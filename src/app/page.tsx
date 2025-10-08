@@ -119,19 +119,19 @@ export default function FAQPage() {
     }>
       <div className="min-h-screen bg-white">
         {/* Hero Section */}
-        <section className="max-w-4xl mx-auto px-6 py-16">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center space-x-8">
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+          <div className="text-center mb-8 sm:mb-12">
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-8">
               <img
                 src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
                 alt="Logo ETU - École Transcendantaliste Universelle"
-                className="w-40 h-40"
+                className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40"
               />
-              <div className="text-left space-y-2">
-                <h1 className="text-4xl font-serif text-gray-900">
+              <div className="text-center sm:text-left space-y-1 sm:space-y-2">
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-serif text-gray-900 leading-tight">
                   École Transcendantaliste Universelle
                 </h1>
-                <p className="text-xl font-serif text-gray-600 uppercase tracking-wider">
+                <p className="text-sm sm:text-base md:text-lg lg:text-xl font-serif text-gray-600 uppercase tracking-wider">
                   Ordre des Marins Pêcheurs
                 </p>
               </div>
@@ -140,24 +140,24 @@ export default function FAQPage() {
 
           <div className="border-t border-gray-200 pt-12"></div>
 
-          <div className="text-center space-y-6">
-            <h2 className="text-6xl font-serif text-gray-900 tracking-wide">
+          <div className="text-center space-y-4 sm:space-y-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-gray-900 tracking-wide leading-tight">
               Foire Aux Questions
             </h2>
-            <p className="text-xl text-gray-500 leading-relaxed max-w-3xl mx-auto font-serif">
+            <p className="text-base sm:text-lg md:text-xl text-gray-500 leading-relaxed max-w-3xl mx-auto font-serif px-4">
               Cette FAQ est conçue pour répondre à toutes vos interrogations et vous accompagner dans votre décision de rejoindre l'École Transcendantaliste Universelle (ETU) Bénin pour une transformation profonde.
             </p>
           </div>
         </section>
 
         {/* FAQ Sections */}
-        <main className="max-w-4xl mx-auto px-6 pb-16">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 pb-16">
           {faqData.map((section, sectionIndex) => (
             <section key={sectionIndex} className="mb-8">
               <div className="border border-gray-200 rounded-lg overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-2xl font-serif text-gray-900">{section.title}</h3>
-                  <p className="text-lg font-serif text-gray-600 mt-1">{section.subtitle}</p>
+                <div className="bg-gray-50 px-4 sm:px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-serif text-gray-900">{section.title}</h3>
+                  <p className="text-sm sm:text-base md:text-lg font-serif text-gray-600 mt-1">{section.subtitle}</p>
                 </div>
 
                 <div className="divide-y divide-gray-200">
@@ -167,9 +167,9 @@ export default function FAQPage() {
                       <div key={itemIndex}>
                         <button
                           onClick={() => toggleItem(sectionIndex, itemIndex)}
-                          className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                          className="w-full px-4 sm:px-6 py-4 sm:py-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
                         >
-                          <span className="text-lg font-serif text-gray-900 pr-4 leading-relaxed">{item.question}</span>
+                          <span className="text-base sm:text-lg font-serif text-gray-900 pr-4 leading-relaxed">{item.question}</span>
                           {isOpen ? (
                             <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
                           ) : (
@@ -178,8 +178,8 @@ export default function FAQPage() {
                         </button>
 
                         {isOpen && (
-                          <div className="px-6 pb-6">
-                            <div className="text-lg text-gray-700 leading-relaxed font-serif">
+                          <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+                            <div className="text-base sm:text-lg text-gray-700 leading-relaxed font-serif">
                               {item.answer.split('\n').map((paragraph, pIndex) => (
                                 <p key={pIndex} className="mb-3">
                                   {paragraph.startsWith('•') ? (
@@ -209,43 +209,43 @@ export default function FAQPage() {
           ))}
 
           {/* Appel à l'action après les questions */}
-          <div className="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-8 text-center">
-            <h3 className="text-2xl font-serif text-gray-900 mb-4">
+          <div className="mt-8 sm:mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 sm:p-8 text-center">
+            <h3 className="text-xl sm:text-2xl font-serif text-gray-900 mb-3 sm:mb-4">
               Avez-vous d'autres questions ?
             </h3>
-            <p className="text-lg text-gray-700 mb-6 font-serif">
+            <p className="text-base sm:text-lg text-gray-700 mb-4 sm:mb-6 font-serif">
               Nous serons ravis d'y répondre ! Écrivez-nous à ce numéro WhatsApp :
             </p>
             <a
               href="https://wa.me/22967153974"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-3 bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="inline-flex items-center space-x-2 sm:space-x-3 bg-green-500 hover:bg-green-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-colors text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              <MessageCircle className="w-6 h-6" />
+              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
               <span>+229 67 15 39 74</span>
             </a>
           </div>
         </main>
 
         {/* CTA Section */}
-        <section className="bg-gray-100 py-16">
-          <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-3xl font-serif text-gray-900 mb-6">
+        <section className="bg-gray-100 py-12 sm:py-16">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <h2 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-4 sm:mb-6">
               Prêt(e) à commencer votre élévation spirituelle ?
             </h2>
-            <p className="text-xl text-gray-600 mb-10 font-serif">
+            <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-10 font-serif">
               Rejoignez notre communauté pour commencer votre élévation spirituelle
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
               <a
                 href="https://wa.me/22967153974"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg transition-colors flex items-center space-x-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                className="bg-green-500 hover:bg-green-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-colors flex items-center space-x-2 sm:space-x-3 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
-                <MessageCircle className="w-5 h-5" />
+                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Rejoindre notre WhatsApp</span>
               </a>
 
@@ -253,9 +253,9 @@ export default function FAQPage() {
                 href="https://www.facebook.com/profile.php?id=61570538836966"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg transition-colors flex items-center space-x-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-colors flex items-center space-x-2 sm:space-x-3 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
-                <Facebook className="w-5 h-5" />
+                <Facebook className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Suivre sur Facebook</span>
               </a>
             </div>
@@ -263,27 +263,27 @@ export default function FAQPage() {
         </section>
 
         {/* Footer */}
-        <footer className="bg-white border-t border-gray-200 py-12">
-          <div className="max-w-4xl mx-auto px-6 text-center">
-            <p className="text-gray-600 text-lg mb-3 font-serif">
+        <footer className="bg-white border-t border-gray-200 py-8 sm:py-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <p className="text-gray-600 text-base sm:text-lg mb-2 sm:mb-3 font-serif">
               École Transcendantaliste Universelle - Depuis 1977
             </p>
-            <p className="text-gray-500 text-base font-serif">
+            <p className="text-gray-500 text-sm sm:text-base font-serif">
               © 2024 ETU Bénin. Tous droits réservés.
             </p>
           </div>
         </footer>
 
         {/* Bouton WhatsApp flottant */}
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
           <a
             href="https://wa.me/22967153974"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+            className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
             title="Rejoindre notre WhatsApp"
           >
-            <MessageCircle className="w-6 h-6" />
+            <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
           </a>
         </div>
       </div>
