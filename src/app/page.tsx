@@ -119,7 +119,7 @@ export default function FAQPage() {
     }>
       <div className="min-h-screen bg-white">
         {/* Hero Section */}
-        <section className="max-w-3xl mx-auto px-6 py-16">
+        <section className="max-w-4xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
             <div className="flex items-center justify-center space-x-8">
               <img
@@ -128,10 +128,10 @@ export default function FAQPage() {
                 className="w-40 h-40"
               />
               <div className="text-left space-y-2">
-                <h1 className="text-3xl font-serif text-gray-900">
+                <h1 className="text-4xl font-serif text-gray-900">
                   École Transcendantaliste Universelle
                 </h1>
-                <p className="text-lg font-serif text-gray-600 uppercase tracking-wider">
+                <p className="text-xl font-serif text-gray-600 uppercase tracking-wider">
                   Ordre des Marins Pêcheurs
                 </p>
               </div>
@@ -141,23 +141,23 @@ export default function FAQPage() {
           <div className="border-t border-gray-200 pt-12"></div>
 
           <div className="text-center space-y-6">
-            <h2 className="text-5xl font-serif text-gray-900 tracking-wide">
+            <h2 className="text-6xl font-serif text-gray-900 tracking-wide">
               Foire Aux Questions
             </h2>
-            <p className="text-gray-500 leading-relaxed max-w-2xl mx-auto font-serif">
+            <p className="text-xl text-gray-500 leading-relaxed max-w-3xl mx-auto font-serif">
               Cette FAQ est conçue pour répondre à toutes vos interrogations et vous accompagner dans votre décision de rejoindre l'École Transcendantaliste Universelle (ETU) Bénin pour une transformation profonde.
             </p>
           </div>
         </section>
 
         {/* FAQ Sections */}
-        <main className="max-w-3xl mx-auto px-6 pb-16">
+        <main className="max-w-4xl mx-auto px-6 pb-16">
           {faqData.map((section, sectionIndex) => (
             <section key={sectionIndex} className="mb-8">
               <div className="border border-gray-200 rounded-lg overflow-hidden">
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-serif text-gray-900">{section.title}</h3>
-                  <p className="text-sm font-serif text-gray-600 mt-1">{section.subtitle}</p>
+                  <h3 className="text-2xl font-serif text-gray-900">{section.title}</h3>
+                  <p className="text-lg font-serif text-gray-600 mt-1">{section.subtitle}</p>
                 </div>
 
                 <div className="divide-y divide-gray-200">
@@ -167,29 +167,29 @@ export default function FAQPage() {
                       <div key={itemIndex}>
                         <button
                           onClick={() => toggleItem(sectionIndex, itemIndex)}
-                          className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                          className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
                         >
-                          <span className="font-serif text-gray-900 pr-4">{item.question}</span>
+                          <span className="text-lg font-serif text-gray-900 pr-4 leading-relaxed">{item.question}</span>
                           {isOpen ? (
-                            <ChevronUp className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                            <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
                           ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                            <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" />
                           )}
                         </button>
 
                         {isOpen && (
-                          <div className="px-6 pb-4">
-                            <div className="text-gray-700 leading-relaxed font-serif">
+                          <div className="px-6 pb-6">
+                            <div className="text-lg text-gray-700 leading-relaxed font-serif">
                               {item.answer.split('\n').map((paragraph, pIndex) => (
-                                <p key={pIndex} className="mb-2">
+                                <p key={pIndex} className="mb-3">
                                   {paragraph.startsWith('•') ? (
                                     <span className="flex items-start">
-                                      <span className="text-gray-600 mr-2">•</span>
+                                      <span className="text-gray-600 mr-3 text-xl">•</span>
                                       <span>{paragraph.substring(1).trim()}</span>
                                     </span>
                                   ) : paragraph.match(/^\d+\./) ? (
                                     <span className="flex items-start">
-                                      <span className="text-gray-600 mr-2">{paragraph.split('.')[0]}.</span>
+                                      <span className="text-gray-600 mr-3 font-semibold text-lg">{paragraph.split('.')[0]}.</span>
                                       <span>{paragraph.split('.').slice(1).join('.').trim()}</span>
                                     </span>
                                   ) : (
@@ -207,49 +207,68 @@ export default function FAQPage() {
               </div>
             </section>
           ))}
-        </main>
 
-        {/* CTA Section */}
-        <section className="bg-gray-100 py-12">
-          <div className="max-w-3xl mx-auto px-6 text-center">
-            <h2 className="text-2xl font-serif text-gray-900 mb-4">
-              Prêt(e) à commencer votre élévation spirituelle ?
-            </h2>
-            <p className="text-gray-600 mb-8 font-serif">
-              Rejoignez notre communauté pour commencer votre élévation spirituelle
+          {/* Appel à l'action après les questions */}
+          <div className="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-8 text-center">
+            <h3 className="text-2xl font-serif text-gray-900 mb-4">
+              Avez-vous d'autres questions ?
+            </h3>
+            <p className="text-lg text-gray-700 mb-6 font-serif">
+              Nous serons ravis d'y répondre ! Écrivez-nous à ce numéro WhatsApp :
             </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
               href="https://wa.me/22967153974"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md transition-colors flex items-center space-x-2"
+              className="inline-flex items-center space-x-3 bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              <MessageCircle className="w-4 h-4" />
-              <span>Rejoindre notre WhatsApp</span>
-            </a>
-            
-            <a
-              href="https://www.facebook.com/profile.php?id=61570538836966"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md transition-colors flex items-center space-x-2"
-            >
-              <Facebook className="w-4 h-4" />
-              <span>Suivre sur Facebook</span>
+              <MessageCircle className="w-6 h-6" />
+              <span>+229 67 15 39 74</span>
             </a>
           </div>
+        </main>
+
+        {/* CTA Section */}
+        <section className="bg-gray-100 py-16">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <h2 className="text-3xl font-serif text-gray-900 mb-6">
+              Prêt(e) à commencer votre élévation spirituelle ?
+            </h2>
+            <p className="text-xl text-gray-600 mb-10 font-serif">
+              Rejoignez notre communauté pour commencer votre élévation spirituelle
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <a
+                href="https://wa.me/22967153974"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg transition-colors flex items-center space-x-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span>Rejoindre notre WhatsApp</span>
+              </a>
+
+              <a
+                href="https://www.facebook.com/profile.php?id=61570538836966"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg transition-colors flex items-center space-x-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <Facebook className="w-5 h-5" />
+                <span>Suivre sur Facebook</span>
+              </a>
+            </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="bg-white border-t border-gray-200 py-8">
-          <div className="max-w-3xl mx-auto px-6 text-center">
-            <p className="text-gray-600 text-sm mb-2 font-serif">
+        <footer className="bg-white border-t border-gray-200 py-12">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <p className="text-gray-600 text-lg mb-3 font-serif">
               École Transcendantaliste Universelle - Depuis 1977
             </p>
-            <p className="text-gray-500 text-xs font-serif">
+            <p className="text-gray-500 text-base font-serif">
               © 2024 ETU Bénin. Tous droits réservés.
             </p>
           </div>
