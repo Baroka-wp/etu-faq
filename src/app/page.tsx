@@ -1,0 +1,273 @@
+'use client'
+
+import { useState } from 'react'
+import { ChevronDown, ChevronUp, MessageCircle, Phone, Facebook } from 'lucide-react'
+import ClientOnly from '@/components/ClientOnly'
+
+interface FAQItem {
+  question: string
+  answer: string
+}
+
+interface FAQSection {
+  title: string
+  subtitle: string
+  items: FAQItem[]
+}
+
+const faqData: FAQSection[] = [
+  {
+    title: "La Formation et Sa Promesse",
+    subtitle: "Pourquoi s'inscrire ?",
+    items: [
+      {
+        question: "Qu'est-ce que je vais vraiment apprendre et transformer dans cette formation ?",
+        answer: "Au-delà des sujets, cette formation est une invitation à l'éveil. Vous apprendrez à :\n• Comprendre les lois invisibles qui régissent votre vie et l'univers (Kabbale, Hermétisme)\n• Activer vos potentiels cachés et votre connexion aux mondes subtils (Angiologie, Alchimie)\n• Lire le langage de l'âme et les cycles de votre évolution (Astrologie, Ésotérisme Chrétien)\n• Devenir le canal de votre propre Maître intérieur, en cessant de chercher la validation à l'extérieur\n\nL'objectif n'est pas d'accumuler des connaissances, mais de vivre une transformation intérieure qui changera votre perception de vous-même et du monde."
+      },
+      {
+        question: "Cette formation est-elle faite pour moi ? Ai-je besoin de connaissances préalables ?",
+        answer: "Le 'Degré Explorateur' est spécifiquement conçu pour les aspirants et les néophytes. Aucune connaissance préalable n'est requise. La seule chose dont vous avez besoin est une aspiration sincère à comprendre le sens de votre vie et un désir d'élévation spirituelle. Si vous ressentez cet appel, cette formation est pour vous."
+      }
+    ]
+  },
+  {
+    title: "L'École et Son Enseignement",
+    subtitle: "La Confiance et la Sécurité",
+    items: [
+      {
+        question: "Qu'est-ce que l'École Transcendantaliste Universelle (ETU) ?",
+        answer: "L'ETU est une école de sagesse initiatique fondée en juillet 1977 par KABALEB (Enrique LLOP). Sa mission est de rendre accessibles les enseignements sacrés qui étaient jadis réservés aux initiés. Présente dans plusieurs pays, l'ETU Bénin est une branche vivante de cette tradition, dédiée à l'éveil des âmes."
+      },
+      {
+        question: "Quelle est la source de cet enseignement ? Est-il authentique ?",
+        answer: "L'enseignement de l'ETU est d'une filiation directe. KABALEB a été le canal par lequel les 'Frères Aînés du Monde Divin' ont transmis ces connaissances. Son œuvre majeure a été de révéler les codes kabbalistiques et les symbolismes cachés dans les Évangiles et l'Ancien Testament. Vous recevez donc un enseignement pur, non altéré, dont la source remonte à la tradition primordiale de l'Occident."
+      },
+      {
+        question: "Cet enseignement est-il une religion ou une secte ? Est-il compatible avec ma foi ?",
+        answer: "C'est une question essentielle. L'ETU n'est ni une religion, ni une secte. C'est une école de sagesse et de développement spirituel. L'enseignement est universel et vise à réveiller la divinité en chaque être, quelle que soit sa religion d'origine. Bien au contraire de créer une dépendance, il vous rend libre et autonome. Il est conçu pour enrichir votre foi personnelle, et non la remplacer."
+      }
+    ]
+  },
+  {
+    title: "Modalités Pratiques et Investissement",
+    subtitle: "Le Comment",
+    items: [
+      {
+        question: "Comment se déroulent les cours en pratique ?",
+        answer: "La formation s'étale sur une période de six (06) mois. Les cours sont dispensés en ligne tous les dimanches, de 21h à 23h (heure locale), pour vous permettre de vous organiser sereinement."
+      },
+      {
+        question: "Quel est l'investissement financier demandé et pourquoi ?",
+        answer: "L'investissement pour votre éveil se décompose ainsi :\n• Frais d'inscription unique : 12 000 FCFA (pour le retrait et le traitement de votre fiche d'inscription)\n• Mensualités : 10 000 FCFA au début de chaque mois, pendant 6 mois (soit 60 000 FCFA au total)\n\nCet investissement couvre les frais de structure, l'encadrement par les instructeurs et la transmission d'un savoir initiatique de grande valeur. Il est aussi un premier acte d'engagement et de conscience sur votre chemin."
+      },
+      {
+        question: "Pouvez-vous m'expliquer plus en détail la 'discipline de l'Initiation' (154 jours et 154 000 FCFA) ?",
+        answer: "Il s'agit là du cœur de la démarche alchimique de l'École. Ce n'est pas une 'cotisation', mais un puissant exercice spirituel.\n\nL'acte de mettre de côté chaque jour une petite somme (1000 FCFA) pendant 154 jours, tout en menant une discipline de prières, crée une transformation intérieure. Cela développe la constance, la foi, le détachement et la capacité à manifester dans la matière. Les 154 000 FCFA ne sont pas le but, mais le résultat visible de votre discipline spirituelle. C'est la preuve de votre capacité à atteindre un objectif que vous vous êtes fixé, une clé indispensable pour l'Initiation."
+      },
+      {
+        question: "Comment accéder aux supports de cours ?",
+        answer: "Pour respecter l'environnement et faciliter l'accès, tous les supports de cours sont numériques. Ils seront directement téléchargeables sur la plateforme de la formation, dont l'URL vous sera communiquée dès votre inscription."
+      },
+      {
+        question: "Et si je ne peux pas payer les mensualités d'un coup ? Y a-t-il des solutions ?",
+        answer: "Nous sommes humains et compréhensifs. La priorité est votre aspiration. Si vous rencontrez des difficultés, contactez-nous directement et confidentiellement. Des arrangements peuvent être étudiés au cas par cas pour ne laisser personne sur le chemin pour des raisons matérielles."
+      }
+    ]
+  },
+  {
+    title: "Le Chemin Après la Formation",
+    subtitle: "L'Avenir",
+    items: [
+      {
+        question: "Que se passe-t-il après le Degré Explorateur ? Y a-t-il une suite ?",
+        answer: "Le 'Degré Explorateur' est la porte d'entrée. Une fois que vous avez complété cette étape et la discipline d'Initiation, vous accédez au 'Degré Initié'. Le chemin ne s'arrête pas là ; il continue de s'élever à travers différents degrés au sein de l'ETU, vous accompagnant à chaque étape de votre évolution spirituelle."
+      }
+    ]
+  },
+  {
+    title: "Inscription et Contact",
+    subtitle: "Le Pas Suivant",
+    items: [
+      {
+        question: "Je suis convaincu(e) ! Comment je m'inscris ?",
+        answer: "Nous sommes heureux de vous accueillir ! Le processus est simple :\n1. Contactez-nous par téléphone/WhatsApp au (+229) 67153974 pour exprimer votre motivation\n2. Retirez et remplissez votre fiche d'inscription en réglant les frais de 12 000 FCFA\n3. Rejoignez la communauté WhatsApp pour recevoir les premiers liens et commencer à vibrer avec le groupe"
+      },
+      {
+        question: "J'ai encore une question qui n'est pas ici.",
+        answer: "N'hésitez surtout pas ! Nous sommes là pour vous. Rejoignez notre communauté WhatsApp ou appelez-nous directement. Votre question est importante et mérite une réponse claire."
+      }
+    ]
+  }
+]
+
+export default function FAQPage() {
+  const [openItems, setOpenItems] = useState<{ [key: string]: boolean }>({})
+
+  const toggleItem = (sectionIndex: number, itemIndex: number) => {
+    const key = `${sectionIndex}-${itemIndex}`
+    setOpenItems(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  return (
+    <ClientOnly fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <div className="min-h-screen bg-white">
+        {/* Hero Section */}
+        <section className="max-w-3xl mx-auto px-6 py-16">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center space-x-8">
+              <img
+                src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
+                alt="Logo ETU - École Transcendantaliste Universelle"
+                className="w-40 h-40"
+              />
+              <div className="text-left space-y-2">
+                <h1 className="text-3xl font-serif text-gray-900">
+                  École Transcendantaliste Universelle
+                </h1>
+                <p className="text-lg font-serif text-gray-600 uppercase tracking-wider">
+                  Ordre des Marins Pêcheurs
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 pt-12"></div>
+
+          <div className="text-center space-y-6">
+            <h2 className="text-5xl font-serif text-gray-900 tracking-wide">
+              Foire Aux Questions
+            </h2>
+            <p className="text-gray-500 leading-relaxed max-w-2xl mx-auto font-serif">
+              Cette FAQ est conçue pour répondre à toutes vos interrogations et vous accompagner dans votre décision de rejoindre l'École Transcendantaliste Universelle (ETU) Bénin pour une transformation profonde.
+            </p>
+          </div>
+        </section>
+
+        {/* FAQ Sections */}
+        <main className="max-w-3xl mx-auto px-6 pb-16">
+          {faqData.map((section, sectionIndex) => (
+            <section key={sectionIndex} className="mb-8">
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-lg font-serif text-gray-900">{section.title}</h3>
+                  <p className="text-sm font-serif text-gray-600 mt-1">{section.subtitle}</p>
+                </div>
+
+                <div className="divide-y divide-gray-200">
+                  {section.items.map((item, itemIndex) => {
+                    const isOpen = openItems[`${sectionIndex}-${itemIndex}`]
+                    return (
+                      <div key={itemIndex}>
+                        <button
+                          onClick={() => toggleItem(sectionIndex, itemIndex)}
+                          className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        >
+                          <span className="font-serif text-gray-900 pr-4">{item.question}</span>
+                          {isOpen ? (
+                            <ChevronUp className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                          )}
+                        </button>
+
+                        {isOpen && (
+                          <div className="px-6 pb-4">
+                            <div className="text-gray-700 leading-relaxed font-serif">
+                              {item.answer.split('\n').map((paragraph, pIndex) => (
+                                <p key={pIndex} className="mb-2">
+                                  {paragraph.startsWith('•') ? (
+                                    <span className="flex items-start">
+                                      <span className="text-gray-600 mr-2">•</span>
+                                      <span>{paragraph.substring(1).trim()}</span>
+                                    </span>
+                                  ) : paragraph.match(/^\d+\./) ? (
+                                    <span className="flex items-start">
+                                      <span className="text-gray-600 mr-2">{paragraph.split('.')[0]}.</span>
+                                      <span>{paragraph.split('.').slice(1).join('.').trim()}</span>
+                                    </span>
+                                  ) : (
+                                    paragraph
+                                  )}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </section>
+          ))}
+        </main>
+
+        {/* CTA Section */}
+        <section className="bg-gray-100 py-12">
+          <div className="max-w-3xl mx-auto px-6 text-center">
+            <h2 className="text-2xl font-serif text-gray-900 mb-4">
+              Prêt(e) à commencer votre élévation spirituelle ?
+            </h2>
+            <p className="text-gray-600 mb-8 font-serif">
+              Rejoignez notre communauté pour commencer votre élévation spirituelle
+            </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a
+              href="https://wa.me/22967153974"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md transition-colors flex items-center space-x-2"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Rejoindre notre WhatsApp</span>
+            </a>
+            
+            <a
+              href="https://www.facebook.com/profile.php?id=61570538836966"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md transition-colors flex items-center space-x-2"
+            >
+              <Facebook className="w-4 h-4" />
+              <span>Suivre sur Facebook</span>
+            </a>
+          </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="bg-white border-t border-gray-200 py-8">
+          <div className="max-w-3xl mx-auto px-6 text-center">
+            <p className="text-gray-600 text-sm mb-2 font-serif">
+              École Transcendantaliste Universelle - Depuis 1977
+            </p>
+            <p className="text-gray-500 text-xs font-serif">
+              © 2024 ETU Bénin. Tous droits réservés.
+            </p>
+          </div>
+        </footer>
+
+        {/* Bouton WhatsApp flottant */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <a
+            href="https://wa.me/22967153974"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+            title="Rejoindre notre WhatsApp"
+          >
+            <MessageCircle className="w-6 h-6" />
+          </a>
+        </div>
+      </div>
+    </ClientOnly>
+  )
+}
