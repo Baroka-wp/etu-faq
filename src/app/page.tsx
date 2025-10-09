@@ -69,7 +69,7 @@ const faqData: FAQSection[] = [
         answer: "Pour respecter l'environnement et faciliter l'accès, tous les supports de cours sont numériques. Ils seront directement téléchargeables sur la plateforme de la formation, dont l'URL vous sera communiquée dès votre inscription."
       },
       {
-        question: "E si je ne peux pas payer d'un coup, y a t'il des modalités ?",
+        question: "Et si je ne peux pas payer d'un coup, y a t'il des modalités ?",
         answer: "Nous sommes humains et compréhensifs. La priorité est votre aspiration. Si vous rencontrez des difficultés, contactez-nous directement et confidentiellement. Des arrangements peuvent être étudiés au cas par cas pour ne laisser personne sur le chemin pour des raisons matérielles."
       }
     ]
