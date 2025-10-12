@@ -230,7 +230,7 @@ export default function AdminInscriptions() {
                 return
             }
 
-            const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin. Votre compte a été créé avec succès.\n\n📚 Votre cours est prêt ! Cliquez sur le lien ci-dessous pour télécharger votre matériel de formation :\n\n${downloadUrl}\n\n⚠️ Ce lien est unique et expirera dans 24 heures.\n\nCordialement,\nL'équipe ETU-Bénin`
+            const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin.\nVotre cours est prêt ! Cliquez sur le lien ci-dessous pour télécharger votre matériel de formation :\n\n${downloadUrl}\n\n⚠️ Ce lien est unique et expirera dans 24 heures.\n\nCordialement,\nL'équipe ETU-Bénin`
 
             const encodedMessage = encodeURIComponent(message)
             const whatsappUrl = `https://wa.me/${inscription.telephone}?text=${encodedMessage}`
@@ -460,8 +460,8 @@ export default function AdminInscriptions() {
                                                             onClick={() => sendWhatsAppMessage(inscription)}
                                                             disabled={generatingLinks.has(inscription.id)}
                                                             className={`p-1 ${generatingLinks.has(inscription.id)
-                                                                    ? 'text-gray-400 cursor-not-allowed'
-                                                                    : 'text-green-600 hover:text-green-900'
+                                                                ? 'text-gray-400 cursor-not-allowed'
+                                                                : 'text-green-600 hover:text-green-900'
                                                                 }`}
                                                             title="Générer et envoyer un lien unique"
                                                         >
