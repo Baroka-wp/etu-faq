@@ -4,6 +4,10 @@ import crypto from 'crypto'
 
 const prisma = new PrismaClient()
 
+// Vérifier que Prisma est correctement configuré
+console.log('Prisma client initialisé:', !!prisma)
+console.log('Méthodes disponibles:', Object.getOwnPropertyNames(prisma))
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -64,13 +68,20 @@ export async function POST(
     const pdfPath = gradeToPdfMap[inscription.grade] || 'cours-néophyte.pdf'
 
     // Désactiver les anciens liens pour cette inscription
-    await prisma.uniqueLink.updateMany({
-      where: { 
-        inscriptionId: id,
-        isActive: true 
-      },
-      data: { isActive: false }
-    })
+    console.log('Tentative de désactivation des anciens liens...')
+    try {
+      await prisma.uniqueLink.updateMany({
+        where: { 
+          inscriptionId: id,
+          isActive: true 
+        },
+        data: { isActive: false }
+      })
+      console.log('Anciens liens désactivés avec succès')
+    } catch (updateError) {
+      console.log('Aucun ancien lien à désactiver ou erreur:', updateError)
+      // Continuer même si la désactivation échoue
+    }
 
     // Créer le nouveau lien unique
     const uniqueLink = await prisma.uniqueLink.create({
