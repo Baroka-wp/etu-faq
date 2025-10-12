@@ -76,3 +76,49 @@ export async function PATCH(
     )
   }
 }
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+    const { nom, prenom, sexe, telephone, lieuResidence, grade, programme, statut } = body
+
+    // Vérifier si l'inscription existe
+    const inscription = await prisma.inscription.findUnique({
+      where: { id }
+    })
+
+    if (!inscription) {
+      return NextResponse.json(
+        { error: 'Inscription non trouvée' },
+        { status: 404 }
+      )
+    }
+
+    // Mettre à jour l'inscription complète
+    const updatedInscription = await prisma.inscription.update({
+      where: { id },
+      data: {
+        nom,
+        prenom,
+        sexe,
+        telephone,
+        lieuResidence,
+        grade,
+        programme,
+        statut
+      }
+    })
+
+    return NextResponse.json(updatedInscription, { status: 200 })
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour:', error)
+    return NextResponse.json(
+      { error: 'Erreur interne du serveur' },
+      { status: 500 }
+    )
+  }
+}

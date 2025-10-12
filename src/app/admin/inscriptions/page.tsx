@@ -172,6 +172,61 @@ export default function AdminInscriptions() {
         }
     }
 
+    const handleEditInscription = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!editingInscription) return
+
+        try {
+            const response = await fetch(`/api/admin/inscriptions/${editingInscription.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nom: editingInscription.nom,
+                    prenom: editingInscription.prenom,
+                    sexe: editingInscription.sexe,
+                    telephone: editingInscription.telephone,
+                    lieuResidence: editingInscription.lieuResidence,
+                    grade: editingInscription.grade,
+                    programme: editingInscription.programme,
+                    statut: editingInscription.statut,
+                }),
+            })
+
+            if (response.ok) {
+                const updatedInscription = await response.json()
+                setInscriptions(prev =>
+                    prev.map(inscription =>
+                        inscription.id === editingInscription.id
+                            ? updatedInscription
+                            : inscription
+                    )
+                )
+                addToast({
+                    type: 'success',
+                    title: 'Inscription mise à jour',
+                    message: 'L\'inscription a été modifiée avec succès'
+                })
+                setShowEditModal(false)
+                setEditingInscription(null)
+            } else {
+                addToast({
+                    type: 'error',
+                    title: 'Erreur',
+                    message: 'Impossible de modifier l\'inscription'
+                })
+            }
+        } catch (err) {
+            console.error('Erreur lors de la modification:', err)
+            addToast({
+                type: 'error',
+                title: 'Erreur',
+                message: 'Erreur lors de la modification'
+            })
+        }
+    }
+
     const generateUniqueLink = async (inscription: Inscription) => {
         try {
             console.log('Tentative de génération de lien pour:', inscription.prenom, inscription.nom)
@@ -232,21 +287,20 @@ export default function AdminInscriptions() {
 
             const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin.\nVotre cours est prêt ! Cliquez sur le lien ci-dessous pour télécharger votre matériel de formation :\n\n${downloadUrl}\n\n⚠️ Ce lien est unique et expirera dans 24 heures.\n\nCordialement,\nL'équipe ETU-Bénin`
 
-            const encodedMessage = encodeURIComponent(message)
-            const whatsappUrl = `https://wa.me/${inscription.telephone}?text=${encodedMessage}`
-            window.open(whatsappUrl, '_blank')
+            // Copier le message dans le presse-papiers
+            await navigator.clipboard.writeText(message)
 
             addToast({
                 type: 'success',
-                title: 'Message envoyé',
-                message: `Lien unique généré et envoyé à ${inscription.prenom} ${inscription.nom}`
+                title: 'Message copié !',
+                message: `Le message avec le lien unique a été copié dans le presse-papiers`
             })
         } catch (err) {
-            console.error('Erreur lors de l\'envoi du message:', err)
+            console.error('Erreur lors de la copie du message:', err)
             addToast({
                 type: 'error',
                 title: 'Erreur',
-                message: 'Impossible d\'envoyer le message WhatsApp'
+                message: 'Impossible de copier le message'
             })
         } finally {
             // Retirer l'ID de la liste des liens en cours de génération
@@ -574,6 +628,200 @@ export default function AdminInscriptions() {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {showEditModal && editingInscription && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Modifier l'inscription
+                                </h3>
+                                <button
+                                    onClick={() => {
+                                        setShowEditModal(false)
+                                        setEditingInscription(null)
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                        <form onSubmit={handleEditInscription} className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Nom */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Nom
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editingInscription.nom}
+                                        onChange={(e) => setEditingInscription({
+                                            ...editingInscription,
+                                            nom: e.target.value
+                                        })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Prénom */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Prénom
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editingInscription.prenom}
+                                        onChange={(e) => setEditingInscription({
+                                            ...editingInscription,
+                                            prenom: e.target.value
+                                        })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Sexe */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Sexe
+                                    </label>
+                                    <select
+                                        value={editingInscription.sexe}
+                                        onChange={(e) => setEditingInscription({
+                                            ...editingInscription,
+                                            sexe: e.target.value
+                                        })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                                        required
+                                    >
+                                        <option value="Masculin">Masculin</option>
+                                        <option value="Féminin">Féminin</option>
+                                    </select>
+                                </div>
+
+                                {/* Téléphone */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Téléphone
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={editingInscription.telephone}
+                                        onChange={(e) => setEditingInscription({
+                                            ...editingInscription,
+                                            telephone: e.target.value
+                                        })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Lieu de résidence */}
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Lieu de résidence
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editingInscription.lieuResidence}
+                                        onChange={(e) => setEditingInscription({
+                                            ...editingInscription,
+                                            lieuResidence: e.target.value
+                                        })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Grade */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Grade
+                                    </label>
+                                    <select
+                                        value={editingInscription.grade}
+                                        onChange={(e) => setEditingInscription({
+                                            ...editingInscription,
+                                            grade: e.target.value
+                                        })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                                        required
+                                    >
+                                        <option value="Explorateur">Explorateur</option>
+                                        <option value="Néophyte">Néophyte</option>
+                                        <option value="Constructeur">Constructeur</option>
+                                        <option value="Navigateur">Navigateur</option>
+                                        <option value="Alchimiste">Alchimiste</option>
+                                    </select>
+                                </div>
+
+                                {/* Programme */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Programme
+                                    </label>
+                                    <select
+                                        value={editingInscription.programme}
+                                        onChange={(e) => setEditingInscription({
+                                            ...editingInscription,
+                                            programme: e.target.value
+                                        })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                                        required
+                                    >
+                                        <option value="Initiation">Initiation</option>
+                                        <option value="Formation Continue">Formation Continue</option>
+                                    </select>
+                                </div>
+
+                                {/* Statut */}
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Statut
+                                    </label>
+                                    <select
+                                        value={editingInscription.statut}
+                                        onChange={(e) => setEditingInscription({
+                                            ...editingInscription,
+                                            statut: e.target.value
+                                        })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+                                        required
+                                    >
+                                        <option value="En attente">En attente</option>
+                                        <option value="Approuvé">Approuvé</option>
+                                        <option value="Rejeté">Rejeté</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowEditModal(false)
+                                        setEditingInscription(null)
+                                    }}
+                                    className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                                >
+                                    Enregistrer
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

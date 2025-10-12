@@ -51,7 +51,7 @@ export default function BibliothequePage() {
 
     const handleWhatsAppOrder = (book: Book) => {
         const message = encodeURIComponent(book.whatsappMessage)
-        const whatsappUrl = `https://wa.me/229XXXXXXXX?text=${message}`
+        const whatsappUrl = `https://wa.me/22967153974?text=${message}`
         window.open(whatsappUrl, '_blank')
     }
 
@@ -67,21 +67,21 @@ export default function BibliothequePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-white">
             {/* Header */}
-            <div className="bg-gray-800 text-white py-12">
+            <div className="bg-gray-900 text-white py-8 border-b border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-center mb-4">
+                    <div className="flex items-center justify-center mb-3">
                         <Image
                             src="/logo.svg"
                             alt="ETU-Bénin Logo"
-                            width={40}
-                            height={40}
+                            width={36}
+                            height={36}
                             className="mr-3"
                         />
-                        <h1 className="text-4xl font-bold font-serif">Bibliothèque ETU-Bénin</h1>
+                        <h1 className="text-3xl font-bold">Bibliothèque ETU-Bénin</h1>
                     </div>
-                    <p className="text-xl text-gray-300 text-center max-w-3xl mx-auto">
+                    <p className="text-base text-gray-400 text-center max-w-3xl mx-auto">
                         Découvrez notre collection de livres et ouvrages pour approfondir votre parcours spirituel
                     </p>
                 </div>
@@ -99,7 +99,7 @@ export default function BibliothequePage() {
                 </div>
 
                 {/* Filters and Search */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 mb-8">
                     <div className="flex flex-col md:flex-row gap-4">
                         {/* Search */}
                         <div className="flex-1">
@@ -108,7 +108,7 @@ export default function BibliothequePage() {
                                 placeholder="Rechercher un livre..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-900 focus:border-gray-900 bg-white"
                             />
                         </div>
 
@@ -116,32 +116,29 @@ export default function BibliothequePage() {
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setFilter('all')}
-                                className={`px-4 py-2 rounded-lg flex items-center ${filter === 'all'
-                                    ? 'bg-gray-800 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === 'all'
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
                                     }`}
                             >
-                                <Filter className="w-4 h-4 mr-2" />
                                 Tous
                             </button>
                             <button
                                 onClick={() => setFilter('etu')}
-                                className={`px-4 py-2 rounded-lg flex items-center ${filter === 'etu'
-                                    ? 'bg-gray-800 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === 'etu'
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
                                     }`}
                             >
-                                <BookOpen className="w-4 h-4 mr-2" />
                                 Éditions ETU
                             </button>
                             <button
                                 onClick={() => setFilter('recommended')}
-                                className={`px-4 py-2 rounded-lg flex items-center ${filter === 'recommended'
-                                    ? 'bg-gray-800 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === 'recommended'
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
                                     }`}
                             >
-                                <ExternalLink className="w-4 h-4 mr-2" />
                                 Lectures recommandées
                             </button>
                         </div>
@@ -151,9 +148,9 @@ export default function BibliothequePage() {
                 {/* Books Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredBooks.map((book) => (
-                        <div key={book.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                        <div key={book.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-gray-400 transition-all">
                             {/* Book Image */}
-                            <div className="h-48 bg-gray-200 flex items-center justify-center">
+                            <div className="h-48 bg-gray-100 flex items-center justify-center">
                                 {book.imageUrl ? (
                                     <img
                                         src={book.imageUrl}
@@ -161,35 +158,35 @@ export default function BibliothequePage() {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <BookOpen className="w-16 h-16 text-gray-400" />
+                                    <BookOpen className="w-16 h-16 text-gray-300" />
                                 )}
                             </div>
 
                             {/* Book Content */}
-                            <div className="p-6">
+                            <div className="p-5">
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-lg font-semibold text-gray-900">{book.title}</h3>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${book.isFree
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-blue-100 text-blue-800'
+                                    <h3 className="text-base font-semibold text-gray-900">{book.title}</h3>
+                                    <span className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ml-2 ${book.isFree
+                                        ? 'bg-gray-100 text-gray-700 border border-gray-300'
+                                        : 'bg-gray-900 text-white'
                                         }`}>
                                         {book.isFree ? 'Gratuit' : 'Payant'}
                                     </span>
                                 </div>
 
-                                <p className="text-sm text-gray-600 mb-2">par {book.author}</p>
+                                <p className="text-sm text-gray-500 mb-3">par {book.author}</p>
 
-                                <p className="text-gray-700 text-sm mb-4 line-clamp-3">{book.description}</p>
+                                <p className="text-gray-600 text-sm mb-4 line-clamp-3">{book.description}</p>
 
                                 {book.price && (
-                                    <div className="text-lg font-bold text-gray-900 mb-4">
+                                    <div className="text-base font-semibold text-gray-900 mb-4">
                                         {book.price.toLocaleString()} FCFA
                                     </div>
                                 )}
 
                                 <button
                                     onClick={() => handleWhatsAppOrder(book)}
-                                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
+                                    className="w-full bg-gray-900 text-white py-2.5 px-4 rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center text-sm font-medium"
                                 >
                                     <MessageCircle className="w-4 h-4 mr-2" />
                                     {book.isFree ? 'Demander des infos' : 'Commander'}
@@ -209,15 +206,15 @@ export default function BibliothequePage() {
                 )}
 
                 {/* Info Section */}
-                <div className="mt-12 bg-blue-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-blue-900 mb-4">Comment commander ?</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                <div className="mt-12 bg-gray-50 rounded-lg border border-gray-200 p-6">
+                    <h3 className="text-base font-semibold text-gray-900 mb-4">Comment commander ?</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-600">
                         <div>
-                            <h4 className="font-medium mb-2">📚 Éditions ETU</h4>
+                            <h4 className="font-medium text-gray-900 mb-2">📚 Éditions ETU</h4>
                             <p>Livres officiels de l'ETU-Bénin avec prix fixe. Commande via WhatsApp avec paiement à la livraison.</p>
                         </div>
                         <div>
-                            <h4 className="font-medium mb-2">📖 Lectures recommandées</h4>
+                            <h4 className="font-medium text-gray-900 mb-2">📖 Lectures recommandées</h4>
                             <p>Ouvrages de référence gratuits. Obtenez des informations sur où les trouver ou les télécharger.</p>
                         </div>
                     </div>
