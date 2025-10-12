@@ -168,11 +168,61 @@ export default function AdminInscriptions() {
         }
     }
 
-    const sendWhatsAppMessage = (telephone: string, nom: string, prenom: string) => {
-        const message = `Bonjour ${prenom} ${nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin. Votre compte a été créé avec succès.\n\nVous pouvez maintenant accéder à votre profil et commencer votre formation.\n\nCordialement,\nL'équipe ETU-Bénin`
-        const encodedMessage = encodeURIComponent(message)
-        const whatsappUrl = `https://wa.me/${telephone}?text=${encodedMessage}`
-        window.open(whatsappUrl, '_blank')
+    const generateUniqueLink = async (inscription: Inscription) => {
+        try {
+            const response = await fetch(`/api/admin/inscriptions/${inscription.id}/generate-link`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ duration: 24 }) // 24 heures
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                return data.downloadUrl
+            } else {
+                throw new Error('Erreur lors de la génération du lien')
+            }
+        } catch (err) {
+            console.error('Erreur lors de la génération du lien:', err)
+            addToast({
+                type: 'error',
+                title: 'Erreur',
+                message: 'Impossible de générer le lien unique'
+            })
+            return null
+        }
+    }
+
+    const sendWhatsAppMessage = async (inscription: Inscription) => {
+        try {
+            // Générer le lien unique
+            const downloadUrl = await generateUniqueLink(inscription)
+            
+            if (!downloadUrl) {
+                return
+            }
+
+            const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin. Votre compte a été créé avec succès.\n\n📚 Votre cours est prêt ! Cliquez sur le lien ci-dessous pour télécharger votre matériel de formation :\n\n${downloadUrl}\n\n⚠️ Ce lien est unique et expirera dans 24 heures.\n\nVous pouvez également accéder à votre profil : /profil\n\nCordialement,\nL'équipe ETU-Bénin`
+            
+            const encodedMessage = encodeURIComponent(message)
+            const whatsappUrl = `https://wa.me/${inscription.telephone}?text=${encodedMessage}`
+            window.open(whatsappUrl, '_blank')
+
+            addToast({
+                type: 'success',
+                title: 'Message envoyé',
+                message: `Lien unique généré et envoyé à ${inscription.prenom} ${inscription.nom}`
+            })
+        } catch (err) {
+            console.error('Erreur lors de l\'envoi du message:', err)
+            addToast({
+                type: 'error',
+                title: 'Erreur',
+                message: 'Impossible d\'envoyer le message WhatsApp'
+            })
+        }
     }
 
     const downloadPDF = (inscription: Inscription) => {
@@ -185,7 +235,7 @@ export default function AdminInscriptions() {
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
-        
+
         addToast({
             type: 'success',
             title: 'Téléchargement',
@@ -377,9 +427,9 @@ export default function AdminInscriptions() {
                                                             <Key className="w-4 h-4" />
                                                         </button>
                                                         <button
-                                                            onClick={() => sendWhatsAppMessage(inscription.telephone, inscription.nom, inscription.prenom)}
+                                                            onClick={() => sendWhatsAppMessage(inscription)}
                                                             className="text-green-600 hover:text-green-900 p-1"
-                                                            title="Envoyer un message WhatsApp"
+                                                            title="Envoyer un message WhatsApp avec lien unique"
                                                         >
                                                             <MessageCircle className="w-4 h-4" />
                                                         </button>

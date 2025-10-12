@@ -48,4 +48,20 @@ model Inscription {
   statut            String   @default("En attente")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  
+  uniqueLinks       UniqueLink[]
+}
+
+model UniqueLink {
+  id                String   @id @default(cuid())
+  inscriptionId     String
+  token             String   @unique
+  pdfPath           String
+  isActive          Boolean  @default(true)
+  expiresAt         DateTime
+  downloadedAt      DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  inscription       Inscription @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
 }
