@@ -7,10 +7,10 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { token: string } } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params
+    const { token } = await params
 
     // Trouver le lien unique
     const uniqueLink = await prisma.uniqueLink.findUnique({
@@ -66,10 +66,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params
+    const { token } = await params
     const { downloaded } = await request.json()
 
     if (downloaded) {

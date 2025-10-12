@@ -6,10 +6,10 @@ const prisma = new PrismaClient()
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const { duration = 24 } = await request.json() // Durée en heures
 
     // Vérifier si l'inscription existe

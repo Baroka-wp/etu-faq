@@ -10,7 +10,7 @@ console.log('Méthodes disponibles:', Object.getOwnPropertyNames(prisma))
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Vérifier l'authentification admin
@@ -22,7 +22,7 @@ export async function POST(
       )
     }
 
-    const { id } = params
+    const { id } = await params
     console.log('Génération de lien pour l\'inscription:', id)
     
     let duration = 24
