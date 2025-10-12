@@ -96,7 +96,10 @@ export async function POST(
     })
 
     // Générer l'URL complète
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
+                    process.env.NEXTAUTH_URL ||
+                    'http://localhost:3000'
     const downloadUrl = `${baseUrl}/download/${token}`
 
     return NextResponse.json({
