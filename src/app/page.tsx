@@ -140,7 +140,7 @@ export default function HomePage() {
         </section>
 
         {/* Notre Mission & Philosophie */}
-        <section id="mission" className="py-16 sm:py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <section id="mission" className="py-16 sm:py-20 bg-gray-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-gray-900 mb-6">
@@ -151,7 +151,7 @@ export default function HomePage() {
 
             {/* Le But de l'ETU - Section principale */}
             <div className="mb-12">
-              <div className="bg-white rounded-xl p-8 sm:p-12 shadow-lg">
+              <div className="bg-white rounded-lg p-8 sm:p-12 border border-gray-200 hover:border-gray-300 transition-all duration-300">
                 <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Le But de l'ETU</h3>
                 <div className="max-w-4xl mx-auto">
                   <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mb-6 text-center">
@@ -166,8 +166,8 @@ export default function HomePage() {
 
             {/* Le Transcendantalisme - Section détaillée */}
             <div className="grid lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-xl p-8 shadow-lg">
-                <h3 className="text-2xl font-serif text-gray-900 mb-6">Qu'est-ce que le Transcendantalisme ?</h3>
+              <div className="bg-white rounded-lg p-8 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
+                <h3 className="text-2xl font-serif text-gray-900 mb-6 group-hover:text-gray-800 transition-colors">Qu'est-ce que le Transcendantalisme ?</h3>
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
                   Le transcendantalisme est un mouvement de type moral et philosophique. Par sa philosophie, il se propose d'amener l'homme à une compréhension plus grande des problèmes de l'existence, situant sa conscience à un plus haut niveau dans les régions métaphysiques.
                 </p>
@@ -179,8 +179,8 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl p-8 shadow-lg">
-                <h3 className="text-2xl font-serif text-gray-900 mb-6">Qui est le Transcendantaliste ?</h3>
+              <div className="bg-white rounded-lg p-8 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
+                <h3 className="text-2xl font-serif text-gray-900 mb-6 group-hover:text-gray-800 transition-colors">Qui est le Transcendantaliste ?</h3>
                 <p className="text-lg text-gray-700 leading-relaxed">
                   Le transcendantaliste est celui qui cherche une mission concrète et positive dans la vie ; celui qui se sent frustré partout où règne l'injustice ; celui qui cherche la lumière que l'enseignement peut lui donner. Il est heureux de servir sans rien demander en échange, satisfait du plaisir de servir. C'est celui qui doute, qui s'interroge sur son propre destin et celui de l'humanité, un assoiffé d'éternité, car le transcendantalisme répond à toutes les questions qu'il se pose.
                 </p>
@@ -201,19 +201,19 @@ export default function HomePage() {
 
             {/* Introduction aux Enseignements */}
             <div className="max-w-5xl mx-auto mb-12">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 sm:p-12">
+              <div className="bg-gray-50 rounded-lg p-8 sm:p-12 border border-gray-200 hover:border-gray-300 transition-all duration-300">
                 <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Découvrez nos parcours d'étude</h3>
                 <div className="max-w-4xl mx-auto">
                   <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mb-6">
-                    Nos enseignements sont principalement articulés autour de la <strong>Kabbale</strong>, une doctrine mystérieuse et sacrée. Elle est une « Tradition Ésotérique », une Méthode permettant d'appréhender les LOIS de notre Système Solaire et de les utiliser afin de mieux comprendre :
+                    Nos enseignements sont principalement articulés autour de la <strong className="text-gray-900">Kabbale</strong>, une doctrine mystérieuse et sacrée. Elle est une « Tradition Ésotérique », une Méthode permettant d'appréhender les LOIS de notre Système Solaire et de les utiliser afin de mieux comprendre :
                   </p>
                   <ol className="list-decimal list-inside text-lg sm:text-xl text-gray-700 space-y-3 mb-8">
-                    <li>Notre sphère d'existence.</li>
-                    <li>Notre situation physique, psychique, mentale et spirituelle.</li>
-                    <li>La manière de nous dégager de notre « condition humaine » en accédant à un état de Conscience Élevé, qualifié de DIVIN.</li>
+                    <li className="hover:text-gray-900 transition-colors duration-200">Notre sphère d'existence.</li>
+                    <li className="hover:text-gray-900 transition-colors duration-200">Notre situation physique, psychique, mentale et spirituelle.</li>
+                    <li className="hover:text-gray-900 transition-colors duration-200">La manière de nous dégager de notre « condition humaine » en accédant à un état de Conscience Élevé, qualifié de DIVIN.</li>
                   </ol>
                   <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
-                    Cette Méthode représente notre Univers au moyen d'un schéma appelé « ARBRE DE VIE », qui permet de comprendre comment circule la Force Divine, comment elle se différencie en plusieurs types d'énergies, et comment celles-ci sont hiérarchisées.
+                    Cette Méthode représente notre Univers au moyen d'un schéma appelé « <strong className="text-gray-900">ARBRE DE VIE</strong> », qui permet de comprendre comment circule la Force Divine, comment elle se différencie en plusieurs types d'énergies, et comment celles-ci sont hiérarchisées.
                   </p>
                 </div>
               </div>
@@ -221,28 +221,28 @@ export default function HomePage() {
 
             {/* Les Programmes par Grade */}
             <div className="mb-12">
-              <div className="bg-white rounded-xl p-8 sm:p-12 shadow-lg border-2 border-gray-100">
+              <div className="bg-white rounded-lg p-8 sm:p-12 border border-gray-200">
                 <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Les Programmes par Grade</h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4">1</div>
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center">Grade 1: NÉOPHYTE</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed text-center">Les mystères de l'œuvre divine (la philosophie exotérique). Le cours est composé de 24 leçons.</p>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
+                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4 group-hover:bg-gray-700 transition-colors duration-300">1</div>
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center group-hover:text-gray-800 transition-colors duration-300">Grade 1: NÉOPHYTE</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed text-center group-hover:text-gray-800 transition-colors duration-300">Les mystères de l'œuvre divine (la philosophie exotérique). Le cours est composé de 24 leçons.</p>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4">2</div>
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center">Grade 2: CONSTRUCTEUR</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed text-center">22 Travaux de Grade + 12 leçons d'Évangile.</p>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
+                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4 group-hover:bg-gray-700 transition-colors duration-300">2</div>
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center group-hover:text-gray-800 transition-colors duration-300">Grade 2: CONSTRUCTEUR</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed text-center group-hover:text-gray-800 transition-colors duration-300">22 Travaux de Grade + 12 leçons d'Évangile.</p>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4">3</div>
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center">Grade 3: NAVIGATEUR</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed text-center">22 Travaux de Grade + 22 leçons d'Évangile.</p>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
+                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4 group-hover:bg-gray-700 transition-colors duration-300">3</div>
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center group-hover:text-gray-800 transition-colors duration-300">Grade 3: NAVIGATEUR</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed text-center group-hover:text-gray-800 transition-colors duration-300">22 Travaux de Grade + 22 leçons d'Évangile.</p>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4">4</div>
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center">Grade 4: ALCHIMISTE</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed text-center">44 Travaux de Grade + 28 leçons d'Évangile.</p>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
+                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4 group-hover:bg-gray-700 transition-colors duration-300">4</div>
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center group-hover:text-gray-800 transition-colors duration-300">Grade 4: ALCHIMISTE</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed text-center group-hover:text-gray-800 transition-colors duration-300">44 Travaux de Grade + 28 leçons d'Évangile.</p>
                   </div>
                 </div>
               </div>
@@ -250,44 +250,44 @@ export default function HomePage() {
 
             {/* Les Cours Thématiques Détaillés */}
             <div className="mb-12">
-              <div className="bg-white rounded-xl p-8 sm:p-12 shadow-lg border-2 border-gray-100">
+              <div className="bg-white rounded-lg p-8 sm:p-12 border border-gray-200">
                 <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Les Cours Thématiques Détaillés</h3>
                 
                 {/* Cours 1: Philosophie Ésotérique Chrétienne */}
                 <div className="mb-8">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
-                    <h4 className="text-xl font-serif font-semibold text-gray-900 mb-4">1. Philosophie Ésotérique Chrétienne (22 leçons)</h4>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
+                    <h4 className="text-xl font-serif font-semibold text-gray-900 mb-4 group-hover:text-gray-800 transition-colors duration-300">1. Philosophie Ésotérique Chrétienne (22 leçons)</h4>
                     <p className="text-gray-700 leading-relaxed mb-4">
                       Ce cours introduit la Kabbale, l'organisation cosmique et les symbolismes bibliques. Il expose de façon cohérente et simple les lois établies par Dieu pour le fonctionnement de notre Univers. La connaissance de ces Lois permet à l'homme d'agir à l'unisson avec elles et de se mouvoir dans un espace où le malheur, le mal, les accidents et la maladie, produits de l'ignorance, n'ont pas de place. C'est une véritable « Science du Comportement ».
                     </p>
                     <p className="text-gray-700 leading-relaxed mb-4">
                       Le contenu de cet Enseignement provient de la Tradition Hermétique, présenté de manière globale et logique pour permettre à l'Étudiant, quelle que soit son appartenance, de mieux comprendre les enseignements de sa propre religion ou école.
                     </p>
-                    <div className="bg-white rounded-lg p-4">
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
                       <h5 className="font-semibold text-gray-900 mb-3">Programme du cours :</h5>
                       <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
-                        <div>– Leçon 1 : La création (Cours Gratuit)</div>
-                        <div>– Leçon 2 : La création (suite)</div>
-                        <div>– Leçon 3 : La Création (fin)</div>
-                        <div>– Leçon 4 : Le cycle Vital</div>
-                        <div>– Leçon 5 : Le cycle vital (suite)</div>
-                        <div>– Leçon 6 : Le cycle vital (suite)</div>
-                        <div>– Leçon 7 : Le cycle vital (suite)</div>
-                        <div>– Leçon 8 : Le cycle vital (suite)</div>
-                        <div>– Leçon 9 : Le cycle vital (suite)</div>
-                        <div>– Leçon 10 : Le cycle vital (fin)</div>
-                        <div>– Leçon 11 : L'Organisation</div>
-                        <div>– Leçon 12 : L'Organisation (suite)</div>
-                        <div>– Leçon 13 : L'Organisation (suite)</div>
-                        <div>– Leçon 14 : L'Organisation (suite)</div>
-                        <div>– Leçon 15 : L'Organisation (suite et fin)</div>
-                        <div>– Leçon 16 : Le travail humain</div>
-                        <div>– Leçon 17 : Le travail humain (suite)</div>
-                        <div>– Leçon 18 : Le travail humain (suite)</div>
-                        <div>– Leçon 19 : Le travail humain (suite)</div>
-                        <div>– Leçon 20 : Le travail divin</div>
-                        <div>– Leçon 21 : Le travail divin (suite et fin)</div>
-                        <div>– Leçon 22 : Analyse finale</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 1 : La création (Cours Gratuit)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 2 : La création (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 3 : La Création (fin)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 4 : Le cycle Vital</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 5 : Le cycle vital (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 6 : Le cycle vital (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 7 : Le cycle vital (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 8 : Le cycle vital (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 9 : Le cycle vital (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 10 : Le cycle vital (fin)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 11 : L'Organisation</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 12 : L'Organisation (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 13 : L'Organisation (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 14 : L'Organisation (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 15 : L'Organisation (suite et fin)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 16 : Le travail humain</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 17 : Le travail humain (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 18 : Le travail humain (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 19 : Le travail humain (suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 20 : Le travail divin</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 21 : Le travail divin (suite et fin)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 22 : Analyse finale</div>
                       </div>
                     </div>
                   </div>
@@ -295,26 +295,26 @@ export default function HomePage() {
 
                 {/* Cours 2: Interprétation Ésotérique de l'Évangile */}
                 <div className="mb-8">
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6">
-                    <h4 className="text-xl font-serif font-semibold text-gray-900 mb-4">2. Interprétation Ésotérique de l'Évangile (50 leçons)</h4>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
+                    <h4 className="text-xl font-serif font-semibold text-gray-900 mb-4 group-hover:text-gray-800 transition-colors duration-300">2. Interprétation Ésotérique de l'Évangile (50 leçons)</h4>
                     <p className="text-gray-700 leading-relaxed mb-4">
                       Ce cours révèle tous les symbolismes bibliques contenus dans les Évangiles.
                     </p>
-                    <div className="bg-white rounded-lg p-4">
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
                       <h5 className="font-semibold text-gray-900 mb-3">Programme du cours :</h5>
                       <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
-                        <div>– Leçon 1 : Processus d'élaboration de la personnalité christique et de sa sauvegarde.</div>
-                        <div>– Leçon 2 : Aplanir les sentiers intérieurs</div>
-                        <div>– Leçon 3 : Jésus à l'aube de sa mission terrestre</div>
-                        <div>– Leçon 4 : L'art d'être chrétien</div>
-                        <div>– Leçon 5 : Intérioriser les lois cosmiques et les extérioriser en comportement naturel</div>
-                        <div>– Leçon 6 : Dépasser la Loi et instaurer la Foi et l'Amour</div>
-                        <div>– Leçon 7 : Le Christianisme : une voie intérieure. L'humilité : première vertu du disciple.</div>
-                        <div>– Leçon 8 : Le travail humain et les mystères de l'Amour – Christ</div>
-                        <div>– Leçon 9 : Directives pour le disciple du Christ – La femme dans l'œuvre du Christ</div>
-                        <div>– Leçon 10 : Le mystère de l'âme humaine - Le symbolisme de la décapitation de Jean Baptiste.</div>
-                        <div>– Leçon 11 à 50 : Interprétation Ésotérique de l'évangile (Suite)</div>
-                        <div>– Conclusion</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 1 : Processus d'élaboration de la personnalité christique et de sa sauvegarde.</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 2 : Aplanir les sentiers intérieurs</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 3 : Jésus à l'aube de sa mission terrestre</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 4 : L'art d'être chrétien</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 5 : Intérioriser les lois cosmiques et les extérioriser en comportement naturel</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 6 : Dépasser la Loi et instaurer la Foi et l'Amour</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 7 : Le Christianisme : une voie intérieure. L'humilité : première vertu du disciple.</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 8 : Le travail humain et les mystères de l'Amour – Christ</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 9 : Directives pour le disciple du Christ – La femme dans l'œuvre du Christ</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 10 : Le mystère de l'âme humaine - Le symbolisme de la décapitation de Jean Baptiste.</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 11 à 50 : Interprétation Ésotérique de l'évangile (Suite)</div>
+                        <div className="hover:text-gray-900 transition-colors duration-200">– Conclusion</div>
                       </div>
                     </div>
                   </div>
@@ -322,27 +322,27 @@ export default function HomePage() {
 
                 {/* Autres Enseignements */}
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">3. Astrologie et Kabbale (22 leçons)</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed">Associe l'étude de l'Astrologie à celle de la Kabbale et révèle les clés de l'interprétation des thèmes.</p>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">3. Astrologie et Kabbale (22 leçons)</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Associe l'étude de l'Astrologie à celle de la Kabbale et révèle les clés de l'interprétation des thèmes.</p>
                   </div>
-                  <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-6">
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">4. Haute Kabbale appliquée à l'Astrologie et au Tarot (60 leçons)</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed">Le disciple est alors en possession de tous les Arcanes lui permettant d'être utile au monde et d'être un agent de la Divine Volonté.</p>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">4. Haute Kabbale appliquée à l'Astrologie et au Tarot (60 leçons)</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Le disciple est alors en possession de tous les Arcanes lui permettant d'être utile au monde et d'être un agent de la Divine Volonté.</p>
                   </div>
-                  <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg p-6">
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">5. Interprétation ésotérique de l'Apocalypse (22 leçons)</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed">Découverte des symbolismes cachés dans le livre de l'Apocalypse.</p>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">5. Interprétation ésotérique de l'Apocalypse (22 leçons)</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Découverte des symbolismes cachés dans le livre de l'Apocalypse.</p>
                   </div>
-                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg p-6">
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">6. Interprétation ésotérique de la Genèse (50 leçons)</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed">Analyse approfondie des premiers chapitres de la Bible.</p>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">6. Interprétation ésotérique de la Genèse (50 leçons)</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Analyse approfondie des premiers chapitres de la Bible.</p>
                   </div>
                 </div>
 
-                <div className="mt-6 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-6">
-                  <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">7. Étude des noms des anges divins</h4>
-                  <p className="text-gray-700 leading-relaxed">Par ce cours, le disciple apprend à maîtriser les noms, les sons, et peut les utiliser pour améliorer sa condition de vie ou les rejeter s'ils ne sont pas en harmonie avec elle.</p>
+                <div className="mt-6 bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
+                  <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">7. Étude des noms des anges divins</h4>
+                  <p className="text-gray-700 leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Par ce cours, le disciple apprend à maîtriser les noms, les sons, et peut les utiliser pour améliorer sa condition de vie ou les rejeter s'ils ne sont pas en harmonie avec elle.</p>
                 </div>
               </div>
             </div>
@@ -350,7 +350,7 @@ export default function HomePage() {
         </section>
 
         {/* Notre Action Spirituelle et Sociale */}
-        <section className="py-16 sm:py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <section className="py-16 sm:py-20 bg-gray-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-gray-900 mb-6">
@@ -360,7 +360,7 @@ export default function HomePage() {
             </div>
 
             <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-xl p-8 shadow-lg">
+              <div className="bg-white rounded-lg p-8 border border-gray-200 hover:border-gray-300 transition-all duration-300">
                 <h3 className="text-2xl font-serif text-gray-900 mb-6">Au-delà des cours, une action concrète</h3>
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
                   L'ETU met également à la disposition du disciple des prières, des rituels, des textes sacrés pouvant l'aider dans la quête de son identité spirituelle. C'est ainsi que sont mis en place des groupes de prières qui œuvrent pour la guérison des malades (Serviteurs Silencieux du Christ – SSC – et Médecins du Christ – MC).
