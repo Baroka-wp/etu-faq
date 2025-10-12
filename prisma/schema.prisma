@@ -43,7 +43,7 @@ model Inscription {
   religion          String
   telephone         String
   motDePasse        String   @default("")
-  grade             String   @default("Novice")
+  grade             String   @default("Explorateur")
   programme         String   @default("Initiation")
   statut            String   @default("En attente")
   createdAt         DateTime @default(now())

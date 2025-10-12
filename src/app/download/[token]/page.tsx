@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { Download, Clock, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface LinkData {
     id: string
@@ -103,6 +104,16 @@ export default function DownloadPage() {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+                    <div className="flex items-center justify-center mb-4">
+                        <Image
+                            src="/logo.svg"
+                            alt="ETU-Bénin Logo"
+                            width={32}
+                            height={32}
+                            className="mr-2"
+                        />
+                        <span className="text-lg font-semibold text-gray-800">ETU-Bénin</span>
+                    </div>
                     <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">Lien non valide</h1>
                     <p className="text-gray-600 mb-6">{error}</p>
@@ -122,8 +133,17 @@ export default function DownloadPage() {
             <div className="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
                 {/* Header */}
                 <div className="bg-gray-800 text-white p-6 text-center">
-                    <h1 className="text-2xl font-bold font-serif">ETU-Bénin</h1>
-                    <p className="text-gray-300 mt-2">Téléchargement du cours</p>
+                    <div className="flex items-center justify-center mb-3">
+                        <Image
+                            src="/logo.svg"
+                            alt="ETU-Bénin Logo"
+                            width={40}
+                            height={40}
+                            className="mr-3"
+                        />
+                        <h1 className="text-2xl font-bold font-serif">ETU-Bénin</h1>
+                    </div>
+                    <p className="text-gray-300">Téléchargement du cours</p>
                 </div>
 
                 {/* Content */}

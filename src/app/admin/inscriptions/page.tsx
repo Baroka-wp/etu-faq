@@ -15,7 +15,10 @@ import {
     Clock,
     X,
     MessageCircle,
-    FileText
+    FileText,
+    Send,
+    Link,
+    RefreshCw
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
@@ -47,6 +50,7 @@ export default function AdminInscriptions() {
     const [showEditModal, setShowEditModal] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [editingInscription, setEditingInscription] = useState<Inscription | null>(null)
+    const [generatingLinks, setGeneratingLinks] = useState<Set<string>>(new Set())
     const router = useRouter()
     const { toasts, addToast, removeToast } = useToast()
 
@@ -215,6 +219,9 @@ export default function AdminInscriptions() {
     }
 
     const sendWhatsAppMessage = async (inscription: Inscription) => {
+        // Ajouter l'ID à la liste des liens en cours de génération
+        setGeneratingLinks(prev => new Set(prev).add(inscription.id))
+
         try {
             // Générer le lien unique
             const downloadUrl = await generateUniqueLink(inscription)
@@ -223,7 +230,7 @@ export default function AdminInscriptions() {
                 return
             }
 
-            const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin. Votre compte a été créé avec succès.\n\n📚 Votre cours est prêt ! Cliquez sur le lien ci-dessous pour télécharger votre matériel de formation :\n\n${downloadUrl}\n\n⚠️ Ce lien est unique et expirera dans 24 heures.\n\nVous pouvez également accéder à votre profil : /profil\n\nCordialement,\nL'équipe ETU-Bénin`
+            const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin. Votre compte a été créé avec succès.\n\n📚 Votre cours est prêt ! Cliquez sur le lien ci-dessous pour télécharger votre matériel de formation :\n\n${downloadUrl}\n\n⚠️ Ce lien est unique et expirera dans 24 heures.\n\nCordialement,\nL'équipe ETU-Bénin`
 
             const encodedMessage = encodeURIComponent(message)
             const whatsappUrl = `https://wa.me/${inscription.telephone}?text=${encodedMessage}`
@@ -241,24 +248,28 @@ export default function AdminInscriptions() {
                 title: 'Erreur',
                 message: 'Impossible d\'envoyer le message WhatsApp'
             })
+        } finally {
+            // Retirer l'ID de la liste des liens en cours de génération
+            setGeneratingLinks(prev => {
+                const newSet = new Set(prev)
+                newSet.delete(inscription.id)
+                return newSet
+            })
         }
     }
 
-    const downloadPDF = (inscription: Inscription) => {
-        // Pour l'instant, on va créer un lien vers un PDF générique
-        // Plus tard, on pourra générer des PDFs personnalisés
-        const pdfUrl = `/pdfs/cours-${inscription.grade.toLowerCase()}.pdf`
-        const link = document.createElement('a')
-        link.href = pdfUrl
-        link.download = `cours-${inscription.grade}-${inscription.prenom}-${inscription.nom}.pdf`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+    const sendCustomWhatsApp = (inscription: Inscription) => {
+        // Ouvrir WhatsApp avec un message personnalisé
+        const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin. Votre compte a été créé avec succès.\n\n📚 Votre cours est prêt ! Vous pouvez accéder à votre profil : /profil\n\nCordialement,\nL'équipe ETU-Bénin`
+
+        const encodedMessage = encodeURIComponent(message)
+        const whatsappUrl = `https://wa.me/${inscription.telephone}?text=${encodedMessage}`
+        window.open(whatsappUrl, '_blank')
 
         addToast({
             type: 'success',
-            title: 'Téléchargement',
-            message: 'Le PDF du cours est en cours de téléchargement'
+            title: 'Message envoyé',
+            message: `Message WhatsApp personnalisé envoyé à ${inscription.prenom} ${inscription.nom}`
         })
     }
 
@@ -447,17 +458,25 @@ export default function AdminInscriptions() {
                                                         </button>
                                                         <button
                                                             onClick={() => sendWhatsAppMessage(inscription)}
-                                                            className="text-green-600 hover:text-green-900 p-1"
-                                                            title="Envoyer un message WhatsApp avec lien unique"
+                                                            disabled={generatingLinks.has(inscription.id)}
+                                                            className={`p-1 ${generatingLinks.has(inscription.id)
+                                                                    ? 'text-gray-400 cursor-not-allowed'
+                                                                    : 'text-green-600 hover:text-green-900'
+                                                                }`}
+                                                            title="Générer et envoyer un lien unique"
                                                         >
-                                                            <MessageCircle className="w-4 h-4" />
+                                                            {generatingLinks.has(inscription.id) ? (
+                                                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                                            ) : (
+                                                                <Link className="w-4 h-4" />
+                                                            )}
                                                         </button>
                                                         <button
-                                                            onClick={() => downloadPDF(inscription)}
+                                                            onClick={() => sendCustomWhatsApp(inscription)}
                                                             className="text-blue-600 hover:text-blue-900 p-1"
-                                                            title="Télécharger le PDF du cours"
+                                                            title="Envoyer un message WhatsApp personnalisé"
                                                         >
-                                                            <FileText className="w-4 h-4" />
+                                                            <Send className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => {
