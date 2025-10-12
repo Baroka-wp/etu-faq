@@ -58,12 +58,11 @@ export async function POST(
 
     // Déterminer le chemin du PDF basé sur le grade
     const gradeToPdfMap: Record<string, string> = {
+      'EXPLORATEUR': 'cours_explorateur_yod.pdf',
       'NÉOPHYTE': 'cours_explorateur_yod.pdf',
       'CONSTRUCTEUR': 'cours_explorateur_yod.pdf',
       'NAVIGATEUR': 'cours_explorateur_yod.pdf',
-      'ALCHIMISTE': 'cours_explorateur_yod.pdf',
-      'EXPLORATEUR': 'cours_explorateur_yod.pdf',
-      'NOVICE': 'cours_explorateur_yod.pdf'
+      'ALCHIMISTE': 'cours_explorateur_yod.pdf'
     }
 
     const pdfPath = gradeToPdfMap[inscription.grade] || 'cours_explorateur_yod.pdf'

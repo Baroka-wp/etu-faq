@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         religion,
         telephone,
         motDePasse,
-        grade: 'Novice',
+        grade: 'Explorateur',
         programme: 'Initiation',
         statut: 'En attente'
       }
