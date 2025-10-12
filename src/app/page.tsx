@@ -556,13 +556,13 @@ export default function HomePage() {
               <div className="bg-white rounded-lg p-8 border border-gray-200 hover:border-gray-300 transition-all duration-300">
                 <h3 className="text-2xl font-serif text-gray-900 mb-6">Au-delà des cours, une action concrète</h3>
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  L'ETU met également à la disposition du disciple des prières, des rituels, des textes sacrés pouvant l'aider dans la quête de son identité spirituelle. C'est ainsi que sont mis en place des groupes de prières qui œuvrent pour la guérison des malades (Serviteurs Silencieux du Christ – SSC – et Médecins du Christ – MC).
+                  L'ETU met également à la disposition du disciple des prières, des rituels, des textes sacrés pouvant l'aider dans la quête de son identité spirituelle.
                 </p>
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
                   Par son action sociale, les membres de l'ETU rendent visite aux malades, aux prisonniers, aux enfants abandonnés et aux handicapés et leur offrent des présents.
                 </p>
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  L'ETU formera finalement des groupes d'étudiants pour travailler à préparer et organiser le Monde de Demain, à travers son ordre initiatique et mystique. L'étudiant pourra faire partie de l'OIM-ETU après les premiers cours, soit après un an à partir de la date de son adhésion, s'il est régulier.
+                  L'ETU formera finalement des groupes d'étudiants pour travailler à préparer et organiser le Monde de Demain, à travers son ordre initiatique et mystique. L'étudiant pourra faire partie de l'OMP-ETU après les premiers cours, soit après un an à partir de la date de son adhésion, s'il est régulier.
                 </p>
               </div>
             </div>
