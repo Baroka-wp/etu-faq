@@ -10,7 +10,8 @@ import {
     X,
     UserPlus,
     FileText,
-    Shield
+    Shield,
+    BookOpen
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -36,6 +37,12 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             label: 'Inscriptions',
             icon: Users,
             href: '/admin/inscriptions'
+        },
+        {
+            id: 'bibliotheque',
+            label: 'Bibliothèque',
+            icon: BookOpen,
+            href: '/admin/bibliotheque'
         },
         {
             id: 'members',
