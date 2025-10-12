@@ -172,7 +172,7 @@ export default function AdminInscriptions() {
         try {
             console.log('Tentative de génération de lien pour:', inscription.prenom, inscription.nom)
             console.log('ID de l\'inscription:', inscription.id)
-            
+
             const response = await fetch(`/api/admin/inscriptions/${inscription.id}/generate-link`, {
                 method: 'POST',
                 headers: {
@@ -190,7 +190,7 @@ export default function AdminInscriptions() {
             } else {
                 const errorData = await response.json()
                 console.error('Erreur API:', errorData)
-                
+
                 if (response.status === 401) {
                     addToast({
                         type: 'error',
@@ -199,7 +199,7 @@ export default function AdminInscriptions() {
                     })
                     return null
                 }
-                
+
                 throw new Error(errorData.details || errorData.error || 'Erreur lors de la génération du lien')
             }
         } catch (err) {
