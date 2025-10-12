@@ -58,14 +58,15 @@ export async function POST(
 
     // Déterminer le chemin du PDF basé sur le grade
     const gradeToPdfMap: Record<string, string> = {
-      'NÉOPHYTE': 'cours-néophyte.pdf',
-      'CONSTRUCTEUR': 'cours-constructeur.pdf',
-      'NAVIGATEUR': 'cours-navigateur.pdf',
-      'ALCHIMISTE': 'cours-alchimiste.pdf',
-      'EXPLORATEUR': 'cours-explorateur.pdf'
+      'NÉOPHYTE': 'cours_explorateur_yod.pdf',
+      'CONSTRUCTEUR': 'cours_explorateur_yod.pdf',
+      'NAVIGATEUR': 'cours_explorateur_yod.pdf',
+      'ALCHIMISTE': 'cours_explorateur_yod.pdf',
+      'EXPLORATEUR': 'cours_explorateur_yod.pdf',
+      'NOVICE': 'cours_explorateur_yod.pdf'
     }
 
-    const pdfPath = gradeToPdfMap[inscription.grade] || 'cours-néophyte.pdf'
+    const pdfPath = gradeToPdfMap[inscription.grade] || 'cours_explorateur_yod.pdf'
 
     // Désactiver les anciens liens pour cette inscription
     console.log('Tentative de désactivation des anciens liens...')
