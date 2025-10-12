@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, ArrowLeft } from 'lucide-react'
+import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, ArrowLeft, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 
@@ -63,11 +63,15 @@ const faqData: FAQSection[] = [
             },
             {
                 question: "Pouvez-vous m'expliquer plus en détail la 'discipline de l'Initiation' (154 jours et 154 000 FCFA) ?",
-                answer: "Il s'agit là du cœur de la démarche alchimique de l'École. Ce n'est pas une 'cotisation', mais un puissant exercice spirituel.\n\nL'acte de mettre de côté chaque jour une petite somme (1000 FCFA) pendant 154 jours, tout en menant une discipline de prières, crée une transformation intérieure. Cela développe la constance, la foi, le détachement et la capacité à manifester dans la matière. Les 154 000 FCFA ne sont pas le but, mais le résultat visible de votre discipline spirituelle. C'est la preuve de votre capacité à atteindre un objectif que vous vous êtes fixé, une clé indispensable pour l'Initiation."
+                answer: "Il s'agit là du cœur de la démarche alchimique de l'École. Ce n'est pas une 'cotisation', mais un puissant exercice spirituel.\n\nL'acte de mettre de côté chaque jour une petite somme (1000 FCFA) pendant 154 jours, tout en menant une discipline de prières, crée une transformation intérieure. Cela développe la constance, la foi, le détachement et la capacité à manifester dans la matière. Les 154 000 FCFA ne sont pas le but, mais le résultat visible de votre discipline spirituelle. C'est la preuve de votre capacité à atteindre un objectif que vous vous êtes fixé, une clé indispensable pour l'Initiation.\n\n📚 Pour vous accompagner dans cette discipline, vous pouvez vous procurer un livre de prière spécialement conçu pour les 154 jours. Ce livre vous permettra de rester constant dans votre pratique spirituelle. Découvrez notre bibliothèque pour plus d'informations sur les ouvrages disponibles."
             },
             {
                 question: "Comment accéder aux supports de cours ?",
                 answer: "Pour respecter l'environnement et faciliter l'accès, tous les supports de cours sont numériques. Ils seront directement téléchargeables sur la plateforme de la formation, dont l'URL vous sera communiquée dès votre inscription."
+            },
+            {
+                question: "Où puis-je trouver des livres et ouvrages complémentaires ?",
+                answer: "Notre bibliothèque contient une sélection d'ouvrages essentiels pour votre parcours spirituel :\n\n📚 **Éditions ETU** : Livres officiels de l'école avec des prix fixés (ex: Livre de Prière pour l'Initiation, Manuel de l'Explorateur)\n📖 **Lectures recommandées** : Ouvrages de référence gratuits pour approfondir vos connaissances\n\nTous les livres peuvent être commandés via WhatsApp. Visitez notre bibliothèque pour découvrir la collection complète."
             },
             {
                 question: "Et si je ne peux pas payer d'un coup, y a t'il des modalités ?",
@@ -173,10 +177,16 @@ export default function FAQPage() {
                 {/* Hero Section */}
                 <section className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
                     <div className="text-center mb-8 sm:mb-12">
-                        <Link href="/" className="flex items-center justify-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors mb-6">
-                            <ArrowLeft className="w-5 h-5" />
-                            <span className="text-sm font-serif">Retour à l'accueil</span>
-                        </Link>
+                        <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4 mb-6">
+                            <Link href="/" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+                                <ArrowLeft className="w-5 h-5" />
+                                <span className="text-sm font-serif">Retour à l'accueil</span>
+                            </Link>
+                            <Link href="/bibliotheque" className="flex items-center space-x-2 text-blue-600 hover:text-blue-900 transition-colors">
+                                <BookOpen className="w-5 h-5" />
+                                <span className="text-sm font-serif">Bibliothèque</span>
+                            </Link>
+                        </div>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-8">
                             <img

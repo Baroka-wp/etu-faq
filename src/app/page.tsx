@@ -39,6 +39,7 @@ export default function HomePage() {
                 <a href="#mission" className="text-gray-700 hover:text-gray-900 font-serif">Mission</a>
                 <a href="#enseignements" className="text-gray-700 hover:text-gray-900 font-serif">Enseignements</a>
                 <Link href="/faq" className="text-gray-700 hover:text-gray-900 font-serif">FAQ</Link>
+                <Link href="/bibliotheque" className="text-gray-700 hover:text-gray-900 font-serif">Bibliothèque</Link>
                 <Link href="/inscription" className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors font-serif">
                   S'inscrire
                 </Link>
@@ -64,6 +65,7 @@ export default function HomePage() {
                   <a href="#mission" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Mission</a>
                   <a href="#enseignements" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Enseignements</a>
                   <Link href="/faq" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">FAQ</Link>
+                  <Link href="/bibliotheque" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Bibliothèque</Link>
                   <Link href="/inscription" className="block px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-serif">
                     S'inscrire
                   </Link>
