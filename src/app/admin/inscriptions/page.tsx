@@ -13,10 +13,14 @@ import {
     Key,
     UserCheck,
     Clock,
-    X
+    X,
+    MessageCircle,
+    FileText
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
+import { useToast } from '@/components/Toast'
+import { ToastContainer } from '@/components/ToastContainer'
 
 interface Inscription {
     id: string
@@ -40,7 +44,11 @@ export default function AdminInscriptions() {
     const [filterStatut, setFilterStatut] = useState('')
     const [selectedInscription, setSelectedInscription] = useState<Inscription | null>(null)
     const [showPasswordModal, setShowPasswordModal] = useState(false)
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [editingInscription, setEditingInscription] = useState<Inscription | null>(null)
     const router = useRouter()
+    const { toasts, addToast, removeToast } = useToast()
 
     useEffect(() => {
         fetchInscriptions()
@@ -74,11 +82,18 @@ export default function AdminInscriptions() {
     const copyPassword = async (password: string) => {
         try {
             await navigator.clipboard.writeText(password)
-            // Notification de succès
-            alert('Mot de passe copié dans le presse-papiers !')
+            addToast({
+                type: 'success',
+                title: 'Copié !',
+                message: 'Mot de passe copié dans le presse-papiers'
+            })
         } catch (err) {
             console.error('Erreur lors de la copie:', err)
-            alert('Erreur lors de la copie du mot de passe')
+            addToast({
+                type: 'error',
+                title: 'Erreur',
+                message: 'Erreur lors de la copie du mot de passe'
+            })
         }
     }
 
@@ -100,10 +115,82 @@ export default function AdminInscriptions() {
                             : inscription
                     )
                 )
+                addToast({
+                    type: 'success',
+                    title: 'Statut mis à jour',
+                    message: `Le statut a été changé en "${newStatut}"`
+                })
+            } else {
+                addToast({
+                    type: 'error',
+                    title: 'Erreur',
+                    message: 'Impossible de mettre à jour le statut'
+                })
             }
         } catch (err) {
             console.error('Erreur lors de la mise à jour:', err)
+            addToast({
+                type: 'error',
+                title: 'Erreur',
+                message: 'Erreur lors de la mise à jour du statut'
+            })
         }
+    }
+
+    const deleteInscription = async (id: string) => {
+        try {
+            const response = await fetch(`/api/admin/inscriptions/${id}`, {
+                method: 'DELETE'
+            })
+
+            if (response.ok) {
+                setInscriptions(prev => prev.filter(inscription => inscription.id !== id))
+                addToast({
+                    type: 'success',
+                    title: 'Inscription supprimée',
+                    message: 'L\'inscription a été supprimée avec succès'
+                })
+                setShowDeleteModal(false)
+            } else {
+                addToast({
+                    type: 'error',
+                    title: 'Erreur',
+                    message: 'Impossible de supprimer l\'inscription'
+                })
+            }
+        } catch (err) {
+            console.error('Erreur lors de la suppression:', err)
+            addToast({
+                type: 'error',
+                title: 'Erreur',
+                message: 'Erreur lors de la suppression'
+            })
+        }
+    }
+
+    const sendWhatsAppMessage = (telephone: string, nom: string, prenom: string) => {
+        const message = `Bonjour ${prenom} ${nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin. Votre compte a été créé avec succès.\n\nVous pouvez maintenant accéder à votre profil et commencer votre formation.\n\nCordialement,\nL'équipe ETU-Bénin`
+        const encodedMessage = encodeURIComponent(message)
+        const whatsappUrl = `https://wa.me/${telephone}?text=${encodedMessage}`
+        window.open(whatsappUrl, '_blank')
+    }
+
+    const downloadPDF = (inscription: Inscription) => {
+        // Pour l'instant, on va créer un lien vers un PDF générique
+        // Plus tard, on pourra générer des PDFs personnalisés
+        const pdfUrl = `/pdfs/cours-${inscription.grade.toLowerCase()}.pdf`
+        const link = document.createElement('a')
+        link.href = pdfUrl
+        link.download = `cours-${inscription.grade}-${inscription.prenom}-${inscription.nom}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        addToast({
+            type: 'success',
+            title: 'Téléchargement',
+            message: 'Le PDF du cours est en cours de téléchargement'
+        })
     }
 
     const filteredInscriptions = inscriptions.filter(inscription => {
@@ -290,13 +377,38 @@ export default function AdminInscriptions() {
                                                             <Key className="w-4 h-4" />
                                                         </button>
                                                         <button
-                                                            onClick={() => {
-                                                                // Logique pour voir les détails
-                                                            }}
-                                                            className="text-gray-600 hover:text-gray-900 p-1"
-                                                            title="Voir les détails"
+                                                            onClick={() => sendWhatsAppMessage(inscription.telephone, inscription.nom, inscription.prenom)}
+                                                            className="text-green-600 hover:text-green-900 p-1"
+                                                            title="Envoyer un message WhatsApp"
                                                         >
-                                                            <Eye className="w-4 h-4" />
+                                                            <MessageCircle className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => downloadPDF(inscription)}
+                                                            className="text-blue-600 hover:text-blue-900 p-1"
+                                                            title="Télécharger le PDF du cours"
+                                                        >
+                                                            <FileText className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingInscription(inscription)
+                                                                setShowEditModal(true)
+                                                            }}
+                                                            className="text-yellow-600 hover:text-yellow-900 p-1"
+                                                            title="Modifier l'inscription"
+                                                        >
+                                                            <Edit className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedInscription(inscription)
+                                                                setShowDeleteModal(true)
+                                                            }}
+                                                            className="text-red-600 hover:text-red-900 p-1"
+                                                            title="Supprimer l'inscription"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
                                                         </button>
                                                     </div>
                                                 </td>
@@ -377,6 +489,50 @@ export default function AdminInscriptions() {
                     </div>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && selectedInscription && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900 font-serif">
+                                    Confirmer la suppression
+                                </h3>
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-gray-600 mb-6">
+                                Êtes-vous sûr de vouloir supprimer l'inscription de <strong>{selectedInscription.prenom} {selectedInscription.nom}</strong> ?
+                                Cette action est irréversible.
+                            </p>
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    onClick={() => deleteInscription(selectedInscription.id)}
+                                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                                >
+                                    Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast Container */}
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
         </div>
     )
 }

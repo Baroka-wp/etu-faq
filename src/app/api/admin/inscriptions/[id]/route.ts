@@ -3,76 +3,76 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    // Vérifier l'authentification admin
-    const adminSession = request.cookies.get('admin-session')?.value
-    if (adminSession !== 'authenticated') {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      )
-    }
-
-    const { id } = await params
-    const { statut, grade, programme } = await request.json()
-
-    const updatedInscription = await (prisma as any).inscription.update({
-      where: { id },
-      data: {
-        ...(statut && { statut }),
-        ...(grade && { grade }),
-        ...(programme && { programme })
-      }
-    })
-
-    return NextResponse.json(updatedInscription)
-
-  } catch (error: any) {
-    console.error('Erreur lors de la mise à jour de l\'inscription:', error)
-    
-    return NextResponse.json(
-      { error: 'Une erreur est survenue lors de la mise à jour' },
-      { status: 500 }
-    )
-  } finally {
-    await prisma.$disconnect()
-  }
-}
-
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    // Vérifier l'authentification admin
-    const adminSession = request.cookies.get('admin-session')?.value
-    if (adminSession !== 'authenticated') {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      )
-    }
+    const { id } = params
 
-    const { id } = await params
-
-    await (prisma as any).inscription.delete({
+    // Vérifier si l'inscription existe
+    const inscription = await prisma.inscription.findUnique({
       where: { id }
     })
 
-    return NextResponse.json({ success: true })
+    if (!inscription) {
+      return NextResponse.json(
+        { error: 'Inscription non trouvée' },
+        { status: 404 }
+      )
+    }
 
-  } catch (error: any) {
-    console.error('Erreur lors de la suppression de l\'inscription:', error)
-    
+    // Supprimer l'inscription
+    await prisma.inscription.delete({
+      where: { id }
+    })
+
     return NextResponse.json(
-      { error: 'Une erreur est survenue lors de la suppression' },
+      { message: 'Inscription supprimée avec succès' },
+      { status: 200 }
+    )
+  } catch (error) {
+    console.error('Erreur lors de la suppression:', error)
+    return NextResponse.json(
+      { error: 'Erreur interne du serveur' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params
+    const body = await request.json()
+    const { statut } = body
+
+    // Vérifier si l'inscription existe
+    const inscription = await prisma.inscription.findUnique({
+      where: { id }
+    })
+
+    if (!inscription) {
+      return NextResponse.json(
+        { error: 'Inscription non trouvée' },
+        { status: 404 }
+      )
+    }
+
+    // Mettre à jour le statut
+    const updatedInscription = await prisma.inscription.update({
+      where: { id },
+      data: { statut }
+    })
+
+    return NextResponse.json(updatedInscription, { status: 200 })
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour:', error)
+    return NextResponse.json(
+      { error: 'Erreur interne du serveur' },
+      { status: 500 }
+    )
   }
 }
