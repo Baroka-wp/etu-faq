@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   description: "Foire aux questions de l'École Transcendantaliste Universelle (ETU) Bénin - Formation spirituelle et initiatique.",
   keywords: ["ETU", "École Transcendantaliste", "Formation spirituelle", "Initiation", "Kabbale", "FAQ"],
   authors: [{ name: "ETU Bénin" }],
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, MessageCircle, Phone, Facebook } from 'lucide-react'
+import { ChevronDown, ChevronUp, MessageCircle, Phone, Facebook, User } from 'lucide-react'
 import ClientOnly from '@/components/ClientOnly'
 
 interface FAQItem {
@@ -220,7 +220,7 @@ export default function FAQPage() {
               href="https://wa.me/22967153974"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 sm:space-x-3 bg-green-500 hover:bg-green-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-colors text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="inline-flex items-center space-x-2 sm:space-x-3 bg-gray-800 hover:bg-gray-900 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-colors text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
               <span>+229 67 15 39 74</span>
@@ -229,35 +229,51 @@ export default function FAQPage() {
         </main>
 
         {/* CTA Section */}
-        <section className="bg-gray-100 py-12 sm:py-16">
+        <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-16 sm:py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-            <h2 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-4 sm:mb-6">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-gray-900 mb-6 sm:mb-8">
               Prêt(e) à commencer votre élévation spirituelle ?
             </h2>
-            <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-10 font-serif">
-              Rejoignez notre communauté pour commencer votre élévation spirituelle
+            <p className="text-lg sm:text-xl text-gray-600 mb-10 sm:mb-12 font-serif max-w-2xl mx-auto">
+              Rejoignez notre communauté pour commencer votre transformation intérieure
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
+            <div className="flex justify-center mb-12 sm:mb-16">
               <a
-                href="https://wa.me/22967153974"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-green-500 hover:bg-green-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-colors flex items-center space-x-2 sm:space-x-3 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                href="/inscription"
+                className="group relative inline-flex items-center justify-center px-8 sm:px-12 py-4 sm:py-6 text-lg sm:text-xl font-semibold text-white bg-gray-800 hover:bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105"
               >
-                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Rejoindre notre WhatsApp</span>
+                <User className="w-6 h-6 sm:w-7 sm:h-7 mr-3" />
+                <span>S'inscrire maintenant</span>
               </a>
+            </div>
 
-              <a
-                href="https://www.facebook.com/profile.php?id=61570538836966"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-colors flex items-center space-x-2 sm:space-x-3 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-              >
-                <Facebook className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Suivre sur Facebook</span>
-              </a>
+            {/* Section réseaux sociaux */}
+            <div className="border-t border-gray-200/50 pt-8 sm:pt-12">
+              <p className="text-sm sm:text-base text-gray-500 mb-6 font-serif">
+                Suivez-nous sur nos réseaux
+              </p>
+              <div className="flex justify-center space-x-6">
+                <a
+                  href="https://wa.me/22967153974"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gray-800 hover:bg-gray-900 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  title="Rejoindre notre WhatsApp"
+                >
+                  <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
+                </a>
+
+                <a
+                  href="https://www.facebook.com/profile.php?id=61570538836966"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gray-700 hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  title="Suivre sur Facebook"
+                >
+                  <Facebook className="w-6 h-6 sm:w-7 sm:h-7" />
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -274,13 +290,27 @@ export default function FAQPage() {
           </div>
         </footer>
 
-        {/* Bouton WhatsApp flottant */}
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
+        {/* Boutons flottants */}
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col space-y-3">
+          <a
+            href="/member-login"
+            className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+            title="Connexion Membre"
+          >
+            <User className="w-5 h-5 sm:w-6 sm:h-6" />
+          </a>
+          <a
+            href="/admin-login"
+            className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gray-700 hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+            title="Connexion Admin"
+          >
+            <User className="w-5 h-5 sm:w-6 sm:h-6" />
+          </a>
           <a
             href="https://wa.me/22967153974"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+            className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gray-800 hover:bg-gray-900 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
             title="Rejoindre notre WhatsApp"
           >
             <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
