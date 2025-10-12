@@ -7,6 +7,7 @@ import ClientOnly from '@/components/ClientOnly'
 
 export default function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
 
   return (
     <ClientOnly fallback={
@@ -248,101 +249,289 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Les Cours Thématiques Détaillés */}
+            {/* Les Cours Thématiques Détaillés - Accordéons */}
             <div className="mb-12">
               <div className="bg-white rounded-lg p-8 sm:p-12 border border-gray-200">
                 <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Les Cours Thématiques Détaillés</h3>
                 
-                {/* Cours 1: Philosophie Ésotérique Chrétienne */}
-                <div className="mb-8">
-                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
-                    <h4 className="text-xl font-serif font-semibold text-gray-900 mb-4 group-hover:text-gray-800 transition-colors duration-300">1. Philosophie Ésotérique Chrétienne (22 leçons)</h4>
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                      Ce cours introduit la Kabbale, l'organisation cosmique et les symbolismes bibliques. Il expose de façon cohérente et simple les lois établies par Dieu pour le fonctionnement de notre Univers. La connaissance de ces Lois permet à l'homme d'agir à l'unisson avec elles et de se mouvoir dans un espace où le malheur, le mal, les accidents et la maladie, produits de l'ignorance, n'ont pas de place. C'est une véritable « Science du Comportement ».
-                    </p>
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                      Le contenu de cet Enseignement provient de la Tradition Hermétique, présenté de manière globale et logique pour permettre à l'Étudiant, quelle que soit son appartenance, de mieux comprendre les enseignements de sa propre religion ou école.
-                    </p>
-                    <div className="bg-white rounded-lg p-4 border border-gray-200">
-                      <h5 className="font-semibold text-gray-900 mb-3">Programme du cours :</h5>
-                      <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 1 : La création (Cours Gratuit)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 2 : La création (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 3 : La Création (fin)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 4 : Le cycle Vital</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 5 : Le cycle vital (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 6 : Le cycle vital (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 7 : Le cycle vital (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 8 : Le cycle vital (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 9 : Le cycle vital (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 10 : Le cycle vital (fin)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 11 : L'Organisation</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 12 : L'Organisation (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 13 : L'Organisation (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 14 : L'Organisation (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 15 : L'Organisation (suite et fin)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 16 : Le travail humain</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 17 : Le travail humain (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 18 : Le travail humain (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 19 : Le travail humain (suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 20 : Le travail divin</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 21 : Le travail divin (suite et fin)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 22 : Analyse finale</div>
+                <div className="space-y-4">
+                  {/* Accordéon 1: Philosophie Ésotérique Chrétienne */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setOpenItems(prev => ({ ...prev, 'philosophie': !prev['philosophie'] }))}
+                      className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">1</div>
+                        <div>
+                          <h4 className="text-lg font-serif font-semibold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
+                            Philosophie Ésotérique Chrétienne
+                          </h4>
+                          <p className="text-sm text-gray-600">22 leçons - Introduction à la Kabbale et aux symbolismes bibliques</p>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Cours 2: Interprétation Ésotérique de l'Évangile */}
-                <div className="mb-8">
-                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
-                    <h4 className="text-xl font-serif font-semibold text-gray-900 mb-4 group-hover:text-gray-800 transition-colors duration-300">2. Interprétation Ésotérique de l'Évangile (50 leçons)</h4>
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                      Ce cours révèle tous les symbolismes bibliques contenus dans les Évangiles.
-                    </p>
-                    <div className="bg-white rounded-lg p-4 border border-gray-200">
-                      <h5 className="font-semibold text-gray-900 mb-3">Programme du cours :</h5>
-                      <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 1 : Processus d'élaboration de la personnalité christique et de sa sauvegarde.</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 2 : Aplanir les sentiers intérieurs</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 3 : Jésus à l'aube de sa mission terrestre</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 4 : L'art d'être chrétien</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 5 : Intérioriser les lois cosmiques et les extérioriser en comportement naturel</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 6 : Dépasser la Loi et instaurer la Foi et l'Amour</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 7 : Le Christianisme : une voie intérieure. L'humilité : première vertu du disciple.</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 8 : Le travail humain et les mystères de l'Amour – Christ</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 9 : Directives pour le disciple du Christ – La femme dans l'œuvre du Christ</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 10 : Le mystère de l'âme humaine - Le symbolisme de la décapitation de Jean Baptiste.</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 11 à 50 : Interprétation Ésotérique de l'évangile (Suite)</div>
-                        <div className="hover:text-gray-900 transition-colors duration-200">– Conclusion</div>
+                      {openItems['philosophie'] ? (
+                        <ChevronUp className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      )}
+                    </button>
+                    
+                    {openItems['philosophie'] && (
+                      <div className="px-6 pb-6 bg-white border-t border-gray-200">
+                        <div className="pt-4 space-y-4">
+                          <p className="text-gray-700 leading-relaxed">
+                            Ce cours introduit la Kabbale, l'organisation cosmique et les symbolismes bibliques. Il expose de façon cohérente et simple les lois établies par Dieu pour le fonctionnement de notre Univers. La connaissance de ces Lois permet à l'homme d'agir à l'unisson avec elles et de se mouvoir dans un espace où le malheur, le mal, les accidents et la maladie, produits de l'ignorance, n'ont pas de place. C'est une véritable « Science du Comportement ».
+                          </p>
+                          <p className="text-gray-700 leading-relaxed">
+                            Le contenu de cet Enseignement provient de la Tradition Hermétique, présenté de manière globale et logique pour permettre à l'Étudiant, quelle que soit son appartenance, de mieux comprendre les enseignements de sa propre religion ou école.
+                          </p>
+                          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h5 className="font-semibold text-gray-900 mb-3">Programme du cours :</h5>
+                            <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 1 : La création (Cours Gratuit)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 2 : La création (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 3 : La Création (fin)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 4 : Le cycle Vital</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 5 : Le cycle vital (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 6 : Le cycle vital (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 7 : Le cycle vital (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 8 : Le cycle vital (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 9 : Le cycle vital (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 10 : Le cycle vital (fin)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 11 : L'Organisation</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 12 : L'Organisation (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 13 : L'Organisation (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 14 : L'Organisation (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 15 : L'Organisation (suite et fin)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 16 : Le travail humain</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 17 : Le travail humain (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 18 : Le travail humain (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 19 : Le travail humain (suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 20 : Le travail divin</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 21 : Le travail divin (suite et fin)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 22 : Analyse finale</div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
-                </div>
 
-                {/* Autres Enseignements */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">3. Astrologie et Kabbale (22 leçons)</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Associe l'étude de l'Astrologie à celle de la Kabbale et révèle les clés de l'interprétation des thèmes.</p>
+                  {/* Accordéon 2: Interprétation Ésotérique de l'Évangile */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setOpenItems(prev => ({ ...prev, 'evangile': !prev['evangile'] }))}
+                      className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">2</div>
+                        <div>
+                          <h4 className="text-lg font-serif font-semibold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
+                            Interprétation Ésotérique de l'Évangile
+                          </h4>
+                          <p className="text-sm text-gray-600">50 leçons - Révélation des symbolismes bibliques</p>
+                        </div>
+                      </div>
+                      {openItems['evangile'] ? (
+                        <ChevronUp className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      )}
+                    </button>
+                    
+                    {openItems['evangile'] && (
+                      <div className="px-6 pb-6 bg-white border-t border-gray-200">
+                        <div className="pt-4 space-y-4">
+                          <p className="text-gray-700 leading-relaxed">
+                            Ce cours révèle tous les symbolismes bibliques contenus dans les Évangiles.
+                          </p>
+                          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h5 className="font-semibold text-gray-900 mb-3">Programme du cours :</h5>
+                            <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 1 : Processus d'élaboration de la personnalité christique et de sa sauvegarde.</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 2 : Aplanir les sentiers intérieurs</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 3 : Jésus à l'aube de sa mission terrestre</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 4 : L'art d'être chrétien</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 5 : Intérioriser les lois cosmiques et les extérioriser en comportement naturel</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 6 : Dépasser la Loi et instaurer la Foi et l'Amour</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 7 : Le Christianisme : une voie intérieure. L'humilité : première vertu du disciple.</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 8 : Le travail humain et les mystères de l'Amour – Christ</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 9 : Directives pour le disciple du Christ – La femme dans l'œuvre du Christ</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 10 : Le mystère de l'âme humaine - Le symbolisme de la décapitation de Jean Baptiste.</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Leçon 11 à 50 : Interprétation Ésotérique de l'évangile (Suite)</div>
+                              <div className="hover:text-gray-900 transition-colors duration-200">– Conclusion</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">4. Haute Kabbale appliquée à l'Astrologie et au Tarot (60 leçons)</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Le disciple est alors en possession de tous les Arcanes lui permettant d'être utile au monde et d'être un agent de la Divine Volonté.</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">5. Interprétation ésotérique de l'Apocalypse (22 leçons)</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Découverte des symbolismes cachés dans le livre de l'Apocalypse.</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 group cursor-pointer">
-                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">6. Interprétation ésotérique de la Genèse (50 leçons)</h4>
-                    <p className="text-gray-700 text-sm leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Analyse approfondie des premiers chapitres de la Bible.</p>
-                  </div>
-                </div>
 
-                <div className="mt-6 bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
-                  <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">7. Étude des noms des anges divins</h4>
-                  <p className="text-gray-700 leading-relaxed group-hover:text-gray-800 transition-colors duration-300">Par ce cours, le disciple apprend à maîtriser les noms, les sons, et peut les utiliser pour améliorer sa condition de vie ou les rejeter s'ils ne sont pas en harmonie avec elle.</p>
+                  {/* Accordéon 3: Astrologie et Kabbale */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setOpenItems(prev => ({ ...prev, 'astrologie': !prev['astrologie'] }))}
+                      className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">3</div>
+                        <div>
+                          <h4 className="text-lg font-serif font-semibold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
+                            Astrologie et Kabbale
+                          </h4>
+                          <p className="text-sm text-gray-600">22 leçons - Association de l'Astrologie à la Kabbale</p>
+                        </div>
+                      </div>
+                      {openItems['astrologie'] ? (
+                        <ChevronUp className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      )}
+                    </button>
+                    
+                    {openItems['astrologie'] && (
+                      <div className="px-6 pb-6 bg-white border-t border-gray-200">
+                        <div className="pt-4">
+                          <p className="text-gray-700 leading-relaxed">
+                            Associe l'étude de l'Astrologie à celle de la Kabbale et révèle les clés de l'interprétation des thèmes.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Accordéon 4: Haute Kabbale appliquée */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setOpenItems(prev => ({ ...prev, 'haute-kabbale': !prev['haute-kabbale'] }))}
+                      className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">4</div>
+                        <div>
+                          <h4 className="text-lg font-serif font-semibold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
+                            Haute Kabbale appliquée à l'Astrologie et au Tarot
+                          </h4>
+                          <p className="text-sm text-gray-600">60 leçons - Maîtrise complète des Arcanes</p>
+                        </div>
+                      </div>
+                      {openItems['haute-kabbale'] ? (
+                        <ChevronUp className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      )}
+                    </button>
+                    
+                    {openItems['haute-kabbale'] && (
+                      <div className="px-6 pb-6 bg-white border-t border-gray-200">
+                        <div className="pt-4">
+                          <p className="text-gray-700 leading-relaxed">
+                            Le disciple est alors en possession de tous les Arcanes lui permettant d'être utile au monde et d'être un agent de la Divine Volonté.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Accordéon 5: Interprétation ésotérique de l'Apocalypse */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setOpenItems(prev => ({ ...prev, 'apocalypse': !prev['apocalypse'] }))}
+                      className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">5</div>
+                        <div>
+                          <h4 className="text-lg font-serif font-semibold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
+                            Interprétation ésotérique de l'Apocalypse
+                          </h4>
+                          <p className="text-sm text-gray-600">22 leçons - Découverte des symbolismes cachés</p>
+                        </div>
+                      </div>
+                      {openItems['apocalypse'] ? (
+                        <ChevronUp className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      )}
+                    </button>
+                    
+                    {openItems['apocalypse'] && (
+                      <div className="px-6 pb-6 bg-white border-t border-gray-200">
+                        <div className="pt-4">
+                          <p className="text-gray-700 leading-relaxed">
+                            Découverte des symbolismes cachés dans le livre de l'Apocalypse.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Accordéon 6: Interprétation ésotérique de la Genèse */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setOpenItems(prev => ({ ...prev, 'genese': !prev['genese'] }))}
+                      className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">6</div>
+                        <div>
+                          <h4 className="text-lg font-serif font-semibold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
+                            Interprétation ésotérique de la Genèse
+                          </h4>
+                          <p className="text-sm text-gray-600">50 leçons - Analyse approfondie des premiers chapitres</p>
+                        </div>
+                      </div>
+                      {openItems['genese'] ? (
+                        <ChevronUp className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      )}
+                    </button>
+                    
+                    {openItems['genese'] && (
+                      <div className="px-6 pb-6 bg-white border-t border-gray-200">
+                        <div className="pt-4">
+                          <p className="text-gray-700 leading-relaxed">
+                            Analyse approfondie des premiers chapitres de la Bible.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Accordéon 7: Étude des noms des anges divins */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setOpenItems(prev => ({ ...prev, 'anges': !prev['anges'] }))}
+                      className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">7</div>
+                        <div>
+                          <h4 className="text-lg font-serif font-semibold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
+                            Étude des noms des anges divins
+                          </h4>
+                          <p className="text-sm text-gray-600">Maîtrise des noms et sons divins</p>
+                        </div>
+                      </div>
+                      {openItems['anges'] ? (
+                        <ChevronUp className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+                      )}
+                    </button>
+                    
+                    {openItems['anges'] && (
+                      <div className="px-6 pb-6 bg-white border-t border-gray-200">
+                        <div className="pt-4">
+                          <p className="text-gray-700 leading-relaxed">
+                            Par ce cours, le disciple apprend à maîtriser les noms, les sons, et peut les utiliser pour améliorer sa condition de vie ou les rejeter s'ils ne sont pas en harmonie avec elle.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
