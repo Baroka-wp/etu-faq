@@ -10,19 +10,31 @@ export async function POST(
 ) {
   try {
     const { id } = params
-    const { duration = 24 } = await request.json() // Durée en heures
+    console.log('Génération de lien pour l\'inscription:', id)
+    
+    let duration = 24
+    try {
+      const body = await request.json()
+      duration = body.duration || 24
+    } catch (e) {
+      console.log('Utilisation de la durée par défaut (24h)')
+    }
 
     // Vérifier si l'inscription existe
+    console.log('Recherche de l\'inscription avec l\'ID:', id)
     const inscription = await prisma.inscription.findUnique({
       where: { id }
     })
 
     if (!inscription) {
+      console.log('Inscription non trouvée pour l\'ID:', id)
       return NextResponse.json(
         { error: 'Inscription non trouvée' },
         { status: 404 }
       )
     }
+    
+    console.log('Inscription trouvée:', inscription.prenom, inscription.nom, inscription.grade)
 
     // Générer un token unique
     const token = crypto.randomBytes(32).toString('hex')
@@ -75,8 +87,15 @@ export async function POST(
 
   } catch (error) {
     console.error('Erreur lors de la génération du lien:', error)
+    console.error('Détails de l\'erreur:', {
+      message: error instanceof Error ? error.message : 'Erreur inconnue',
+      stack: error instanceof Error ? error.stack : undefined
+    })
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { 
+        error: 'Erreur interne du serveur',
+        details: error instanceof Error ? error.message : 'Erreur inconnue'
+      },
       { status: 500 }
     )
   }

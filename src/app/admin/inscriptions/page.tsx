@@ -182,14 +182,17 @@ export default function AdminInscriptions() {
                 const data = await response.json()
                 return data.downloadUrl
             } else {
-                throw new Error('Erreur lors de la génération du lien')
+                const errorData = await response.json()
+                console.error('Erreur API:', errorData)
+                throw new Error(errorData.details || errorData.error || 'Erreur lors de la génération du lien')
             }
         } catch (err) {
             console.error('Erreur lors de la génération du lien:', err)
+            const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue'
             addToast({
                 type: 'error',
                 title: 'Erreur',
-                message: 'Impossible de générer le lien unique'
+                message: `Impossible de générer le lien unique: ${errorMessage}`
             })
             return null
         }
@@ -199,13 +202,13 @@ export default function AdminInscriptions() {
         try {
             // Générer le lien unique
             const downloadUrl = await generateUniqueLink(inscription)
-            
+
             if (!downloadUrl) {
                 return
             }
 
             const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin. Votre compte a été créé avec succès.\n\n📚 Votre cours est prêt ! Cliquez sur le lien ci-dessous pour télécharger votre matériel de formation :\n\n${downloadUrl}\n\n⚠️ Ce lien est unique et expirera dans 24 heures.\n\nVous pouvez également accéder à votre profil : /profil\n\nCordialement,\nL'équipe ETU-Bénin`
-            
+
             const encodedMessage = encodeURIComponent(message)
             const whatsappUrl = `https://wa.me/${inscription.telephone}?text=${encodedMessage}`
             window.open(whatsappUrl, '_blank')
