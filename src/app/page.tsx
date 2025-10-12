@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, MessageCircle, Phone, Facebook, User } from 'lucide-react'
+import { ChevronDown, ChevronUp, MessageCircle, Facebook, User } from 'lucide-react'
 import ClientOnly from '@/components/ClientOnly'
 
 interface FAQItem {
@@ -290,32 +290,6 @@ export default function FAQPage() {
           </div>
         </footer>
 
-        {/* Boutons flottants */}
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col space-y-3">
-          <a
-            href="/member-login"
-            className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
-            title="Connexion Membre"
-          >
-            <User className="w-5 h-5 sm:w-6 sm:h-6" />
-          </a>
-          <a
-            href="/admin-login"
-            className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gray-700 hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
-            title="Connexion Admin"
-          >
-            <User className="w-5 h-5 sm:w-6 sm:h-6" />
-          </a>
-          <a
-            href="https://wa.me/22967153974"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gray-800 hover:bg-gray-900 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
-            title="Rejoindre notre WhatsApp"
-          >
-            <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-          </a>
-        </div>
       </div>
     </ClientOnly>
   )
