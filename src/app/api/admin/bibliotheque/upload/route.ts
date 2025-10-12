@@ -1,4 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { v2 as cloudinary } from 'cloudinary'
+
+// Configuration Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,41 +36,66 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Vérifier si Cloudinary est configuré
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+    const apiKey = process.env.CLOUDINARY_API_KEY
+    const apiSecret = process.env.CLOUDINARY_API_SECRET
+
+    console.log('🔍 Debug Cloudinary config:')
+    console.log('- Cloud Name:', cloudName)
+    console.log('- API Key:', apiKey ? '***' + apiKey.slice(-4) : 'undefined')
+    console.log('- API Secret:', apiSecret ? '***' + apiSecret.slice(-4) : 'undefined')
+
+    if (!cloudName || cloudName === 'your_cloud_name' || !apiKey || apiKey === 'your_api_key' || !apiSecret || apiSecret === 'your_api_secret') {
+      console.log('⚠️ Cloudinary non configuré, utilisation du mode placeholder')
+      // Mode développement : retourner une URL placeholder
+      return NextResponse.json({
+        success: true,
+        secure_url: 'https://via.placeholder.com/400x600/cccccc/666666?text=Image+de+couverture',
+        public_id: 'placeholder_' + Date.now()
+      })
+    }
+
     // Convertir le fichier en buffer
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Upload vers Cloudinary
-    const cloudinaryFormData = new FormData()
-    cloudinaryFormData.append('file', new Blob([buffer], { type: file.type }))
-    cloudinaryFormData.append('upload_preset', 'etu_bibliotheque')
-    cloudinaryFormData.append('folder', 'etu-bibliotheque')
+    console.log('🚀 Upload vers Cloudinary avec SDK...')
+    console.log('📤 Fichier:', file.name, file.size, file.type)
 
-    const cloudinaryResponse = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: 'POST',
-        body: cloudinaryFormData
-      }
-    )
-
-    if (!cloudinaryResponse.ok) {
-      throw new Error('Erreur lors de l\'upload vers Cloudinary')
-    }
-
-    const cloudinaryData = await cloudinaryResponse.json()
+    // Upload vers Cloudinary avec le SDK
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: 'etu-bibliotheque',
+          resource_type: 'auto',
+          transformation: [
+            { width: 400, height: 600, crop: 'fit', quality: 'auto' }
+          ]
+        },
+        (error, result) => {
+          if (error) {
+            console.error('❌ Erreur Cloudinary SDK:', error)
+            reject(error)
+          } else {
+            console.log('✅ Upload Cloudinary SDK réussi:', result?.public_id)
+            resolve(result)
+          }
+        }
+      ).end(buffer)
+    })
 
     return NextResponse.json({
       success: true,
-      secure_url: cloudinaryData.secure_url,
-      public_id: cloudinaryData.public_id
+      secure_url: (result as any).secure_url,
+      public_id: (result as any).public_id
     })
 
   } catch (error: any) {
-    console.error('Erreur lors de l\'upload:', error)
+    console.error('❌ Erreur lors de l\'upload:', error)
     
     return NextResponse.json(
-      { error: 'Erreur lors de l\'upload de l\'image' },
+      { error: `Erreur lors de l'upload de l'image: ${error.message}` },
       { status: 500 }
     )
   }

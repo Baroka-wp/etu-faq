@@ -6,40 +6,40 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 interface Book {
-  id: string
-  title: string
-  author: string
-  description: string
-  price?: number
-  isFree: boolean
-  category: 'etu' | 'recommended'
-  imageUrl: string
-  whatsappMessage: string
+    id: string
+    title: string
+    author: string
+    description: string
+    price?: number
+    isFree: boolean
+    category: 'etu' | 'recommended'
+    imageUrl: string
+    whatsappMessage: string
 }
 
 export default function BibliothequePage() {
-  const [books, setBooks] = useState<Book[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'etu' | 'recommended'>('all')
-  const [searchTerm, setSearchTerm] = useState('')
+    const [books, setBooks] = useState<Book[]>([])
+    const [loading, setLoading] = useState(true)
+    const [filter, setFilter] = useState<'all' | 'etu' | 'recommended'>('all')
+    const [searchTerm, setSearchTerm] = useState('')
 
-  useEffect(() => {
-    fetchBooks()
-  }, [])
+    useEffect(() => {
+        fetchBooks()
+    }, [])
 
-  const fetchBooks = async () => {
-    try {
-      const response = await fetch('/api/bibliotheque')
-      if (response.ok) {
-        const data = await response.json()
-        setBooks(data.books)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des livres:', error)
-    } finally {
-      setLoading(false)
+    const fetchBooks = async () => {
+        try {
+            const response = await fetch('/api/bibliotheque')
+            if (response.ok) {
+                const data = await response.json()
+                setBooks(data.books)
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des livres:', error)
+        } finally {
+            setLoading(false)
+        }
     }
-  }
 
     const filteredBooks = books.filter(book => {
         const matchesFilter = filter === 'all' || book.category === filter
@@ -49,22 +49,22 @@ export default function BibliothequePage() {
         return matchesFilter && matchesSearch
     })
 
-  const handleWhatsAppOrder = (book: Book) => {
-    const message = encodeURIComponent(book.whatsappMessage)
-    const whatsappUrl = `https://wa.me/229XXXXXXXX?text=${message}`
-    window.open(whatsappUrl, '_blank')
-  }
+    const handleWhatsAppOrder = (book: Book) => {
+        const message = encodeURIComponent(book.whatsappMessage)
+        const whatsappUrl = `https://wa.me/229XXXXXXXX?text=${message}`
+        window.open(whatsappUrl, '_blank')
+    }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Chargement de la bibliothèque...</p>
-        </div>
-      </div>
-    )
-  }
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Chargement de la bibliothèque...</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -117,8 +117,8 @@ export default function BibliothequePage() {
                             <button
                                 onClick={() => setFilter('all')}
                                 className={`px-4 py-2 rounded-lg flex items-center ${filter === 'all'
-                                        ? 'bg-gray-800 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-gray-800 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 <Filter className="w-4 h-4 mr-2" />
@@ -127,8 +127,8 @@ export default function BibliothequePage() {
                             <button
                                 onClick={() => setFilter('etu')}
                                 className={`px-4 py-2 rounded-lg flex items-center ${filter === 'etu'
-                                        ? 'bg-gray-800 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-gray-800 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 <BookOpen className="w-4 h-4 mr-2" />
@@ -137,8 +137,8 @@ export default function BibliothequePage() {
                             <button
                                 onClick={() => setFilter('recommended')}
                                 className={`px-4 py-2 rounded-lg flex items-center ${filter === 'recommended'
-                                        ? 'bg-gray-800 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-gray-800 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 <ExternalLink className="w-4 h-4 mr-2" />
@@ -152,26 +152,26 @@ export default function BibliothequePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredBooks.map((book) => (
                         <div key={book.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-              {/* Book Image */}
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                {book.imageUrl ? (
-                  <img 
-                    src={book.imageUrl} 
-                    alt={book.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <BookOpen className="w-16 h-16 text-gray-400" />
-                )}
-              </div>
+                            {/* Book Image */}
+                            <div className="h-48 bg-gray-200 flex items-center justify-center">
+                                {book.imageUrl ? (
+                                    <img
+                                        src={book.imageUrl}
+                                        alt={book.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <BookOpen className="w-16 h-16 text-gray-400" />
+                                )}
+                            </div>
 
                             {/* Book Content */}
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="text-lg font-semibold text-gray-900">{book.title}</h3>
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${book.isFree
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-blue-100 text-blue-800'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-blue-100 text-blue-800'
                                         }`}>
                                         {book.isFree ? 'Gratuit' : 'Payant'}
                                     </span>
