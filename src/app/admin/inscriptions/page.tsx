@@ -170,6 +170,9 @@ export default function AdminInscriptions() {
 
     const generateUniqueLink = async (inscription: Inscription) => {
         try {
+            console.log('Tentative de génération de lien pour:', inscription.prenom, inscription.nom)
+            console.log('ID de l\'inscription:', inscription.id)
+            
             const response = await fetch(`/api/admin/inscriptions/${inscription.id}/generate-link`, {
                 method: 'POST',
                 headers: {
@@ -178,12 +181,25 @@ export default function AdminInscriptions() {
                 body: JSON.stringify({ duration: 24 }) // 24 heures
             })
 
+            console.log('Réponse de l\'API:', response.status, response.statusText)
+
             if (response.ok) {
                 const data = await response.json()
+                console.log('Données reçues:', data)
                 return data.downloadUrl
             } else {
                 const errorData = await response.json()
                 console.error('Erreur API:', errorData)
+                
+                if (response.status === 401) {
+                    addToast({
+                        type: 'error',
+                        title: 'Non autorisé',
+                        message: 'Vous devez être connecté en tant qu\'administrateur'
+                    })
+                    return null
+                }
+                
                 throw new Error(errorData.details || errorData.error || 'Erreur lors de la génération du lien')
             }
         } catch (err) {

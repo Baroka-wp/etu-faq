@@ -34,6 +34,9 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Temporairement désactivé pour tester
+    '/admin/:path*',
+    '/api/admin/:path*',
+    '/profil',
+    '/api/user/:path*'
   ]
 }

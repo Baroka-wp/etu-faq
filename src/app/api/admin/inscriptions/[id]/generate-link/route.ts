@@ -9,6 +9,15 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Vérifier l'authentification admin
+    const adminSession = request.cookies.get('admin-session')?.value
+    if (adminSession !== 'authenticated') {
+      return NextResponse.json(
+        { error: 'Non autorisé' },
+        { status: 401 }
+      )
+    }
+
     const { id } = params
     console.log('Génération de lien pour l\'inscription:', id)
     
