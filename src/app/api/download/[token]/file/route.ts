@@ -47,7 +47,7 @@ export async function GET(
       const pdfBuffer = await readFile(pdfPath)
 
       // Retourner le fichier PDF
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(pdfBuffer.buffer, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${uniqueLink.pdfPath}"`,
