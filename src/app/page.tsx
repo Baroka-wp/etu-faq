@@ -142,49 +142,53 @@ export default function HomePage() {
 
         {/* Notre Mission & Philosophie */}
         <section id="mission" className="py-16 sm:py-20 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-16">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-gray-900 mb-6">
                 Notre Mission & Philosophie
               </h2>
               <div className="w-24 h-1 bg-gray-800 mx-auto"></div>
             </div>
 
-            {/* Le But de l'ETU - Section principale */}
-            <div className="mb-12">
+            {/* Structure verticale sobre */}
+            <div className="space-y-12">
+              {/* Le But de l'ETU */}
               <div className="bg-white rounded-lg p-8 sm:p-12 border border-gray-200 hover:border-gray-300 transition-all duration-300">
                 <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Le But de l'ETU</h3>
-                <div className="max-w-4xl mx-auto">
-                  <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mb-6 text-center">
+                <div className="max-w-3xl mx-auto space-y-6">
+                  <p className="text-lg text-gray-700 leading-relaxed text-center">
                     À l'aube de ce 3ème millénaire, tous ceux qui manifestent le désir d'être parmi le Peuple Élu le peuvent, si leur volonté, principal attribut divin, se manifeste dans le sens du progrès spirituel de l'humanité.
                   </p>
-                  <p className="text-lg sm:text-xl text-gray-700 leading-relaxed text-center">
+                  <p className="text-lg text-gray-700 leading-relaxed text-center">
                     Le but de l'ETU est donc de transmettre à l'humanité les enseignements qui lui permettront d'entrer dans l'ère du Verseau qui sera l'ère de la communication, de la manifestation de l'Amour, du règne du Fils.
                   </p>
                 </div>
               </div>
-            </div>
 
-            {/* Le Transcendantalisme - Section détaillée */}
-            <div className="grid lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-lg p-8 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
-                <h3 className="text-2xl font-serif text-gray-900 mb-6 group-hover:text-gray-800 transition-colors">Qu'est-ce que le Transcendantalisme ?</h3>
-                <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  Le transcendantalisme est un mouvement de type moral et philosophique. Par sa philosophie, il se propose d'amener l'homme à une compréhension plus grande des problèmes de l'existence, situant sa conscience à un plus haut niveau dans les régions métaphysiques.
-                </p>
-                <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  Il lui permet, à travers les connaissances diffusées par l'ETU, d'être plus objectif dans ses actes, plus généreux et plus juste.
-                </p>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  La conséquence de cette compréhension sera la conquête d'un niveau moral plus élevé, qui fera de lui un Être de refus, de renoncement, introduisant l'idée de rendre service à autrui, du sacrifice volontaire, et des restrictions matérielles comme idéal. Les armes du transcendantalisme sont morales, intellectuelles, spirituelles. Plus qu'un mouvement physique, c'est un état d'esprit. Est transcendantaliste celui qui, par ses idées et ses actions, contribue à l'évolution de l'humanité.
-                </p>
+              {/* Qu'est-ce que le Transcendantalisme ? */}
+              <div className="bg-white rounded-lg p-8 sm:p-12 border border-gray-200 hover:border-gray-300 transition-all duration-300">
+                <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Qu'est-ce que le Transcendantalisme ?</h3>
+                <div className="max-w-3xl mx-auto space-y-6">
+                  <p className="text-lg text-gray-700 leading-relaxed">
+                    Le transcendantalisme est un mouvement de type moral et philosophique. Par sa philosophie, il se propose d'amener l'homme à une compréhension plus grande des problèmes de l'existence, situant sa conscience à un plus haut niveau dans les régions métaphysiques.
+                  </p>
+                  <p className="text-lg text-gray-700 leading-relaxed">
+                    Il lui permet, à travers les connaissances diffusées par l'ETU, d'être plus objectif dans ses actes, plus généreux et plus juste.
+                  </p>
+                  <p className="text-lg text-gray-700 leading-relaxed">
+                    La conséquence de cette compréhension sera la conquête d'un niveau moral plus élevé, qui fera de lui un Être de refus, de renoncement, introduisant l'idée de rendre service à autrui, du sacrifice volontaire, et des restrictions matérielles comme idéal. Les armes du transcendantalisme sont morales, intellectuelles, spirituelles. Plus qu'un mouvement physique, c'est un état d'esprit. Est transcendantaliste celui qui, par ses idées et ses actions, contribue à l'évolution de l'humanité.
+                  </p>
+                </div>
               </div>
 
-              <div className="bg-white rounded-lg p-8 border border-gray-200 hover:border-gray-300 transition-all duration-300 group">
-                <h3 className="text-2xl font-serif text-gray-900 mb-6 group-hover:text-gray-800 transition-colors">Qui est le Transcendantaliste ?</h3>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  Le transcendantaliste est celui qui cherche une mission concrète et positive dans la vie ; celui qui se sent frustré partout où règne l'injustice ; celui qui cherche la lumière que l'enseignement peut lui donner. Il est heureux de servir sans rien demander en échange, satisfait du plaisir de servir. C'est celui qui doute, qui s'interroge sur son propre destin et celui de l'humanité, un assoiffé d'éternité, car le transcendantalisme répond à toutes les questions qu'il se pose.
-                </p>
+              {/* Qui est le Transcendantaliste ? */}
+              <div className="bg-white rounded-lg p-8 sm:p-12 border border-gray-200 hover:border-gray-300 transition-all duration-300">
+                <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Qui est le Transcendantaliste ?</h3>
+                <div className="max-w-3xl mx-auto">
+                  <p className="text-lg text-gray-700 leading-relaxed">
+                    Le transcendantaliste est celui qui cherche une mission concrète et positive dans la vie ; celui qui se sent frustré partout où règne l'injustice ; celui qui cherche la lumière que l'enseignement peut lui donner. Il est heureux de servir sans rien demander en échange, satisfait du plaisir de servir. C'est celui qui doute, qui s'interroge sur son propre destin et celui de l'humanité, un assoiffé d'éternité, car le transcendantalisme répond à toutes les questions qu'il se pose.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -253,7 +257,7 @@ export default function HomePage() {
             <div className="mb-12">
               <div className="bg-white rounded-lg p-8 sm:p-12 border border-gray-200">
                 <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Les Cours Thématiques Détaillés</h3>
-                
+
                 <div className="space-y-4">
                   {/* Accordéon 1: Philosophie Ésotérique Chrétienne */}
                   <div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -276,7 +280,7 @@ export default function HomePage() {
                         <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
                       )}
                     </button>
-                    
+
                     {openItems['philosophie'] && (
                       <div className="px-6 pb-6 bg-white border-t border-gray-200">
                         <div className="pt-4 space-y-4">
@@ -339,7 +343,7 @@ export default function HomePage() {
                         <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
                       )}
                     </button>
-                    
+
                     {openItems['evangile'] && (
                       <div className="px-6 pb-6 bg-white border-t border-gray-200">
                         <div className="pt-4 space-y-4">
@@ -389,7 +393,7 @@ export default function HomePage() {
                         <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
                       )}
                     </button>
-                    
+
                     {openItems['astrologie'] && (
                       <div className="px-6 pb-6 bg-white border-t border-gray-200">
                         <div className="pt-4">
@@ -422,7 +426,7 @@ export default function HomePage() {
                         <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
                       )}
                     </button>
-                    
+
                     {openItems['haute-kabbale'] && (
                       <div className="px-6 pb-6 bg-white border-t border-gray-200">
                         <div className="pt-4">
@@ -455,7 +459,7 @@ export default function HomePage() {
                         <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
                       )}
                     </button>
-                    
+
                     {openItems['apocalypse'] && (
                       <div className="px-6 pb-6 bg-white border-t border-gray-200">
                         <div className="pt-4">
@@ -488,7 +492,7 @@ export default function HomePage() {
                         <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
                       )}
                     </button>
-                    
+
                     {openItems['genese'] && (
                       <div className="px-6 pb-6 bg-white border-t border-gray-200">
                         <div className="pt-4">
@@ -521,7 +525,7 @@ export default function HomePage() {
                         <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
                       )}
                     </button>
-                    
+
                     {openItems['anges'] && (
                       <div className="px-6 pb-6 bg-white border-t border-gray-200">
                         <div className="pt-4">
