@@ -30,7 +30,7 @@ export default function HomePage() {
                 />
                 <span className="text-xl font-serif font-bold text-gray-900">ETU Bénin</span>
               </div>
-              
+
               {/* Desktop Menu */}
               <div className="hidden md:flex items-center space-x-8">
                 <a href="#accueil" className="text-gray-700 hover:text-gray-900 font-serif">Accueil</a>
@@ -95,7 +95,7 @@ export default function HomePage() {
               <blockquote className="text-xl sm:text-2xl lg:text-3xl font-serif text-gray-800 italic mb-8 leading-relaxed">
                 « Un jour, tout ce qui est caché sera dévoilé », disait le Christ. Ce Jour est maintenant arrivé.
               </blockquote>
-              
+
               <p className="text-lg sm:text-xl text-gray-700 mb-8 leading-relaxed">
                 L'ETU a été instituée pour dévoiler les Enseignements dispensés par les hautes Écoles Initiatiques et couverts du sceau du secret. Notre mission est de vous transmettre les clés pour comprendre les lois divines et préparer l'humanité à l'ère du Verseau.
               </p>
@@ -149,33 +149,42 @@ export default function HomePage() {
               <div className="w-24 h-1 bg-gray-800 mx-auto"></div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-white rounded-xl p-8 shadow-lg">
-                <h3 className="text-2xl font-serif text-gray-900 mb-6">Le But de l'ETU</h3>
-                <p className="text-lg text-gray-700 leading-relaxed mb-4">
-                  À l'aube de ce 3ème millénaire, tous ceux qui manifestent le désir d'être parmi le Peuple Élu le peuvent, si leur volonté, principal attribut divin, se manifeste dans le sens du progrès spirituel de l'humanité.
-                </p>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  Le but de l'ETU est donc de transmettre à l'humanité les enseignements qui lui permettront d'entrer dans l'ère du Verseau qui sera l'ère de la communication, de la manifestation de l'Amour, du règne du Fils.
-                </p>
-              </div>
-
-              <div className="bg-white rounded-xl p-8 shadow-lg">
-                <h3 className="text-2xl font-serif text-gray-900 mb-6">Qu'est-ce que le Transcendantalisme ?</h3>
-                <p className="text-lg text-gray-700 leading-relaxed mb-4">
-                  Le transcendantalisme est un mouvement de type moral et philosophique. Par sa philosophie, il se propose d'amener l'homme à une compréhension plus grande des problèmes de l'existence, situant sa conscience à un plus haut niveau dans les régions métaphysiques.
-                </p>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  Il lui permet, à travers les connaissances diffusées par l'ETU, d'être plus objectif dans ses actes, plus généreux et plus juste.
-                </p>
+            {/* Le But de l'ETU - Section principale */}
+            <div className="mb-12">
+              <div className="bg-white rounded-xl p-8 sm:p-12 shadow-lg">
+                <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Le But de l'ETU</h3>
+                <div className="max-w-4xl mx-auto">
+                  <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mb-6 text-center">
+                    À l'aube de ce 3ème millénaire, tous ceux qui manifestent le désir d'être parmi le Peuple Élu le peuvent, si leur volonté, principal attribut divin, se manifeste dans le sens du progrès spirituel de l'humanité.
+                  </p>
+                  <p className="text-lg sm:text-xl text-gray-700 leading-relaxed text-center">
+                    Le but de l'ETU est donc de transmettre à l'humanité les enseignements qui lui permettront d'entrer dans l'ère du Verseau qui sera l'ère de la communication, de la manifestation de l'Amour, du règne du Fils.
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="mt-8 bg-white rounded-xl p-8 shadow-lg">
-              <h3 className="text-2xl font-serif text-gray-900 mb-6">Qui est le Transcendantaliste ?</h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Le transcendantaliste est celui qui cherche une mission concrète et positive dans la vie ; celui qui se sent frustré partout où règne l'injustice ; celui qui cherche la lumière que l'enseignement peut lui donner. Il est heureux de servir sans rien demander en échange, satisfait du plaisir de servir. C'est celui qui doute, qui s'interroge sur son propre destin et celui de l'humanité, un assoiffé d'éternité, car le transcendantalisme répond à toutes les questions qu'il se pose.
-              </p>
+            {/* Le Transcendantalisme - Section détaillée */}
+            <div className="grid lg:grid-cols-2 gap-8">
+              <div className="bg-white rounded-xl p-8 shadow-lg">
+                <h3 className="text-2xl font-serif text-gray-900 mb-6">Qu'est-ce que le Transcendantalisme ?</h3>
+                <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                  Le transcendantalisme est un mouvement de type moral et philosophique. Par sa philosophie, il se propose d'amener l'homme à une compréhension plus grande des problèmes de l'existence, situant sa conscience à un plus haut niveau dans les régions métaphysiques.
+                </p>
+                <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                  Il lui permet, à travers les connaissances diffusées par l'ETU, d'être plus objectif dans ses actes, plus généreux et plus juste.
+                </p>
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  La conséquence de cette compréhension sera la conquête d'un niveau moral plus élevé, qui fera de lui un Être de refus, de renoncement, introduisant l'idée de rendre service à autrui, du sacrifice volontaire, et des restrictions matérielles comme idéal. Les armes du transcendantalisme sont morales, intellectuelles, spirituelles. Plus qu'un mouvement physique, c'est un état d'esprit. Est transcendantaliste celui qui, par ses idées et ses actions, contribue à l'évolution de l'humanité.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-8 shadow-lg">
+                <h3 className="text-2xl font-serif text-gray-900 mb-6">Qui est le Transcendantaliste ?</h3>
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Le transcendantaliste est celui qui cherche une mission concrète et positive dans la vie ; celui qui se sent frustré partout où règne l'injustice ; celui qui cherche la lumière que l'enseignement peut lui donner. Il est heureux de servir sans rien demander en échange, satisfait du plaisir de servir. C'est celui qui doute, qui s'interroge sur son propre destin et celui de l'humanité, un assoiffé d'éternité, car le transcendantalisme répond à toutes les questions qu'il se pose.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -190,77 +199,150 @@ export default function HomePage() {
               <div className="w-24 h-1 bg-gray-800 mx-auto"></div>
             </div>
 
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-8">
-                <h3 className="text-2xl font-serif text-gray-900 mb-6">Découvrez nos parcours d'étude</h3>
-                <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  Nos enseignements sont principalement articulés autour de la <strong>Kabbale</strong>, une doctrine mystérieuse et sacrée. Elle est une « Tradition Ésotérique », une Méthode permettant d'appréhender les LOIS de notre Système Solaire et de les utiliser afin de mieux comprendre :
-                </p>
-                <ol className="list-decimal list-inside text-lg text-gray-700 space-y-2 mb-6">
-                  <li>Notre sphère d'existence.</li>
-                  <li>Notre situation physique, psychique, mentale et spirituelle.</li>
-                  <li>La manière de nous dégager de notre « condition humaine » en accédant à un état de Conscience Élevé, qualifié de DIVIN.</li>
-                </ol>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  Cette Méthode représente notre Univers au moyen d'un schéma appelé « ARBRE DE VIE », qui permet de comprendre comment circule la Force Divine, comment elle se différencie en plusieurs types d'énergies, et comment celles-ci sont hiérarchisées.
-                </p>
+            {/* Introduction aux Enseignements */}
+            <div className="max-w-5xl mx-auto mb-12">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 sm:p-12">
+                <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Découvrez nos parcours d'étude</h3>
+                <div className="max-w-4xl mx-auto">
+                  <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mb-6">
+                    Nos enseignements sont principalement articulés autour de la <strong>Kabbale</strong>, une doctrine mystérieuse et sacrée. Elle est une « Tradition Ésotérique », une Méthode permettant d'appréhender les LOIS de notre Système Solaire et de les utiliser afin de mieux comprendre :
+                  </p>
+                  <ol className="list-decimal list-inside text-lg sm:text-xl text-gray-700 space-y-3 mb-8">
+                    <li>Notre sphère d'existence.</li>
+                    <li>Notre situation physique, psychique, mentale et spirituelle.</li>
+                    <li>La manière de nous dégager de notre « condition humaine » en accédant à un état de Conscience Élevé, qualifié de DIVIN.</li>
+                  </ol>
+                  <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
+                    Cette Méthode représente notre Univers au moyen d'un schéma appelé « ARBRE DE VIE », qui permet de comprendre comment circule la Force Divine, comment elle se différencie en plusieurs types d'énergies, et comment celles-ci sont hiérarchisées.
+                  </p>
+                </div>
               </div>
+            </div>
 
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="bg-white rounded-xl p-8 shadow-lg">
-                  <h3 className="text-2xl font-serif text-gray-900 mb-6">Les Programmes par Grade</h3>
-                  <ul className="space-y-4">
-                    <li className="flex items-start">
-                      <span className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-4 mt-1">1</span>
-                      <div>
-                        <strong className="text-lg font-serif">Grade 1: NÉOPHYTE</strong>
-                        <p className="text-gray-700">Les mystères de l'œuvre divine (la philosophie exotérique). Le cours est composé de 24 leçons.</p>
+            {/* Les Programmes par Grade */}
+            <div className="mb-12">
+              <div className="bg-white rounded-xl p-8 sm:p-12 shadow-lg border-2 border-gray-100">
+                <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Les Programmes par Grade</h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4">1</div>
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center">Grade 1: NÉOPHYTE</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed text-center">Les mystères de l'œuvre divine (la philosophie exotérique). Le cours est composé de 24 leçons.</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4">2</div>
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center">Grade 2: CONSTRUCTEUR</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed text-center">22 Travaux de Grade + 12 leçons d'Évangile.</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4">3</div>
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center">Grade 3: NAVIGATEUR</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed text-center">22 Travaux de Grade + 22 leçons d'Évangile.</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <div className="bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold mx-auto mb-4">4</div>
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3 text-center">Grade 4: ALCHIMISTE</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed text-center">44 Travaux de Grade + 28 leçons d'Évangile.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Les Cours Thématiques Détaillés */}
+            <div className="mb-12">
+              <div className="bg-white rounded-xl p-8 sm:p-12 shadow-lg border-2 border-gray-100">
+                <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-8 text-center">Les Cours Thématiques Détaillés</h3>
+                
+                {/* Cours 1: Philosophie Ésotérique Chrétienne */}
+                <div className="mb-8">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
+                    <h4 className="text-xl font-serif font-semibold text-gray-900 mb-4">1. Philosophie Ésotérique Chrétienne (22 leçons)</h4>
+                    <p className="text-gray-700 leading-relaxed mb-4">
+                      Ce cours introduit la Kabbale, l'organisation cosmique et les symbolismes bibliques. Il expose de façon cohérente et simple les lois établies par Dieu pour le fonctionnement de notre Univers. La connaissance de ces Lois permet à l'homme d'agir à l'unisson avec elles et de se mouvoir dans un espace où le malheur, le mal, les accidents et la maladie, produits de l'ignorance, n'ont pas de place. C'est une véritable « Science du Comportement ».
+                    </p>
+                    <p className="text-gray-700 leading-relaxed mb-4">
+                      Le contenu de cet Enseignement provient de la Tradition Hermétique, présenté de manière globale et logique pour permettre à l'Étudiant, quelle que soit son appartenance, de mieux comprendre les enseignements de sa propre religion ou école.
+                    </p>
+                    <div className="bg-white rounded-lg p-4">
+                      <h5 className="font-semibold text-gray-900 mb-3">Programme du cours :</h5>
+                      <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
+                        <div>– Leçon 1 : La création (Cours Gratuit)</div>
+                        <div>– Leçon 2 : La création (suite)</div>
+                        <div>– Leçon 3 : La Création (fin)</div>
+                        <div>– Leçon 4 : Le cycle Vital</div>
+                        <div>– Leçon 5 : Le cycle vital (suite)</div>
+                        <div>– Leçon 6 : Le cycle vital (suite)</div>
+                        <div>– Leçon 7 : Le cycle vital (suite)</div>
+                        <div>– Leçon 8 : Le cycle vital (suite)</div>
+                        <div>– Leçon 9 : Le cycle vital (suite)</div>
+                        <div>– Leçon 10 : Le cycle vital (fin)</div>
+                        <div>– Leçon 11 : L'Organisation</div>
+                        <div>– Leçon 12 : L'Organisation (suite)</div>
+                        <div>– Leçon 13 : L'Organisation (suite)</div>
+                        <div>– Leçon 14 : L'Organisation (suite)</div>
+                        <div>– Leçon 15 : L'Organisation (suite et fin)</div>
+                        <div>– Leçon 16 : Le travail humain</div>
+                        <div>– Leçon 17 : Le travail humain (suite)</div>
+                        <div>– Leçon 18 : Le travail humain (suite)</div>
+                        <div>– Leçon 19 : Le travail humain (suite)</div>
+                        <div>– Leçon 20 : Le travail divin</div>
+                        <div>– Leçon 21 : Le travail divin (suite et fin)</div>
+                        <div>– Leçon 22 : Analyse finale</div>
                       </div>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-4 mt-1">2</span>
-                      <div>
-                        <strong className="text-lg font-serif">Grade 2: CONSTRUCTEUR</strong>
-                        <p className="text-gray-700">22 Travaux de Grade + 12 leçons d'Évangile.</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-4 mt-1">3</span>
-                      <div>
-                        <strong className="text-lg font-serif">Grade 3: NAVIGATEUR</strong>
-                        <p className="text-gray-700">22 Travaux de Grade + 22 leçons d'Évangile.</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-4 mt-1">4</span>
-                      <div>
-                        <strong className="text-lg font-serif">Grade 4: ALCHIMISTE</strong>
-                        <p className="text-gray-700">44 Travaux de Grade + 28 leçons d'Évangile.</p>
-                      </div>
-                    </li>
-                  </ul>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="bg-white rounded-xl p-8 shadow-lg">
-                  <h3 className="text-2xl font-serif text-gray-900 mb-6">Cours Thématiques</h3>
-                  <ul className="space-y-4">
-                    <li>
-                      <strong className="text-lg font-serif">Philosophie Ésotérique Chrétienne</strong>
-                      <p className="text-gray-700">22 leçons - Introduction à la Kabbale et aux symbolismes bibliques</p>
-                    </li>
-                    <li>
-                      <strong className="text-lg font-serif">Interprétation Ésotérique de l'Évangile</strong>
-                      <p className="text-gray-700">50 leçons - Révélation des symbolismes bibliques</p>
-                    </li>
-                    <li>
-                      <strong className="text-lg font-serif">Astrologie et Kabbale</strong>
-                      <p className="text-gray-700">22 leçons - Association de l'Astrologie à la Kabbale</p>
-                    </li>
-                    <li>
-                      <strong className="text-lg font-serif">Haute Kabbale appliquée</strong>
-                      <p className="text-gray-700">60 leçons - Maîtrise complète des Arcanes</p>
-                    </li>
-                  </ul>
+                {/* Cours 2: Interprétation Ésotérique de l'Évangile */}
+                <div className="mb-8">
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6">
+                    <h4 className="text-xl font-serif font-semibold text-gray-900 mb-4">2. Interprétation Ésotérique de l'Évangile (50 leçons)</h4>
+                    <p className="text-gray-700 leading-relaxed mb-4">
+                      Ce cours révèle tous les symbolismes bibliques contenus dans les Évangiles.
+                    </p>
+                    <div className="bg-white rounded-lg p-4">
+                      <h5 className="font-semibold text-gray-900 mb-3">Programme du cours :</h5>
+                      <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
+                        <div>– Leçon 1 : Processus d'élaboration de la personnalité christique et de sa sauvegarde.</div>
+                        <div>– Leçon 2 : Aplanir les sentiers intérieurs</div>
+                        <div>– Leçon 3 : Jésus à l'aube de sa mission terrestre</div>
+                        <div>– Leçon 4 : L'art d'être chrétien</div>
+                        <div>– Leçon 5 : Intérioriser les lois cosmiques et les extérioriser en comportement naturel</div>
+                        <div>– Leçon 6 : Dépasser la Loi et instaurer la Foi et l'Amour</div>
+                        <div>– Leçon 7 : Le Christianisme : une voie intérieure. L'humilité : première vertu du disciple.</div>
+                        <div>– Leçon 8 : Le travail humain et les mystères de l'Amour – Christ</div>
+                        <div>– Leçon 9 : Directives pour le disciple du Christ – La femme dans l'œuvre du Christ</div>
+                        <div>– Leçon 10 : Le mystère de l'âme humaine - Le symbolisme de la décapitation de Jean Baptiste.</div>
+                        <div>– Leçon 11 à 50 : Interprétation Ésotérique de l'évangile (Suite)</div>
+                        <div>– Conclusion</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Autres Enseignements */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">3. Astrologie et Kabbale (22 leçons)</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">Associe l'étude de l'Astrologie à celle de la Kabbale et révèle les clés de l'interprétation des thèmes.</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-6">
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">4. Haute Kabbale appliquée à l'Astrologie et au Tarot (60 leçons)</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">Le disciple est alors en possession de tous les Arcanes lui permettant d'être utile au monde et d'être un agent de la Divine Volonté.</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg p-6">
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">5. Interprétation ésotérique de l'Apocalypse (22 leçons)</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">Découverte des symbolismes cachés dans le livre de l'Apocalypse.</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg p-6">
+                    <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">6. Interprétation ésotérique de la Genèse (50 leçons)</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">Analyse approfondie des premiers chapitres de la Bible.</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-6">
+                  <h4 className="text-lg font-serif font-semibold text-gray-900 mb-3">7. Étude des noms des anges divins</h4>
+                  <p className="text-gray-700 leading-relaxed">Par ce cours, le disciple apprend à maîtriser les noms, les sons, et peut les utiliser pour améliorer sa condition de vie ou les rejeter s'ils ne sont pas en harmonie avec elle.</p>
                 </div>
               </div>
             </div>
