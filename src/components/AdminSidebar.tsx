@@ -11,7 +11,8 @@ import {
     UserPlus,
     FileText,
     Shield,
-    BookOpen
+    BookOpen,
+    Sparkles
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -43,6 +44,12 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             label: 'Bibliothèque',
             icon: BookOpen,
             href: '/admin/bibliotheque'
+        },
+        {
+            id: 'carte-du-ciel',
+            label: 'Carte du ciel',
+            icon: Sparkles,
+            href: '/admin/carte-du-ciel'
         },
         {
             id: 'members',
