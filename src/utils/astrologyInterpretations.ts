@@ -82,23 +82,8 @@ export function getSpiritualGuidance(planetName: string, sign: string): string {
 }
 
 export function getPersonalityAnalysis(planetName: string, sign: string): string {
-  // Normaliser les noms de planètes
-  const normalizedPlanetName = planetName.toLowerCase()
-  let planetKey = planetName
-  
-  if (normalizedPlanetName === 'sun' || normalizedPlanetName === 'soleil') {
-    planetKey = 'Soleil'
-  } else if (normalizedPlanetName === 'moon' || normalizedPlanetName === 'lune') {
-    planetKey = 'Lune'
-  } else if (normalizedPlanetName === 'jupiter') {
-    planetKey = 'Jupiter'
-  } else if (normalizedPlanetName === 'ascendant') {
-    planetKey = 'Ascendant'
-  } else if (normalizedPlanetName === 'saturn' || normalizedPlanetName === 'saturne') {
-    planetKey = 'Saturne'
-  } else if (normalizedPlanetName === 'mars') {
-    planetKey = 'Mars'
-  }
+  // Utiliser la fonction centralisée de normalisation
+  const planetKey = normalizePlanetName(planetName)
   
   const analysis: Record<string, Record<string, string>> = {
     'Soleil': {
@@ -347,9 +332,89 @@ export function getProgressGuidance(planetName: string, sign: string, actionType
   return progressGuidance[planetName]?.[sign]?.[actionType] || 'Conseil de progrès en cours de développement.'
 }
 
+// Fonction pour obtenir les symboles zodiacaux
+export function getZodiacSymbol(sign: string): string {
+  const symbols: Record<string, string> = {
+    'Ari': '♈', 'Bélier': '♈', 'Aries': '♈', 'aries': '♈', 'bélier': '♈',
+    'Tau': '♉', 'Taureau': '♉', 'Taurus': '♉', 'taurus': '♉', 'taureau': '♉',
+    'Gem': '♊', 'Gémeaux': '♊', 'Gemini': '♊', 'gemini': '♊', 'gémeaux': '♊',
+    'Can': '♋', 'Cancer': '♋', 'cancer': '♋',
+    'Leo': '♌', 'Lion': '♌', 'leo': '♌', 'lion': '♌',
+    'Vir': '♍', 'Vierge': '♍', 'Virgo': '♍', 'virgo': '♍', 'vierge': '♍',
+    'Lib': '♎', 'Balance': '♎', 'Libra': '♎', 'libra': '♎', 'balance': '♎',
+    'Sco': '♏', 'Scorpion': '♏', 'Scorpio': '♏', 'scorpio': '♏', 'scorpion': '♏',
+    'Sag': '♐', 'Sagittaire': '♐', 'Sagittarius': '♐', 'sagittarius': '♐', 'sagittaire': '♐',
+    'Cap': '♑', 'Capricorne': '♑', 'Capricorn': '♑', 'capricorn': '♑', 'capricorne': '♑',
+    'Aqu': '♒', 'Verseau': '♒', 'Aquarius': '♒', 'aquarius': '♒', 'verseau': '♒',
+    'Pis': '♓', 'Poissons': '♓', 'Pisces': '♓', 'pisces': '♓', 'poissons': '♓'
+  }
+  return symbols[sign] || '●'
+}
+
+// Fonction pour obtenir le nom français du signe
+export function getZodiacName(sign: string): string {
+  const names: Record<string, string> = {
+    'Ari': 'Bélier', 'Aries': 'Bélier', 'aries': 'Bélier',
+    'Tau': 'Taureau', 'Taurus': 'Taureau', 'taurus': 'Taureau',
+    'Gem': 'Gémeaux', 'Gemini': 'Gémeaux', 'gemini': 'Gémeaux',
+    'Can': 'Cancer', 'Cancer': 'Cancer', 'cancer': 'Cancer',
+    'Leo': 'Lion', 'leo': 'Lion',
+    'Vir': 'Vierge', 'Virgo': 'Vierge', 'virgo': 'Vierge',
+    'Lib': 'Balance', 'Libra': 'Balance', 'libra': 'Balance',
+    'Sco': 'Scorpion', 'Scorpio': 'Scorpion', 'scorpio': 'Scorpion',
+    'Sag': 'Sagittaire', 'Sagittarius': 'Sagittaire', 'sagittarius': 'Sagittaire',
+    'Cap': 'Capricorne', 'Capricorn': 'Capricorne', 'capricorn': 'Capricorne',
+    'Aqu': 'Verseau', 'Aquarius': 'Verseau', 'aquarius': 'Verseau',
+    'Pis': 'Poissons', 'Pisces': 'Poissons', 'pisces': 'Poissons'
+  }
+  return names[sign] || sign
+}
+
+// Fonction centralisée pour normaliser les noms de planètes
+export function normalizePlanetName(planetName: string): string {
+  const normalized = planetName.toLowerCase().trim()
+
+  const mapping: Record<string, string> = {
+    // Soleil
+    'sun': 'Soleil', 'soleil': 'Soleil',
+    // Lune
+    'moon': 'Lune', 'lune': 'Lune',
+    // Mercure
+    'mercury': 'Mercure', 'mercure': 'Mercure',
+    // Vénus
+    'venus': 'Vénus', 'vénus': 'Vénus',
+    // Mars
+    'mars': 'Mars',
+    // Jupiter
+    'jupiter': 'Jupiter',
+    // Saturne
+    'saturn': 'Saturne', 'saturne': 'Saturne',
+    // Uranus
+    'uranus': 'Uranus',
+    // Neptune
+    'neptune': 'Neptune',
+    // Pluton
+    'pluto': 'Pluton', 'pluton': 'Pluton',
+    // Points spéciaux
+    'ascendant': 'Ascendant',
+    'descendant': 'Descendant',
+    'medium_coeli': 'Medium_Coeli', 'mc': 'Medium_Coeli', 'mediumcoeli': 'Medium_Coeli',
+    'imum_coeli': 'Imum_Coeli', 'ic': 'Imum_Coeli', 'imumcoeli': 'Imum_Coeli',
+    'mean_node': 'Mean_Node', 'north node': 'Mean_Node', 'noeud nord': 'Mean_Node', 'northnode': 'Mean_Node',
+    'mean_south_node': 'Mean_South_Node', 'south node': 'Mean_South_Node', 'noeud sud': 'Mean_South_Node', 'southnode': 'Mean_South_Node',
+    'true_node': 'True_Node', 'truenode': 'True_Node',
+    'true_south_node': 'True_South_Node', 'truesouthnode': 'True_South_Node',
+    'chiron': 'Chiron',
+    'mean_lilith': 'Mean_Lilith', 'lilith': 'Mean_Lilith', 'lune noire': 'Mean_Lilith', 'lunenoire': 'Mean_Lilith',
+    'true_lilith': 'True_Lilith'
+  }
+
+  return mapping[normalized] || planetName
+}
+
 // Fonction pour obtenir les symboles des planètes
 export function getPlanetSymbol(planetName: string): string {
-  const normalizedName = planetName.toLowerCase()
+  const normalizedName = planetName.toLowerCase().trim()
   const symbols: Record<string, string> = {
     'soleil': '☉', 'sun': '☉',
     'lune': '☽', 'moon': '☽',
@@ -361,32 +426,47 @@ export function getPlanetSymbol(planetName: string): string {
     'uranus': '♅',
     'neptune': '♆',
     'pluton': '♇', 'pluto': '♇',
-    'noeud nord': '☊', 'north node': '☊', 'mean_node': '☊',
+    'noeud nord': '☊', 'north node': '☊', 'mean_node': '☊', 'northnode': '☊',
+    'noeud sud': '☋', 'south node': '☋', 'mean_south_node': '☋', 'southnode': '☋',
+    'true_node': '☊', 'truenode': '☊',
+    'true_south_node': '☋', 'truesouthnode': '☋',
+    'chiron': '⚷',
+    'mean_lilith': '⚸', 'lilith': '⚸', 'lune noire': '⚸', 'lunenoire': '⚸',
+    'true_lilith': '⚸', 'truelilith': '⚸',
     'ascendant': 'Ac',
     'descendant': 'Dc',
-    'noeud sud': '☋', 'south node': '☋'
+    'medium_coeli': 'MC', 'mc': 'MC', 'mediumcoeli': 'MC',
+    'imum_coeli': 'IC', 'ic': 'IC', 'imumcoeli': 'IC'
   }
   return symbols[normalizedName] || '●'
 }
 
-// Fonction pour obtenir les couleurs des planètes
+// Fonction pour obtenir les couleurs des planètes (alignées avec Kerykeion)
 export function getPlanetColor(planetName: string): string {
-  const normalizedName = planetName.toLowerCase()
+  const normalizedName = planetName.toLowerCase().trim()
   const colors: Record<string, string> = {
-    'soleil': 'text-orange-500', 'sun': 'text-orange-500',
-    'lune': 'text-blue-500', 'moon': 'text-blue-500',
+    // Couleurs alignées avec Kerykeion
+    'soleil': 'text-orange-600', 'sun': 'text-orange-600',          // #FF6B00 ≈ orange-600
+    'lune': 'text-blue-500', 'moon': 'text-blue-500',                // #4A90E2 ≈ blue-500
     'mercure': 'text-teal-500', 'mercury': 'text-teal-500',
     'vénus': 'text-pink-500', 'venus': 'text-pink-500',
-    'mars': 'text-red-500',
-    'jupiter': 'text-purple-500',
-    'saturne': 'text-gray-600', 'saturn': 'text-gray-600',
+    'mars': 'text-red-600',
+    'jupiter': 'text-purple-600',
+    'saturne': 'text-gray-700', 'saturn': 'text-gray-700',
     'uranus': 'text-cyan-500',
-    'neptune': 'text-indigo-500',
-    'pluton': 'text-red-700', 'pluto': 'text-red-700',
-    'noeud nord': 'text-green-500', 'north node': 'text-green-500', 'mean_node': 'text-green-500',
-    'ascendant': 'text-blue-600',
-    'descendant': 'text-blue-600',
-    'noeud sud': 'text-green-500', 'south node': 'text-green-500'
+    'neptune': 'text-indigo-600',
+    'pluton': 'text-red-800', 'pluto': 'text-red-800',
+    'noeud nord': 'text-green-600', 'north node': 'text-green-600', 'mean_node': 'text-green-600', 'northnode': 'text-green-600',
+    'noeud sud': 'text-green-600', 'south node': 'text-green-600', 'mean_south_node': 'text-green-600', 'southnode': 'text-green-600',
+    'true_node': 'text-green-600', 'truenode': 'text-green-600',
+    'true_south_node': 'text-green-600', 'truesouthnode': 'text-green-600',
+    'chiron': 'text-amber-600',
+    'mean_lilith': 'text-purple-700', 'lilith': 'text-purple-700', 'lune noire': 'text-purple-700', 'lunenoire': 'text-purple-700',
+    'true_lilith': 'text-purple-700', 'truelilith': 'text-purple-700',
+    'ascendant': 'text-blue-700',
+    'descendant': 'text-blue-700',
+    'medium_coeli': 'text-indigo-700', 'mc': 'text-indigo-700', 'mediumcoeli': 'text-indigo-700',
+    'imum_coeli': 'text-indigo-700', 'ic': 'text-indigo-700', 'imumcoeli': 'text-indigo-700'
   }
   return colors[normalizedName] || 'text-gray-500'
 }

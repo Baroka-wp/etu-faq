@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { getSpiritualGuidance, getPersonalityAnalysis, getProgressGuidance, getPlanetSymbol, getPlanetColor } from '@/utils/astrologyInterpretations'
+import { getSpiritualGuidance, getPersonalityAnalysis, getProgressGuidance, getPlanetSymbol, getPlanetColor, getZodiacSymbol, getZodiacName } from '@/utils/astrologyInterpretations'
 
 interface AstrologyInterpretationsProps {
     chartData: {
@@ -214,7 +214,7 @@ export default function AstrologyInterpretations({ chartData }: AstrologyInterpr
                                         </CardTitle>
                                         {interpretation.planet && (
                                             <p className="text-sm text-gray-600">
-                                                {interpretation.planet.planet_name} en {interpretation.planet.sign}
+                                                {interpretation.planet.planet_name} en {getZodiacSymbol(interpretation.planet.sign)} {getZodiacName(interpretation.planet.sign)}
                                             </p>
                                         )}
                                     </div>
@@ -249,7 +249,7 @@ export default function AstrologyInterpretations({ chartData }: AstrologyInterpr
                                             {item.aspect}
                                         </CardTitle>
                                         <p className="text-sm text-gray-600">
-                                            {item.subtitle}
+                                            {item.planet.planet_name} en {getZodiacSymbol(item.planet.sign)} {getZodiacName(item.planet.sign)}
                                         </p>
                                     </div>
                                 </CardHeader>
@@ -286,7 +286,7 @@ export default function AstrologyInterpretations({ chartData }: AstrologyInterpr
                                             {item.title}
                                         </CardTitle>
                                         <p className="text-sm text-gray-600">
-                                            {item.subtitle}
+                                            {item.planet.planet_name} en {getZodiacSymbol(item.planet.sign)} {getZodiacName(item.planet.sign)}
                                         </p>
                                     </div>
                                 </CardHeader>

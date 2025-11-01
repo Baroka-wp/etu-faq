@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import AstrologyChart from '@/components/AstrologyChart'
 import AstrologyInterpretations from '@/components/AstrologyInterpretations'
 import AdminSidebar from '@/components/AdminSidebar'
+import { getPlanetSymbol, getZodiacSymbol, getZodiacName } from '@/utils/astrologyInterpretations'
 
 interface NatalChartData {
     basic_info: {
@@ -239,13 +240,13 @@ export default function ResultatsPage() {
                             <div key={key} className={`flex items-center justify-between py-3 ${index !== Object.keys(chartData.planets).length - 1 ? 'border-b border-gray-200' : ''}`}>
                                 <div className="flex items-center space-x-3">
                                     <div className="w-4 h-4 flex items-center justify-center">
-                                        <span className="text-lg">☉</span>
+                                        <span className="text-lg">{getPlanetSymbol(planet.planet_name)}</span>
                                     </div>
                                     <span className="font-medium text-gray-900">{planet.planet_name}</span>
                                 </div>
                                 <div className="flex items-center space-x-4">
                                     <div className="flex items-center space-x-1">
-                                        <span className="text-purple-600 text-sm">♈</span>
+                                        <span className="text-purple-600 text-sm">{getZodiacSymbol(planet.sign)}</span>
                                         <span className="text-purple-600 font-medium">
                                             {planet.position}°
                                         </span>
@@ -267,12 +268,7 @@ export default function ResultatsPage() {
                     <CardContent className="space-y-0">
                         {Object.entries(chartData.houses).map(([key, house], index) => {
                             const houseNumber = key.replace('_house', '').replace('first', '1').replace('second', '2').replace('third', '3').replace('fourth', '4').replace('fifth', '5').replace('sixth', '6').replace('seventh', '7').replace('eighth', '8').replace('ninth', '9').replace('tenth', '10').replace('eleventh', '11').replace('twelfth', '12')
-                            const signNames: Record<string, string> = {
-                                'Ari': 'Bélier', 'Tau': 'Taureau', 'Gem': 'Gémeaux', 'Can': 'Cancer',
-                                'Leo': 'Lion', 'Vir': 'Vierge', 'Lib': 'Balance', 'Sco': 'Scorpion',
-                                'Sag': 'Sagittaire', 'Cap': 'Capricorne', 'Aqu': 'Verseau', 'Pis': 'Poissons'
-                            }
-                            const signName = signNames[house.sign] || house.sign
+                            const signName = getZodiacName(house.sign)
 
                             return (
                                 <div key={key} className={`flex items-center justify-between py-3 ${index !== Object.keys(chartData.houses).length - 1 ? 'border-b border-gray-200' : ''}`}>
@@ -281,7 +277,7 @@ export default function ResultatsPage() {
                                             {houseNumber}
                                         </span>
                                         <div className="flex items-center space-x-2">
-                                            <span className="text-purple-600 text-sm">♈</span>
+                                            <span className="text-purple-600 text-sm">{getZodiacSymbol(house.sign)}</span>
                                             <span className="text-gray-900">
                                                 {signName}
                                             </span>
