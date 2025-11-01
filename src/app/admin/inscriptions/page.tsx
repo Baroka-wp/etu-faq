@@ -509,6 +509,13 @@ export default function AdminInscriptions() {
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                     <div className="flex space-x-2">
                                                         <button
+                                                            onClick={() => router.push(`/admin/inscriptions/${inscription.id}`)}
+                                                            className="text-gray-600 hover:text-gray-900 p-1"
+                                                            title="Voir le profil"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                        </button>
+                                                        <button
                                                             onClick={() => {
                                                                 setSelectedInscription(inscription)
                                                                 setShowPasswordModal(true)

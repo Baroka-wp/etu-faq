@@ -182,7 +182,9 @@ export default function AdminDashboard() {
                                 ) : (
                                     <div className="space-y-4">
                                         {stats.recentInscriptions.map((inscription) => (
-                                            <div key={inscription.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                            <div key={inscription.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                                                onClick={() => router.push(`/admin/inscriptions/${inscription.id}`)}
+                                            >
                                                 <div className="flex items-center space-x-4">
                                                     <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center">
                                                         <Users className="w-5 h-5 text-white" />
@@ -196,7 +198,14 @@ export default function AdminDashboard() {
                                                     <span className="text-sm text-gray-500">
                                                         {new Date(inscription.createdAt).toLocaleDateString('fr-FR')}
                                                     </span>
-                                                    <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            router.push(`/admin/inscriptions/${inscription.id}`)
+                                                        }}
+                                                        className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                                                        title="Voir le profil"
+                                                    >
                                                         <Eye className="w-4 h-4" />
                                                     </button>
                                                 </div>

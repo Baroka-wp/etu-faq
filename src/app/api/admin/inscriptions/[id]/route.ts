@@ -3,6 +3,44 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    // Vérifier l'authentification admin
+    const adminSession = request.cookies.get('admin-session')?.value
+    if (adminSession !== 'authenticated') {
+      return NextResponse.json(
+        { error: 'Non autorisé' },
+        { status: 401 }
+      )
+    }
+
+    // Récupérer l'inscription avec tous ses détails
+    const inscription = await prisma.inscription.findUnique({
+      where: { id }
+    })
+
+    if (!inscription) {
+      return NextResponse.json(
+        { error: 'Inscription non trouvée' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json(inscription, { status: 200 })
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'inscription:', error)
+    return NextResponse.json(
+      { error: 'Erreur interne du serveur' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
