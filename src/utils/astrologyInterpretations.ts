@@ -559,6 +559,49 @@ export function getZodiacName(sign: string): string {
   return names[sign] || sign
 }
 
+// Fonction pour obtenir le nom français de la planète (comme affiché dans l'image)
+export function getPlanetNameFrench(planetName: string): string {
+  const normalized = planetName.toLowerCase().trim()
+  
+  const frenchNames: Record<string, string> = {
+    // Planètes principales
+    'sun': 'Soleil', 'soleil': 'Soleil',
+    'moon': 'Lune', 'lune': 'Lune',
+    'mercury': 'Mercure', 'mercure': 'Mercure',
+    'venus': 'Vénus', 'vénus': 'Vénus', 'venus': 'Vénus',
+    'mars': 'Mars',
+    'jupiter': 'Jupiter',
+    'saturn': 'Saturne', 'saturne': 'Saturne',
+    'uranus': 'Uranus',
+    'neptune': 'Neptune',
+    'pluto': 'Pluton', 'pluton': 'Pluton',
+    // Points spéciaux
+    'mean_node': 'Noeud nord', 'north node': 'Noeud nord', 'noeud nord': 'Noeud nord', 'northnode': 'Noeud nord',
+    'true_node': 'Noeud nord', 'truenode': 'Noeud nord',
+    'ascendant': 'Ac', 'ac': 'Ac', 'asc': 'Ac',  // Affiché comme "Ac" dans l'image
+    'descendant': 'Dc', 'dc': 'Dc', 'desc': 'Dc',  // Affiché comme "Dc" dans l'image
+    'mean_south_node': 'Noeud sud', 'south node': 'Noeud sud', 'noeud sud': 'Noeud sud', 'southnode': 'Noeud sud',
+    'true_south_node': 'Noeud sud', 'truesouthnode': 'Noeud sud',
+    // Angles
+    'medium_coeli': 'Medium Coeli', 'mc': 'Medium Coeli', 'mediumcoeli': 'Medium Coeli',
+    'imum_coeli': 'Imum Coeli', 'ic': 'Imum Coeli', 'imumcoeli': 'Imum Coeli',
+    // Autres
+    'chiron': 'Chiron',
+    'mean_lilith': 'Lilith', 'lilith': 'Lilith', 'lune noire': 'Lilith', 'lunenoire': 'Lilith',
+    'true_lilith': 'Lilith', 'truelilith': 'Lilith'
+  }
+  
+  return frenchNames[normalized] || planetName
+}
+
+// Ordre d'affichage des planètes selon l'image (noms français exacts)
+export function getPlanetDisplayOrder(): string[] {
+  return [
+    'Soleil', 'Lune', 'Mercure', 'Vénus', 'Mars', 'Jupiter', 'Saturne',
+    'Uranus', 'Neptune', 'Pluton', 'Noeud nord', 'Ac', 'Dc', 'Noeud sud'
+  ]
+}
+
 // Fonction centralisée pour normaliser les noms de planètes
 export function normalizePlanetName(planetName: string): string {
   const normalized = planetName.toLowerCase().trim()

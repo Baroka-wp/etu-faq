@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, Download, Sparkles, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import AdminSidebar from '@/components/AdminSidebar'
-import { getPlanetSymbol, getZodiacSymbol, getZodiacName, getSpiritualGuidance, getPersonalityAnalysis, getProgressGuidance, normalizePlanetName } from '@/utils/astrologyInterpretations'
+import { getPlanetSymbol, getZodiacSymbol, getZodiacName, getSpiritualGuidance, getPersonalityAnalysis, getProgressGuidance, normalizePlanetName, getPlanetNameFrench, getPlanetDisplayOrder } from '@/utils/astrologyInterpretations'
 
 interface NatalChartData {
     basic_info: {
@@ -330,25 +330,53 @@ export default function ResultatsPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-2">
-                                        {Object.entries(chartData.planets).map(([key, planet]) => {
-                                            const houseNumber = planet.house ? planet.house.split(' ')[1] : ''
-                                            return (
-                                                <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                                                    <div className="flex items-center space-x-3">
-                                                        <span className="text-lg">{getPlanetSymbol(planet.planet_name)}</span>
-                                                        <span className="font-medium text-gray-900">{planet.planet_name}</span>
+                                        {(() => {
+                                            // Trier les planètes selon l'ordre spécifié
+                                            const planetsArray = Object.entries(chartData.planets).map(([key, planet]: [string, any]) => ({
+                                                key,
+                                                planet,
+                                                frenchName: getPlanetNameFrench(planet.planet_name)
+                                            }))
+                                            
+                                            const displayOrder = getPlanetDisplayOrder()
+                                            
+                                            // Trier selon l'ordre d'affichage
+                                            planetsArray.sort((a, b) => {
+                                                const indexA = displayOrder.indexOf(a.frenchName)
+                                                const indexB = displayOrder.indexOf(b.frenchName)
+                                                
+                                                // Si les deux sont dans l'ordre, trier par index
+                                                if (indexA !== -1 && indexB !== -1) {
+                                                    return indexA - indexB
+                                                }
+                                                // Si seul A est dans l'ordre, A vient en premier
+                                                if (indexA !== -1) return -1
+                                                // Si seul B est dans l'ordre, B vient en premier
+                                                if (indexB !== -1) return 1
+                                                // Sinon, garder l'ordre original
+                                                return 0
+                                            })
+                                            
+                                            return planetsArray.map(({ key, planet, frenchName }) => {
+                                                const houseNumber = planet.house ? planet.house.split(' ')[1] : ''
+                                                return (
+                                                    <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                                        <div className="flex items-center space-x-3">
+                                                            <span className="text-lg">{getPlanetSymbol(planet.planet_name)}</span>
+                                                            <span className="font-medium text-gray-900">{frenchName}</span>
+                                                        </div>
+                                                        <div className="flex items-center space-x-4 text-sm">
+                                                            <span className="text-purple-600">
+                                                                {getZodiacSymbol(planet.sign)} {Math.floor(planet.position)}°
+                                                            </span>
+                                                            {houseNumber && (
+                                                                <span className="text-gray-600">Maison {houseNumber}</span>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center space-x-4 text-sm">
-                                                        <span className="text-purple-600">
-                                                            {getZodiacSymbol(planet.sign)} {Math.floor(planet.position)}°
-                                                        </span>
-                                                        {houseNumber && (
-                                                            <span className="text-gray-600">Maison {houseNumber}</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
+                                                )
+                                            })
+                                        })()}
                                     </div>
                                 </CardContent>
                             </Card>
