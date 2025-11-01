@@ -271,17 +271,24 @@ export default function AdminBibliothequePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Chargement de la bibliothèque...</p>
+            <div className="h-screen bg-gray-50 flex overflow-hidden">
+                <AdminSidebar
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    onLogout={handleLogout}
+                />
+                <div className="flex-1 lg:ml-64 flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+                        <p className="mt-4 text-gray-600">Chargement de la bibliothèque...</p>
+                    </div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="h-screen bg-gray-50 flex overflow-hidden">
             <AdminSidebar
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
@@ -289,9 +296,9 @@ export default function AdminBibliothequePage() {
             />
 
             {/* Main Content */}
-            <div className="flex-1 lg:ml-0 min-w-0">
+            <div className="flex-1 flex flex-col lg:ml-64 overflow-hidden">
                 {/* Header */}
-                <div className="bg-white border-b border-gray-200">
+                <div className="sticky top-0 z-30 bg-white border-b border-gray-200 flex-shrink-0">
                     <div className="px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -337,7 +344,8 @@ export default function AdminBibliothequePage() {
                 </div>
 
                 {/* Content Area */}
-                <div className="px-4 sm:px-6 lg:px-8 py-8">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                    <div className="px-4 sm:px-6 lg:px-8 py-8">
                     {/* Table View */}
                     {viewMode === 'table' && books.length > 0 && (
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -565,9 +573,11 @@ export default function AdminBibliothequePage() {
                             </button>
                         </div>
                     )}
+                    </div>
                 </div>
+            </div>
 
-                {/* Add/Edit Modal */}
+            {/* Add/Edit Modal */}
                 {(showAddModal || showEditModal) && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                         <div className="bg-white rounded-md max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -765,7 +775,6 @@ export default function AdminBibliothequePage() {
                         </div>
                     </div>
                 )}
-            </div>
 
             {/* Toast Container */}
             <ToastContainer toasts={toasts} removeToast={removeToast} />

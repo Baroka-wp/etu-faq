@@ -93,9 +93,9 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             <div className={`
         fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0 lg:static lg:inset-0 lg:z-auto lg:flex-shrink-0
+        lg:translate-x-0
       `}>
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col h-full overflow-y-auto">
                     {/* Logo */}
                     <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
                         <div className="flex items-center space-x-3">

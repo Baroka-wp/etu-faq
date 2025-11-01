@@ -337,17 +337,24 @@ export default function AdminInscriptions() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Chargement des inscriptions...</p>
+            <div className="h-screen bg-gray-50 flex overflow-hidden">
+                <AdminSidebar
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    onLogout={handleLogout}
+                />
+                <div className="flex-1 lg:ml-64 flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+                        <p className="mt-4 text-gray-600">Chargement des inscriptions...</p>
+                    </div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="h-screen bg-gray-50 flex overflow-hidden">
             <AdminSidebar
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
@@ -355,9 +362,9 @@ export default function AdminInscriptions() {
             />
 
             {/* Main Content */}
-            <div className="flex-1 lg:ml-0 min-w-0">
+            <div className="flex-1 flex flex-col lg:ml-64 overflow-hidden">
                 {/* Header */}
-                <div className="bg-white border-b border-gray-200">
+                <div className="sticky top-0 z-30 bg-white border-b border-gray-200 flex-shrink-0">
                     <div className="px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -375,7 +382,8 @@ export default function AdminInscriptions() {
                 </div>
 
                 {/* Main Content */}
-                <div className="p-4 sm:p-6 lg:p-8">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                    <div className="p-4 sm:p-6 lg:p-8">
                     {/* Filters */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                         <div className="flex flex-col sm:flex-row gap-4">
@@ -560,6 +568,7 @@ export default function AdminInscriptions() {
                                 </table>
                             </div>
                         )}
+                    </div>
                     </div>
                 </div>
             </div>

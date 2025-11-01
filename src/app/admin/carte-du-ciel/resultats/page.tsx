@@ -8,6 +8,7 @@ import { ArrowLeft, Download, Sparkles, Maximize2 } from 'lucide-react'
 import { toast } from 'sonner'
 import AstrologyChart from '@/components/AstrologyChart'
 import AstrologyInterpretations from '@/components/AstrologyInterpretations'
+import AdminSidebar from '@/components/AdminSidebar'
 
 interface NatalChartData {
     basic_info: {
@@ -35,6 +36,18 @@ export default function ResultatsPage() {
     const [chartData, setChartData] = useState<NatalChartData | null>(null)
     const [loading, setLoading] = useState(true)
     const [isFullscreen, setIsFullscreen] = useState(false)
+    const [activeTab, setActiveTab] = useState('carte-du-ciel')
+
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST'
+            })
+            router.push('/login')
+        } catch (error) {
+            console.error('Erreur lors de la déconnexion:', error)
+        }
+    }
 
     useEffect(() => {
         // Récupérer les données depuis le localStorage uniquement
@@ -68,8 +81,13 @@ export default function ResultatsPage() {
 
     if (loading) {
         return (
-            <div className="container mx-auto p-6">
-                <div className="flex items-center justify-center h-64">
+            <div className="h-screen bg-gray-50 flex overflow-hidden">
+                <AdminSidebar
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    onLogout={handleLogout}
+                />
+                <div className="flex-1 lg:ml-64 flex items-center justify-center">
                     <div className="text-center">
                         <Sparkles className="w-8 h-8 mx-auto mb-4 text-purple-600 animate-pulse" />
                         <p className="text-gray-600">Chargement des résultats...</p>
@@ -81,43 +99,65 @@ export default function ResultatsPage() {
 
     if (!chartData) {
         return (
-            <div className="container mx-auto p-6">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Aucune donnée trouvée</h1>
-                    <p className="text-gray-600 mb-6">Les données de la carte astrologique ne sont pas disponibles.</p>
-                    <Button onClick={handleBackToForm} variant="outline">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Retour au formulaire
-                    </Button>
+            <div className="h-screen bg-gray-50 flex overflow-hidden">
+                <AdminSidebar
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    onLogout={handleLogout}
+                />
+                <div className="flex-1 lg:ml-64 flex items-center justify-center">
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold text-gray-900 mb-4">Aucune donnée trouvée</h1>
+                        <p className="text-gray-600 mb-6">Les données de la carte astrologique ne sont pas disponibles.</p>
+                        <Button onClick={handleBackToForm} variant="outline">
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Retour au formulaire
+                        </Button>
+                    </div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
-            {/* Header avec bouton retour */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <Sparkles className="w-8 h-8 text-purple-600" />
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Carte astrologique</h1>
-                        <p className="text-gray-600">Thème natal de {chartData.basic_info.name}</p>
+        <div className="h-screen bg-gray-50 flex overflow-hidden">
+            <AdminSidebar
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onLogout={handleLogout}
+            />
+
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col lg:ml-64 overflow-hidden">
+                {/* Header */}
+                <div className="sticky top-0 z-30 bg-white border-b border-gray-200 flex-shrink-0">
+                    <div className="px-4 sm:px-6 lg:px-8 py-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">Carte astrologique</h1>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    Thème natal de {chartData.basic_info.name}
+                                </p>
+                            </div>
+                            <div className="flex space-x-3">
+                                <Button onClick={handleBackToForm} variant="outline">
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    Nouvelle carte
+                                </Button>
+                                {chartData.svg.generated && (
+                                    <Button onClick={handleDownload} variant="default">
+                                        <Download className="w-4 h-4 mr-2" />
+                                        Télécharger
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="flex space-x-3">
-                    <Button onClick={handleBackToForm} variant="outline">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Nouvelle carte
-                    </Button>
-                    {chartData.svg.generated && (
-                        <Button onClick={handleDownload} variant="default">
-                            <Download className="w-4 h-4 mr-2" />
-                            Télécharger
-                        </Button>
-                    )}
-                </div>
-            </div>
+
+                {/* Content Area */}
+                <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
 
             {/* Informations de base */}
             <Card>
@@ -259,6 +299,9 @@ export default function ResultatsPage() {
 
             {/* Interprétations Spirituelles */}
             <AstrologyInterpretations chartData={chartData} />
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
