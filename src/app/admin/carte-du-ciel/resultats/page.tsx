@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Download, Sparkles, Maximize2 } from 'lucide-react'
+import { ArrowLeft, Download, Sparkles, Printer } from 'lucide-react'
 import { toast } from 'sonner'
-import AstrologyChart from '@/components/AstrologyChart'
-import AstrologyInterpretations from '@/components/AstrologyInterpretations'
 import AdminSidebar from '@/components/AdminSidebar'
-import { getPlanetSymbol, getZodiacSymbol, getZodiacName } from '@/utils/astrologyInterpretations'
+import { getPlanetSymbol, getZodiacSymbol, getZodiacName, getSpiritualGuidance, getPersonalityAnalysis, getProgressGuidance, normalizePlanetName } from '@/utils/astrologyInterpretations'
 
 interface NatalChartData {
     basic_info: {
@@ -36,8 +34,8 @@ export default function ResultatsPage() {
     const router = useRouter()
     const [chartData, setChartData] = useState<NatalChartData | null>(null)
     const [loading, setLoading] = useState(true)
-    const [isFullscreen, setIsFullscreen] = useState(false)
     const [activeTab, setActiveTab] = useState('carte-du-ciel')
+    const [interpretationTab, setInterpretationTab] = useState('spiritual')
 
     const handleLogout = async () => {
         try {
@@ -55,7 +53,43 @@ export default function ResultatsPage() {
         const savedData = localStorage.getItem('astrology-chart-data')
         if (savedData) {
             try {
-                setChartData(JSON.parse(savedData))
+                const parsedData = JSON.parse(savedData)
+                
+                // DEBUG: Afficher la structure complète des données pour comprendre comment l'Ascendant est nommé
+                console.log('=== STRUCTURE DES DONNÉES COMPLÈTES ===')
+                console.log('ChartData:', parsedData)
+                console.log('Planets keys:', Object.keys(parsedData?.planets || {}))
+                console.log('Planets values:', Object.values(parsedData?.planets || {}))
+                
+                // Chercher spécifiquement l'Ascendant dans toutes les formes possibles
+                const planets = parsedData?.planets || {}
+                console.log('=== RECHERCHE ASCENDANT ===')
+                console.log('Toutes les clés de planets:', Object.keys(planets))
+                console.log('Tous les planet_name:', Object.values(planets).map((p: any) => p?.planet_name))
+                
+                // Chercher toutes les variantes possibles
+                Object.entries(planets).forEach(([key, planet]: [string, any]) => {
+                    const name = planet?.planet_name || ''
+                    if (name.toLowerCase().includes('asc') || 
+                        name.toLowerCase().includes('ac') || 
+                        key.toLowerCase().includes('asc') ||
+                        key.toLowerCase().includes('ac')) {
+                        console.log(`✅ ASCENDANT TROUVÉ: key="${key}", planet_name="${name}", planet=`, planet)
+                    }
+                })
+                
+                // Chercher aussi dans d'autres objets possibles
+                if (parsedData?.houses) {
+                    console.log('Houses keys:', Object.keys(parsedData.houses))
+                }
+                if (parsedData?.basic_info) {
+                    console.log('Basic info:', parsedData.basic_info)
+                }
+                
+                // Afficher la structure complète pour comprendre
+                console.log('Structure complète de la réponse API:', JSON.stringify(parsedData, null, 2))
+                
+                setChartData(parsedData)
             } catch (error) {
                 console.error('Erreur lors de la récupération des données:', error)
                 toast.error('Données de carte invalides')
@@ -73,11 +107,136 @@ export default function ResultatsPage() {
     }
 
     const handleDownload = () => {
-        toast.success('Carte téléchargée avec succès!')
+        if (chartData?.svg.base64) {
+            try {
+                const svgContent = atob(chartData.svg.base64)
+                const blob = new Blob([svgContent], { type: 'image/svg+xml' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = chartData.svg.filename || 'carte-du-ciel.svg'
+                a.click()
+                URL.revokeObjectURL(url)
+                toast.success('Carte téléchargée avec succès!')
+            } catch (error) {
+                console.error('Erreur lors du téléchargement:', error)
+                toast.error('Erreur lors du téléchargement de la carte')
+            }
+        }
     }
 
-    const toggleFullscreen = () => {
-        setIsFullscreen(!isFullscreen)
+    const handlePrint = () => {
+        window.print()
+    }
+
+    // Trouver les planètes spécifiques (en utilisant la normalisation pour être plus robuste)
+    const sun = Object.values(chartData?.planets || {}).find((p: any) => {
+        const normalized = normalizePlanetName(p.planet_name)
+        return normalized === 'Soleil'
+    })
+    const moon = Object.values(chartData?.planets || {}).find((p: any) => {
+        const normalized = normalizePlanetName(p.planet_name)
+        return normalized === 'Lune'
+    })
+    const mars = Object.values(chartData?.planets || {}).find((p: any) => {
+        const normalized = normalizePlanetName(p.planet_name)
+        return normalized === 'Mars'
+    })
+    const jupiter = Object.values(chartData?.planets || {}).find((p: any) => {
+        const normalized = normalizePlanetName(p.planet_name)
+        return normalized === 'Jupiter'
+    })
+    const saturn = Object.values(chartData?.planets || {}).find((p: any) => {
+        const normalized = normalizePlanetName(p.planet_name)
+        return normalized === 'Saturne'
+    })
+    // Recherche de l'Ascendant - il n'est pas dans planets, chercher ailleurs
+    let ascendant: any = null
+    
+    // 1. Chercher dans houses (première maison = Ascendant - le signe de la première maison est le signe ascendant)
+    if (chartData?.houses) {
+        // Chercher la première maison dans toutes les formes possibles
+        const firstHouseKeys = [
+            'first_house', 'first', 'house_1', 'house1', '1', 
+            'First_House', 'First', 'House_1', 'House1',
+            'FIRST_HOUSE', 'FIRST'
+        ]
+        
+        let firstHouse: any = null
+        for (const key of firstHouseKeys) {
+            if (chartData.houses[key]) {
+                firstHouse = chartData.houses[key]
+                console.log(`✅ Première maison trouvée avec la clé: "${key}"`, firstHouse)
+                break
+            }
+        }
+        
+        // Si pas trouvé, chercher par correspondance dans les clés
+        if (!firstHouse) {
+            const housesKeys = Object.keys(chartData.houses)
+            const firstHouseKey = housesKeys.find(k => 
+                k.toLowerCase().includes('first') || 
+                k.toLowerCase().includes('1') ||
+                k === '1' ||
+                k === 'first'
+            )
+            if (firstHouseKey) {
+                firstHouse = chartData.houses[firstHouseKey]
+                console.log(`✅ Première maison trouvée avec correspondance: "${firstHouseKey}"`, firstHouse)
+            }
+        }
+        
+        // Si trouvé, créer l'objet ascendant à partir du signe de la première maison
+        if (firstHouse && firstHouse.sign) {
+            ascendant = {
+                planet_name: 'Ascendant',
+                sign: firstHouse.sign,
+                position: firstHouse.position || 0,
+                house: 'Maison 1'
+            }
+            console.log('✅ Ascendant créé à partir de la première maison:', ascendant)
+        }
+    }
+    
+    // 2. Chercher dans basic_info (peut-être stocké là)
+    if (!ascendant && chartData?.basic_info) {
+        if (chartData.basic_info.ascendant || chartData.basic_info.asc) {
+            ascendant = chartData.basic_info.ascendant || chartData.basic_info.asc
+            console.log('✅ Ascendant trouvé dans basic_info:', ascendant)
+        }
+    }
+    
+    // 3. Chercher dans un objet séparé "angles" ou "ascendant"
+    if (!ascendant && (chartData as any)?.angles) {
+        ascendant = (chartData as any).angles.ascendant || (chartData as any).angles.AC || (chartData as any).angles.asc
+        if (ascendant) {
+            console.log('✅ Ascendant trouvé dans angles:', ascendant)
+        }
+    }
+    
+    // 4. Si toujours pas trouvé, utiliser l'index -3 comme dans le code Python (3ème depuis la fin)
+    if (!ascendant && chartData?.planets) {
+        const planetsArray = Object.values(chartData.planets)
+        if (planetsArray.length >= 3) {
+            const ascendantCandidate = planetsArray[planetsArray.length - 3] as any
+            // Vérifier si c'est bien l'ascendant
+            const name = (ascendantCandidate?.planet_name || '').toLowerCase()
+            if (name.includes('asc') || name === 'ac' || name.includes('ascendant')) {
+                ascendant = ascendantCandidate
+                console.log('✅ Ascendant trouvé à l\'index -3:', ascendant)
+            }
+        }
+    }
+    
+    if (!ascendant) {
+        console.log('⚠️ Ascendant non trouvé. Structure complète:', {
+            houses: chartData?.houses,
+            basic_info: chartData?.basic_info,
+            planets_count: Object.keys(chartData?.planets || {}).length,
+            planets_keys: Object.keys(chartData?.planets || {})
+        })
+    } else {
+        console.log('✅ Ascendant final trouvé:', ascendant)
     }
 
     if (loading) {
@@ -121,7 +280,7 @@ export default function ResultatsPage() {
     }
 
     return (
-        <div className="h-screen bg-gray-50 flex overflow-hidden">
+        <div className="min-h-screen bg-gray-50">
             <AdminSidebar
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
@@ -129,173 +288,493 @@ export default function ResultatsPage() {
             />
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col lg:ml-64 overflow-hidden">
-                {/* Header */}
-                <div className="sticky top-0 z-30 bg-white border-b border-gray-200 flex-shrink-0">
-                    <div className="px-4 sm:px-6 lg:px-8 py-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Carte astrologique</h1>
-                                <p className="text-sm text-gray-600 mt-1">
-                                    Thème natal de {chartData.basic_info.name}
-                                </p>
+            <div className="lg:ml-64">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    {/* Header */}
+                    <header className="mb-8">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-4">Votre Carte du Ciel</h1>
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-2">{chartData.basic_info.name}</h2>
+                            <p className="text-gray-600 mb-1">Né(e) le {chartData.basic_info.birth_date} à {chartData.basic_info.birth_time}</p>
+                            <p className="text-gray-600">{chartData.basic_info.location}</p>
+                        </div>
+                    </header>
+
+                    {/* Carte SVG */}
+                    {chartData.svg.base64 && (
+                        <div className="mb-8">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-xl">Votre Thème Astral</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="bg-gray-50 rounded-lg p-6 flex justify-center">
+                                        <img
+                                            src={`data:image/svg+xml;base64,${chartData.svg.base64}`}
+                                            alt={`Carte du Ciel de ${chartData.basic_info.name}`}
+                                            className="max-w-full h-auto max-h-[600px] object-contain"
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+
+                    {/* Données astrologiques compactes */}
+                    <div className="mb-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Tableau des Planètes compact */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Planètes</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-2">
+                                        {Object.entries(chartData.planets).map(([key, planet]) => {
+                                            const houseNumber = planet.house ? planet.house.split(' ')[1] : ''
+                                            return (
+                                                <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                                    <div className="flex items-center space-x-3">
+                                                        <span className="text-lg">{getPlanetSymbol(planet.planet_name)}</span>
+                                                        <span className="font-medium text-gray-900">{planet.planet_name}</span>
+                                                    </div>
+                                                    <div className="flex items-center space-x-4 text-sm">
+                                                        <span className="text-purple-600">
+                                                            {getZodiacSymbol(planet.sign)} {Math.floor(planet.position)}°
+                                                        </span>
+                                                        {houseNumber && (
+                                                            <span className="text-gray-600">Maison {houseNumber}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Tableau des Maisons compact */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Maisons</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-2">
+                                        {Object.entries(chartData.houses).map(([key, house]) => {
+                                            const houseNumber = key.replace('_house', '').replace('first', '1').replace('second', '2').replace('third', '3').replace('fourth', '4').replace('fifth', '5').replace('sixth', '6').replace('seventh', '7').replace('eighth', '8').replace('ninth', '9').replace('tenth', '10').replace('eleventh', '11').replace('twelfth', '12')
+                                            const signName = getZodiacName(house.sign)
+                                            return (
+                                                <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                                    <div className="flex items-center space-x-3">
+                                                        <span className="text-sm font-medium text-gray-600 w-6">{houseNumber}</span>
+                                                        <div className="flex items-center space-x-2">
+                                                            <span className="text-purple-600 text-sm">{getZodiacSymbol(house.sign)}</span>
+                                                            <span className="text-gray-900">{signName}</span>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-gray-600 text-sm">{Math.floor(house.position)}°</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+
+                    {/* Navigation Tabs */}
+                    <div className="mb-6 border-b border-gray-200">
+                        <nav className="flex space-x-8">
+                            <button
+                                onClick={() => setInterpretationTab('spiritual')}
+                                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                    interpretationTab === 'spiritual'
+                                        ? 'border-purple-500 text-purple-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                            >
+                                Interprétation Spirituelle
+                            </button>
+                            <button
+                                onClick={() => setInterpretationTab('personality')}
+                                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                    interpretationTab === 'personality'
+                                        ? 'border-purple-500 text-purple-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                            >
+                                Analyse de la Personnalité
+                            </button>
+                            <button
+                                onClick={() => setInterpretationTab('progress')}
+                                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                    interpretationTab === 'progress'
+                                        ? 'border-purple-500 text-purple-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                            >
+                                Programme de Progrès
+                            </button>
+                        </nav>
+                    </div>
+
+                    {/* Interprétation Spirituelle Tab */}
+                    {interpretationTab === 'spiritual' && (
+                        <div className="mb-8">
+                            <div className="text-center mb-6">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Interprétation Spirituelle</h2>
+                                <p className="text-gray-600">Votre chemin d'évolution spirituelle révélé par votre thème astral.</p>
                             </div>
-                            <div className="flex space-x-3">
-                                <Button onClick={handleBackToForm} variant="outline">
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
-                                    Nouvelle carte
-                                </Button>
-                                {chartData.svg.generated && (
-                                    <Button onClick={handleDownload} variant="default">
-                                        <Download className="w-4 h-4 mr-2" />
-                                        Télécharger
-                                    </Button>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Mission d'Âme - Soleil */}
+                                <Card>
+                                    <CardHeader>
+                                        <div className="text-center">
+                                            <div className="text-4xl text-orange-600 mb-4">☉</div>
+                                            <CardTitle className="text-lg mb-2">Votre Mission d'Âme</CardTitle>
+                                            {sun && (
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Soleil en {getZodiacName(sun.sign)}</strong>
+                                                </p>
+                                            )}
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-gray-700 leading-relaxed">
+                                            {getSpiritualGuidance('Soleil', sun?.sign || 'Bélier')}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Intuition Divine - Lune */}
+                                <Card>
+                                    <CardHeader>
+                                        <div className="text-center">
+                                            <div className="text-4xl text-blue-500 mb-4">☽</div>
+                                            <CardTitle className="text-lg mb-2">Votre Intuition Divine</CardTitle>
+                                            {moon && (
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Lune en {getZodiacName(moon.sign)}</strong>
+                                                </p>
+                                            )}
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-gray-700 leading-relaxed">
+                                            {getSpiritualGuidance('Lune', moon?.sign || 'Cancer')}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Expansion Spirituelle - Jupiter */}
+                                <Card>
+                                    <CardHeader>
+                                        <div className="text-center">
+                                            <div className="text-4xl text-purple-600 mb-4">♃</div>
+                                            <CardTitle className="text-lg mb-2">Votre Expansion Spirituelle</CardTitle>
+                                            {jupiter && (
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Jupiter en {getZodiacName(jupiter.sign)}</strong>
+                                                </p>
+                                            )}
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-gray-700 leading-relaxed">
+                                            {getSpiritualGuidance('Jupiter', jupiter?.sign || 'Sagittaire')}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Analyse Personnalité Tab */}
+                    {interpretationTab === 'personality' && (
+                        <div className="mb-8">
+                            <div className="text-center mb-6">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Analyse de votre Personnalité</h2>
+                                <p className="text-gray-600">Les caractéristiques essentielles de votre personnalité révélées par votre thème.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {/* Soleil */}
+                                {sun && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-orange-600 mb-4">☉</div>
+                                                <CardTitle className="text-lg mb-2">Votre Essence</CardTitle>
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Soleil en {getZodiacName(sun.sign)}</strong>
+                                                </p>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                {getPersonalityAnalysis('Soleil', sun.sign)}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Lune */}
+                                {moon && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-blue-500 mb-4">☽</div>
+                                                <CardTitle className="text-lg mb-2">Vos Émotions</CardTitle>
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Lune en {getZodiacName(moon.sign)}</strong>
+                                                </p>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                {getPersonalityAnalysis('Lune', moon.sign)}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Ascendant */}
+                                {ascendant && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-blue-700 mb-4">Ac</div>
+                                                <CardTitle className="text-lg mb-2">Votre Image</CardTitle>
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Ascendant en {getZodiacName(ascendant.sign)}</strong>
+                                                </p>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                {getPersonalityAnalysis('Ascendant', ascendant.sign)}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Jupiter */}
+                                {jupiter && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-purple-600 mb-4">♃</div>
+                                                <CardTitle className="text-lg mb-2">Vos Talents</CardTitle>
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Jupiter en {getZodiacName(jupiter.sign)}</strong>
+                                                </p>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                {getPersonalityAnalysis('Jupiter', jupiter.sign)}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Saturne */}
+                                {saturn && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-gray-700 mb-4">♄</div>
+                                                <CardTitle className="text-lg mb-2">Vos Défis</CardTitle>
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Saturne en {getZodiacName(saturn.sign)}</strong>
+                                                </p>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                {getPersonalityAnalysis('Saturne', saturn.sign)}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Mars */}
+                                {mars && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-red-600 mb-4">♂</div>
+                                                <CardTitle className="text-lg mb-2">Votre Énergie</CardTitle>
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Mars en {getZodiacName(mars.sign)}</strong>
+                                                </p>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                {getPersonalityAnalysis('Mars', mars.sign)}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
                                 )}
                             </div>
                         </div>
-                    </div>
-                </div>
+                    )}
 
-                {/* Content Area */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden">
-                    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-
-            {/* Informations de base */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Informations de naissance</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                            <span className="text-sm font-medium text-gray-500">Nom</span>
-                            <p className="text-lg font-semibold text-gray-900">{chartData.basic_info.name}</p>
-                        </div>
-                        <div>
-                            <span className="text-sm font-medium text-gray-500">Date de naissance</span>
-                            <p className="text-lg font-semibold text-gray-900">{chartData.basic_info.birth_date}</p>
-                        </div>
-                        <div>
-                            <span className="text-sm font-medium text-gray-500">Heure</span>
-                            <p className="text-lg font-semibold text-gray-900">{chartData.basic_info.birth_time}</p>
-                        </div>
-                        <div>
-                            <span className="text-sm font-medium text-gray-500">Lieu</span>
-                            <p className="text-lg font-semibold text-gray-900">{chartData.basic_info.location}</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Carte SVG */}
-            {chartData.svg.base64 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                            <span>Carte astrologique</span>
-                            <div className="flex space-x-2">
-                                <Button onClick={toggleFullscreen} size="sm" variant="outline">
-                                    <Maximize2 className="w-4 h-4 mr-2" />
-                                    {isFullscreen ? 'Réduire' : 'Plein écran'}
-                                </Button>
-                                <Button onClick={handleDownload} size="sm" variant="outline">
-                                    <Download className="w-4 h-4 mr-2" />
-                                    Télécharger SVG
-                                </Button>
+                    {/* Programme de Progrès Tab */}
+                    {interpretationTab === 'progress' && (
+                        <div className="mb-8">
+                            <div className="text-center mb-6">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Programme de Progrès</h2>
+                                <p className="text-gray-600">Votre plan d'action personnalisé basé sur votre analyse de personnalité et votre interprétation spirituelle.</p>
                             </div>
-                        </CardTitle>
-                        <CardDescription>
-                            Thème natal généré pour {chartData.basic_info.name}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className={`border rounded-lg p-6 bg-gray-50 ${isFullscreen ? 'fixed inset-4 z-50 bg-white' : ''}`}>
-                            <img
-                                src={`data:image/svg+xml;base64,${chartData.svg.base64}`}
-                                alt="Carte astrologique"
-                                className={`w-full h-auto object-contain mx-auto ${isFullscreen ? 'max-h-[calc(100vh-8rem)]' : 'max-h-[600px]'}`}
-                            />
-                            {isFullscreen && (
-                                <div className="absolute top-4 right-4">
-                                    <Button onClick={toggleFullscreen} size="sm" variant="outline">
-                                        <Maximize2 className="w-4 h-4 mr-2" />
-                                        Réduire
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
 
-            {/* Planètes et Maisons */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Section Planètes */}
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-lg font-semibold">Planètes</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-0">
-                        {Object.entries(chartData.planets).map(([key, planet], index) => (
-                            <div key={key} className={`flex items-center justify-between py-3 ${index !== Object.keys(chartData.planets).length - 1 ? 'border-b border-gray-200' : ''}`}>
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-4 h-4 flex items-center justify-center">
-                                        <span className="text-lg">{getPlanetSymbol(planet.planet_name)}</span>
-                                    </div>
-                                    <span className="font-medium text-gray-900">{planet.planet_name}</span>
-                                </div>
-                                <div className="flex items-center space-x-4">
-                                    <div className="flex items-center space-x-1">
-                                        <span className="text-purple-600 text-sm">{getZodiacSymbol(planet.sign)}</span>
-                                        <span className="text-purple-600 font-medium">
-                                            {planet.position}°
-                                        </span>
-                                    </div>
-                                    <span className="text-gray-600 text-sm">
-                                        {planet.house}
-                                    </span>
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {/* Soleil */}
+                                {sun && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-orange-600 mb-4">☉</div>
+                                                <CardTitle className="text-lg mb-2">Mission de Vie (Soleil)</CardTitle>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-purple-600 mb-2">OBJECTIF :</h4>
+                                                <p className="text-sm text-gray-700 leading-relaxed">
+                                                    {getProgressGuidance('Soleil', sun.sign, '30days')}
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Lune */}
+                                {moon && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-blue-500 mb-4">☽</div>
+                                                <CardTitle className="text-lg mb-2">Équilibre Émotionnel (Lune)</CardTitle>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-purple-600 mb-2">OBJECTIF :</h4>
+                                                <p className="text-sm text-gray-700 leading-relaxed">
+                                                    {getProgressGuidance('Lune', moon.sign, '30days')}
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Ascendant */}
+                                {ascendant && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-blue-700 mb-4">Ac</div>
+                                                <CardTitle className="text-lg mb-2">Image Personnelle (Ascendant)</CardTitle>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-purple-600 mb-2">OBJECTIF :</h4>
+                                                <p className="text-sm text-gray-700 leading-relaxed">
+                                                    {getProgressGuidance('Ascendant', ascendant.sign, '30days')}
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Jupiter */}
+                                {jupiter && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-purple-600 mb-4">♃</div>
+                                                <CardTitle className="text-lg mb-2">Développement des Talents (Jupiter)</CardTitle>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-purple-600 mb-2">OBJECTIF :</h4>
+                                                <p className="text-sm text-gray-700 leading-relaxed">
+                                                    {getProgressGuidance('Jupiter', jupiter.sign, '30days')}
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Saturne */}
+                                {saturn && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-gray-700 mb-4">♄</div>
+                                                <CardTitle className="text-lg mb-2">Surmonter les Défis (Saturne)</CardTitle>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-purple-600 mb-2">OBJECTIF :</h4>
+                                                <p className="text-sm text-gray-700 leading-relaxed">
+                                                    {getProgressGuidance('Saturne', saturn.sign, '30days')}
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Mars */}
+                                {mars && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="text-center">
+                                                <div className="text-4xl text-red-600 mb-4">♂</div>
+                                                <CardTitle className="text-lg mb-2">Énergie et Action (Mars)</CardTitle>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-purple-600 mb-2">OBJECTIF :</h4>
+                                                <p className="text-sm text-gray-700 leading-relaxed">
+                                                    {getProgressGuidance('Mars', mars.sign, '30days')}
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
                             </div>
-                        ))}
-                    </CardContent>
-                </Card>
+                        </div>
+                    )}
 
-                {/* Section Maisons */}
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-lg font-semibold">Maisons</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-0">
-                        {Object.entries(chartData.houses).map(([key, house], index) => {
-                            const houseNumber = key.replace('_house', '').replace('first', '1').replace('second', '2').replace('third', '3').replace('fourth', '4').replace('fifth', '5').replace('sixth', '6').replace('seventh', '7').replace('eighth', '8').replace('ninth', '9').replace('tenth', '10').replace('eleventh', '11').replace('twelfth', '12')
-                            const signName = getZodiacName(house.sign)
-
-                            return (
-                                <div key={key} className={`flex items-center justify-between py-3 ${index !== Object.keys(chartData.houses).length - 1 ? 'border-b border-gray-200' : ''}`}>
-                                    <div className="flex items-center space-x-3">
-                                        <span className="text-sm font-medium text-gray-600 w-6">
-                                            {houseNumber}
-                                        </span>
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-purple-600 text-sm">{getZodiacSymbol(house.sign)}</span>
-                                            <span className="text-gray-900">
-                                                {signName}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <span className="text-gray-600 text-sm">
-                                        {house.position}°
-                                    </span>
-                                </div>
-                            )
-                        })}
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Interprétations Spirituelles */}
-            <AstrologyInterpretations chartData={chartData} />
+                    {/* Actions */}
+                    <div className="flex justify-between items-center mb-8 pt-6 border-t border-gray-200">
+                        <Button onClick={handleBackToForm} variant="outline">
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Nouvelle Carte
+                        </Button>
+                        <Button onClick={handlePrint} variant="default">
+                            <Printer className="w-4 h-4 mr-2" />
+                            Imprimer
+                        </Button>
                     </div>
+
+                    {/* Footer */}
+                    <footer className="text-center py-8 border-t border-gray-200">
+                        <p className="text-gray-600 mb-1">
+                            Propulsé par <strong className="text-gray-900">Kerykeion</strong> - Bibliothèque d'Astrologie Python
+                        </p>
+                        <p className="text-sm text-gray-500">
+                            Les données sont calculées avec précision astronomique.
+                        </p>
+                    </footer>
                 </div>
             </div>
         </div>

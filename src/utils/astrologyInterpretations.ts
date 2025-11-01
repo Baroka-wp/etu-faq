@@ -81,9 +81,30 @@ export function getSpiritualGuidance(planetName: string, sign: string): string {
   return guidance[planetName]?.[sign] || 'Écoutez votre intuition et agissez selon vos valeurs. Car votre mission spirituelle est : SUIVRE VOTRE VOIE INTÉRIEURE.'
 }
 
+// Fonction pour normaliser le nom du signe
+function normalizeSignName(sign: string): string {
+  const signLower = sign.toLowerCase().trim()
+  const signMap: Record<string, string> = {
+    'bélier': 'Bélier', 'belier': 'Bélier', 'aries': 'Bélier', 'ari': 'Bélier',
+    'taureau': 'Taureau', 'taurus': 'Taureau', 'tau': 'Taureau',
+    'gémeaux': 'Gémeaux', 'gemeaux': 'Gémeaux', 'gemini': 'Gémeaux', 'gem': 'Gémeaux',
+    'cancer': 'Cancer', 'can': 'Cancer',
+    'lion': 'Lion', 'leo': 'Lion',
+    'vierge': 'Vierge', 'virgo': 'Vierge', 'vir': 'Vierge',
+    'balance': 'Balance', 'libra': 'Balance', 'lib': 'Balance',
+    'scorpion': 'Scorpion', 'scorpio': 'Scorpion', 'sco': 'Scorpion',
+    'sagittaire': 'Sagittaire', 'sagittarius': 'Sagittaire', 'sag': 'Sagittaire',
+    'capricorne': 'Capricorne', 'capricorn': 'Capricorne', 'cap': 'Capricorne',
+    'verseau': 'Verseau', 'aquarius': 'Verseau', 'aqu': 'Verseau',
+    'poissons': 'Poissons', 'pisces': 'Poissons', 'pis': 'Poissons'
+  }
+  return signMap[signLower] || sign
+}
+
 export function getPersonalityAnalysis(planetName: string, sign: string): string {
   // Utiliser la fonction centralisée de normalisation
   const planetKey = normalizePlanetName(planetName)
+  const normalizedSign = normalizeSignName(sign)
   
   const analysis: Record<string, Record<string, string>> = {
     'Soleil': {
@@ -172,10 +193,15 @@ export function getPersonalityAnalysis(planetName: string, sign: string): string
     }
   }
   
-  return analysis[planetKey]?.[sign] || 'Analyse de personnalité en cours de développement.'
+  // Chercher d'abord avec le signe normalisé, puis avec le signe original
+  return analysis[planetKey]?.[normalizedSign] || 
+         analysis[planetKey]?.[sign] || 
+         analysis[planetKey]?.[normalizeSignName(sign)] ||
+         (analysis[planetKey] ? Object.values(analysis[planetKey])[0] as string : 'Votre personnalité est unique et en constante évolution.')
 }
 
 export function getProgressGuidance(planetName: string, sign: string, actionType: 'immediate' | '30days'): string {
+  const normalizedSign = normalizeSignName(sign)
   const progressGuidance: Record<string, Record<string, Record<string, string>>> = {
     'Soleil': {
       'Bélier': {
@@ -326,10 +352,173 @@ export function getProgressGuidance(planetName: string, sign: string, actionType
         'immediate': 'Identifiez 3 domaines où vous pouvez guérir. Aidez une cause humanitaire.',
         '30days': 'Développez vos talents spirituels. Créez de l\'unité et de la compassion.'
       }
+    },
+    'Ascendant': {
+      'Bélier': {
+        'immediate': 'Portez des vêtements qui reflètent votre énergie. Soyez le premier à agir.',
+        '30days': 'Développez votre image de leader. Créez une présence forte et inspirante.'
+      },
+      'Taureau': {
+        'immediate': 'Choisissez des vêtements confortables et élégants. Créez un style stable.',
+        '30days': 'Développez votre image de fiabilité. Créez une présence rassurante et sensuelle.'
+      },
+      'Gémeaux': {
+        'immediate': 'Variez votre style vestimentaire. Communiquez avec style.',
+        '30days': 'Développez votre image communicative. Créez une présence intelligente et adaptable.'
+      },
+      'Cancer': {
+        'immediate': 'Portez des vêtements qui vous protègent. Créez un style maternel.',
+        '30days': 'Développez votre image protectrice. Créez une présence nourrissante et intuitive.'
+      },
+      'Lion': {
+        'immediate': 'Portez des vêtements qui vous mettent en valeur. Soyez le centre d\'attention.',
+        '30days': 'Développez votre image charismatique. Créez une présence inspirante et généreuse.'
+      },
+      'Vierge': {
+        'immediate': 'Portez des vêtements bien coupés et pratiques. Montrez votre dévouement.',
+        '30days': 'Développez votre image de service. Créez une présence utile et perfectionniste.'
+      },
+      'Balance': {
+        'immediate': 'Portez des vêtements élégants et harmonieux. Créez l\'équilibre.',
+        '30days': 'Développez votre image diplomatique. Créez une présence charmante et équilibrée.'
+      },
+      'Scorpion': {
+        'immediate': 'Portez des vêtements mystérieux et intenses. Créez de l\'intrigue.',
+        '30days': 'Développez votre image transformatrice. Créez une présence magnétique et profonde.'
+      },
+      'Sagittaire': {
+        'immediate': 'Portez des vêtements aventureux et optimistes. Soyez enthousiaste.',
+        '30days': 'Développez votre image philosophique. Créez une présence sage et aventureuse.'
+      },
+      'Capricorne': {
+        'immediate': 'Portez des vêtements professionnels et structurés. Montrez votre ambition.',
+        '30days': 'Développez votre image d\'autorité. Créez une présence mature et responsable.'
+      },
+      'Verseau': {
+        'immediate': 'Portez des vêtements originaux et indépendants. Soyez unique.',
+        '30days': 'Développez votre image visionnaire. Créez une présence innovante et libératrice.'
+      },
+      'Poissons': {
+        'immediate': 'Portez des vêtements fluides et spirituels. Soyez mystique.',
+        '30days': 'Développez votre image intuitive. Créez une présence empathique et spirituelle.'
+      }
+    },
+    'Saturne': {
+      'Bélier': {
+        'immediate': 'Apprenez à canaliser votre impatience. Prenez le temps de planifier avant d\'agir.',
+        '30days': 'Développez la discipline dans l\'action. Maîtrisez votre impulsivité et construisez de la patience.'
+      },
+      'Taureau': {
+        'immediate': 'Acceptez le changement nécessaire. Laissez partir ce qui ne vous sert plus.',
+        '30days': 'Développez la flexibilité dans la stabilité. Apprenez à lâcher prise tout en conservant vos valeurs.'
+      },
+      'Gémeaux': {
+        'immediate': 'Approfondissez vos connaissances. Concentrez-vous sur un domaine spécifique.',
+        '30days': 'Développez la persévérance dans l\'apprentissage. Créez de la profondeur dans votre communication.'
+      },
+      'Cancer': {
+        'immediate': 'Créez des limites émotionnelles saines. Développez votre indépendance.',
+        '30days': 'Développez la maturité émotionnelle. Créez un équilibre entre protection et autonomie.'
+      },
+      'Lion': {
+        'immediate': 'Partagez la scène avec les autres. Acceptez la critique constructive.',
+        '30days': 'Développez l\'humilité dans le leadership. Apprenez à servir les autres tout en exprimant votre créativité.'
+      },
+      'Vierge': {
+        'immediate': 'Acceptez l\'imperfection. Déléguez des tâches aux autres.',
+        '30days': 'Développez la tolérance. Apprenez à faire confiance et à accepter l\'aide des autres.'
+      },
+      'Balance': {
+        'immediate': 'Prenez des décisions fermes. Affirmez vos besoins clairement.',
+        '30days': 'Développez la fermeté dans la diplomatie. Apprenez à dire non tout en maintenant l\'harmonie.'
+      },
+      'Scorpion': {
+        'immediate': 'Lâchez le contrôle. Acceptez la vulnérabilité comme une force.',
+        '30days': 'Développez la transparence et la confiance. Créez des limites saines sans manipulation.'
+      },
+      'Sagittaire': {
+        'immediate': 'Acceptez vos limites. Approfondissez vos croyances actuelles.',
+        '30days': 'Développez l\'humilité dans la sagesse. Créez de la profondeur dans votre quête de vérité.'
+      },
+      'Capricorne': {
+        'immediate': 'Acceptez l\'aide des autres. Développez votre côté émotionnel.',
+        '30days': 'Développez la sensibilité dans le leadership. Apprenez à recevoir et à faire confiance aux autres.'
+      },
+      'Verseau': {
+        'immediate': 'Acceptez l\'autorité nécessaire. Développez votre engagement.',
+        '30days': 'Développez la responsabilité dans la liberté. Créez un équilibre entre innovation et stabilité.'
+      },
+      'Poissons': {
+        'immediate': 'Acceptez la réalité concrète. Créez des limites saines.',
+        '30days': 'Développez la structure dans la spiritualité. Apprenez à dire non tout en gardant votre compassion.'
+      }
+    },
+    'Mars': {
+      'Bélier': {
+        'immediate': 'Canalisez votre énergie dans des projets constructifs. Lancez une initiative cette semaine.',
+        '30days': 'Développez votre courage et votre leadership. Utilisez votre énergie pour inspirer et motiver les autres.'
+      },
+      'Taureau': {
+        'immediate': 'Agissez avec détermination et patience. Construisez progressivement vos projets.',
+        '30days': 'Développez votre persistance. Utilisez votre énergie pour créer de la stabilité et de la beauté.'
+      },
+      'Gémeaux': {
+        'immediate': 'Utilisez votre intelligence pour agir. Communiquez vos idées avec conviction.',
+        '30days': 'Développez votre communication énergique. Utilisez votre esprit pour influencer positivement.'
+      },
+      'Cancer': {
+        'immediate': 'Protégez et défendez vos proches. Créez un environnement sécurisant.',
+        '30days': 'Développez votre énergie protectrice. Utilisez votre force émotionnelle pour nourrir et sécuriser.'
+      },
+      'Lion': {
+        'immediate': 'Exprimez votre créativité avec passion. Organisez un événement inspirant.',
+        '30days': 'Développez votre leadership créatif. Utilisez votre énergie pour illuminer et inspirer.'
+      },
+      'Vierge': {
+        'immediate': 'Agissez avec précision et dévouement. Aidez concrètement quelqu\'un.',
+        '30days': 'Développez votre énergie de service. Utilisez votre force pour améliorer et organiser.'
+      },
+      'Balance': {
+        'immediate': 'Créez l\'harmonie par l\'action. Résolvez un conflit diplomatiquement.',
+        '30days': 'Développez votre énergie diplomatique. Utilisez votre force pour créer de la beauté et de la justice.'
+      },
+      'Scorpion': {
+        'immediate': 'Transformez avec détermination. Transformez une situation difficile.',
+        '30days': 'Développez votre énergie transformatrice. Utilisez votre force pour guérir et révéler la vérité.'
+      },
+      'Sagittaire': {
+        'immediate': 'Explorez avec enthousiasme. Partez en voyage ou suivez une formation.',
+        '30days': 'Développez votre énergie expansive. Utilisez votre force pour enseigner et élargir les horizons.'
+      },
+      'Capricorne': {
+        'immediate': 'Construisez avec stratégie. Travaillez sur vos objectifs à long terme.',
+        '30days': 'Développez votre énergie ambitieuse. Utilisez votre force pour construire et atteindre les sommets.'
+      },
+      'Verseau': {
+        'immediate': 'Innovez avec originalité. Rejoignez un groupe progressiste.',
+        '30days': 'Développez votre énergie révolutionnaire. Utilisez votre force pour innover et libérer.'
+      },
+      'Poissons': {
+        'immediate': 'Agissez avec compassion. Aidez une cause humanitaire.',
+        '30days': 'Développez votre énergie intuitive. Utilisez votre force pour guérir et créer de l\'unité.'
+      }
     }
   }
   
-  return progressGuidance[planetName]?.[sign]?.[actionType] || 'Conseil de progrès en cours de développement.'
+  // Chercher d'abord avec le signe normalisé, puis avec le signe original
+  const planetData = progressGuidance[planetName]
+  if (!planetData) {
+    return 'Poursuivez votre développement personnel avec détermination.'
+  }
+  
+  const signData = planetData[normalizedSign] || planetData[sign] || planetData[normalizeSignName(sign)]
+  if (!signData) {
+    // Si le signe n'est pas trouvé, utiliser le premier signe disponible pour cette planète
+    const firstSignData = Object.values(planetData)[0] as Record<string, string>
+    return firstSignData?.[actionType] || firstSignData?.['30days'] || 'Poursuivez votre développement personnel avec détermination.'
+  }
+  
+  return signData[actionType] || signData['30days'] || 'Poursuivez votre développement personnel avec détermination.'
 }
 
 // Fonction pour obtenir les symboles zodiacaux
@@ -397,7 +586,9 @@ export function normalizePlanetName(planetName: string): string {
     'pluto': 'Pluton', 'pluton': 'Pluton',
     // Points spéciaux
     'ascendant': 'Ascendant',
-    'descendant': 'Descendant',
+    'ac': 'Ascendant',
+    'asc': 'Ascendant',
+     'descendant': 'Descendant',
     'medium_coeli': 'Medium_Coeli', 'mc': 'Medium_Coeli', 'mediumcoeli': 'Medium_Coeli',
     'imum_coeli': 'Imum_Coeli', 'ic': 'Imum_Coeli', 'imumcoeli': 'Imum_Coeli',
     'mean_node': 'Mean_Node', 'north node': 'Mean_Node', 'noeud nord': 'Mean_Node', 'northnode': 'Mean_Node',
@@ -434,6 +625,8 @@ export function getPlanetSymbol(planetName: string): string {
     'mean_lilith': '⚸', 'lilith': '⚸', 'lune noire': '⚸', 'lunenoire': '⚸',
     'true_lilith': '⚸', 'truelilith': '⚸',
     'ascendant': 'Ac',
+    'ac': 'Ac',
+    'asc': 'Ac',
     'descendant': 'Dc',
     'medium_coeli': 'MC', 'mc': 'MC', 'mediumcoeli': 'MC',
     'imum_coeli': 'IC', 'ic': 'IC', 'imumcoeli': 'IC'
