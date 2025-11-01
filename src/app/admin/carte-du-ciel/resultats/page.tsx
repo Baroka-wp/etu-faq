@@ -200,8 +200,9 @@ export default function ResultatsPage() {
     
     // 2. Chercher dans basic_info (peut-être stocké là)
     if (!ascendant && chartData?.basic_info) {
-        if (chartData.basic_info.ascendant || chartData.basic_info.asc) {
-            ascendant = chartData.basic_info.ascendant || chartData.basic_info.asc
+        const basicInfo = chartData.basic_info as any
+        if (basicInfo.ascendant || basicInfo.asc) {
+            ascendant = basicInfo.ascendant || basicInfo.asc
             console.log('✅ Ascendant trouvé dans basic_info:', ascendant)
         }
     }

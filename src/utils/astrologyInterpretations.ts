@@ -568,7 +568,7 @@ export function getPlanetNameFrench(planetName: string): string {
     'sun': 'Soleil', 'soleil': 'Soleil',
     'moon': 'Lune', 'lune': 'Lune',
     'mercury': 'Mercure', 'mercure': 'Mercure',
-    'venus': 'Vénus', 'vénus': 'Vénus', 'venus': 'Vénus',
+    'venus': 'Vénus', 'vénus': 'Vénus',
     'mars': 'Mars',
     'jupiter': 'Jupiter',
     'saturn': 'Saturne', 'saturne': 'Saturne',
