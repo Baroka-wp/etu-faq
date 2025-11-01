@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     
     const {
       title,
+      slug,
       author,
       description,
       price,
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validation des champs requis
-    if (!title || !author || !description || !category) {
+    if (!title || !slug || !author || !description || !category) {
       return NextResponse.json(
         { error: 'Tous les champs marqués d\'un astérisque sont obligatoires' },
         { status: 400 }
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
     const book = await prisma.book.create({
       data: {
         title,
+        slug,
         author,
         description,
         price: isFree ? null : price,

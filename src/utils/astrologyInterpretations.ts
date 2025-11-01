@@ -142,6 +142,48 @@ export function getPersonalityAnalysis(planetName: string, sign: string): string
       'Capricorne': 'Vos talents naturels : construction, leadership, discipline. Votre domaine d\'excellence : construire des institutions, diriger des équipes, et atteindre des sommets.',
       'Verseau': 'Vos talents naturels : innovation, humanitarisme, originalité. Votre domaine d\'excellence : révolutionner les systèmes, servir l\'humanité, et apporter l\'innovation.',
       'Poissons': 'Vos talents naturels : intuition, guérison, compassion. Votre domaine d\'excellence : guérir les autres, développer la spiritualité, et ressentir l\'amour universel.'
+    },
+    'Ascendant': {
+      'Bélier': 'Vous donnez l\'impression d\'être énergique, courageux et direct. Les autres vous voient comme un leader naturel qui n\'a pas peur de prendre des initiatives.',
+      'Taureau': 'Vous donnez l\'impression d\'être stable, fiable et sensuel. Les autres vous voient comme quelqu\'un de terre-à-terre et de confiance.',
+      'Gémeaux': 'Vous donnez l\'impression d\'être curieux, communicatif et adaptable. Les autres vous voient comme quelqu\'un d\'intelligent et de sociable.',
+      'Cancer': 'Vous donnez l\'impression d\'être protecteur, intuitif et émotionnel. Les autres vous voient comme quelqu\'un de maternel et de sensible.',
+      'Lion': 'Vous donnez l\'impression d\'être créatif, généreux et charismatique. Les autres vous voient comme quelqu\'un de confiant et d\'inspirant.',
+      'Vierge': 'Vous donnez l\'impression d\'être méthodique, serviable et perfectionniste. Les autres vous voient comme quelqu\'un de fiable et de dévoué.',
+      'Balance': 'Vous donnez l\'impression d\'être diplomatique, élégant et harmonieux. Les autres vous voient comme quelqu\'un de charmant et d\'équilibré.',
+      'Scorpion': 'Vous donnez l\'impression d\'être intense, mystérieux et magnétique. Les autres vous voient comme quelqu\'un de profond et d\'intriguant.',
+      'Sagittaire': 'Vous donnez l\'impression d\'être optimiste, aventureux et philosophe. Les autres vous voient comme quelqu\'un d\'enthousiaste et de sage.',
+      'Capricorne': 'Vous donnez l\'impression d\'être ambitieux, responsable et sérieux. Les autres vous voient comme quelqu\'un de mature et de digne de confiance.',
+      'Verseau': 'Vous donnez l\'impression d\'être original, indépendant et visionnaire. Les autres vous voient comme quelqu\'un d\'unique et d\'innovant.',
+      'Poissons': 'Vous donnez l\'impression d\'être intuitif, empathique et spirituel. Les autres vous voient comme quelqu\'un de mystique et de compatissant.'
+    },
+    'Saturne': {
+      'Bélier': 'Vos défis : canaliser votre impatience, apprendre la patience, et diriger sans dominer. Votre leçon : développer la discipline dans l\'action et la maîtrise de soi.',
+      'Taureau': 'Vos défis : éviter la rigidité, accepter le changement, et partager vos ressources. Votre leçon : développer la flexibilité et apprendre à lâcher prise.',
+      'Gémeaux': 'Vos défis : approfondir vos connaissances, éviter la superficialité, et vous concentrer. Votre leçon : développer la profondeur et la persévérance dans l\'apprentissage.',
+      'Cancer': 'Vos défis : gérer vos émotions, éviter la dépendance, et créer des limites. Votre leçon : développer l\'indépendance émotionnelle et la maturité.',
+      'Lion': 'Vos défis : partager la scène, éviter l\'ego, et accepter la critique. Votre leçon : développer l\'humilité et apprendre à servir les autres.',
+      'Vierge': 'Vos défis : éviter le perfectionnisme, accepter l\'imperfection, et déléguer. Votre leçon : développer la tolérance et apprendre à faire confiance.',
+      'Balance': 'Vos défis : prendre des décisions, éviter l\'indécision, et affirmer vos besoins. Votre leçon : développer la fermeté et apprendre à dire non.',
+      'Scorpion': 'Vos défis : contrôler vos obsessions, éviter la manipulation, et accepter la vulnérabilité. Votre leçon : développer la transparence et la confiance.',
+      'Sagittaire': 'Vos défis : éviter l\'arrogance, accepter vos limites, et approfondir vos croyances. Votre leçon : développer l\'humilité et la sagesse.',
+      'Capricorne': 'Vos défis : éviter le contrôle excessif, accepter l\'aide, et développer l\'émotion. Votre leçon : développer la sensibilité et apprendre à recevoir.',
+      'Verseau': 'Vos défis : éviter la rébellion excessive, accepter l\'autorité, et développer l\'engagement. Votre leçon : développer la responsabilité et l\'engagement.',
+      'Poissons': 'Vos défis : éviter l\'évasion, accepter la réalité, et créer des limites. Votre leçon : développer la structure et apprendre à dire non.'
+    },
+    'Mars': {
+      'Bélier': 'Votre énergie est explosive et directe. Vous agissez rapidement et avec courage. Votre façon de vous affirmer : être le premier, prendre des initiatives, et défendre vos droits.',
+      'Taureau': 'Votre énergie est persistante et stable. Vous agissez avec détermination et patience. Votre façon de vous affirmer : construire progressivement, défendre vos valeurs, et maintenir votre position.',
+      'Gémeaux': 'Votre énergie est versatile et communicative. Vous agissez par la parole et l\'intelligence. Votre façon de vous affirmer : argumenter, négocier, et utiliser votre esprit.',
+      'Cancer': 'Votre énergie est protectrice et émotionnelle. Vous agissez pour défendre vos proches. Votre façon de vous affirmer : protéger, nourrir, et créer un environnement sécurisant.',
+      'Lion': 'Votre énergie est créative et dramatique. Vous agissez avec passion et générosité. Votre façon de vous affirmer : exprimer votre créativité, diriger, et inspirer les autres.',
+      'Vierge': 'Votre énergie est méthodique et serviable. Vous agissez avec précision et dévouement. Votre façon de vous affirmer : améliorer, servir, et créer l\'ordre.',
+      'Balance': 'Votre énergie est diplomatique et harmonieuse. Vous agissez pour créer l\'équilibre. Votre façon de vous affirmer : négocier, créer l\'harmonie, et résoudre les conflits.',
+      'Scorpion': 'Votre énergie est intense et transformatrice. Vous agissez avec détermination et passion. Votre façon de vous affirmer : transformer, guérir, et défendre vos convictions.',
+      'Sagittaire': 'Votre énergie est expansive et optimiste. Vous agissez avec enthousiasme et aventure. Votre façon de vous affirmer : explorer, enseigner, et défendre vos croyances.',
+      'Capricorne': 'Votre énergie est disciplinée et ambitieuse. Vous agissez avec stratégie et persévérance. Votre façon de vous affirmer : construire, diriger, et atteindre vos objectifs.',
+      'Verseau': 'Votre énergie est originale et indépendante. Vous agissez pour défendre vos valeurs. Votre façon de vous affirmer : innover, révolutionner, et défendre la liberté.',
+      'Poissons': 'Votre énergie est intuitive et empathique. Vous agissez avec compassion et sensibilité. Votre façon de vous affirmer : guérir, aider, et ressentir profondément.'
     }
   }
   

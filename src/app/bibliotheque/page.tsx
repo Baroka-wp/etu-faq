@@ -8,6 +8,7 @@ import Image from 'next/image'
 interface Book {
     id: string
     title: string
+    slug: string
     author: string
     description: string
     price?: number
@@ -148,44 +149,52 @@ export default function BibliothequePage() {
                 {/* Books Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredBooks.map((book) => (
-                        <div key={book.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-gray-400 transition-all">
-                            {/* Book Image */}
-                            <div className="h-48 bg-gray-100 flex items-center justify-center">
-                                {book.imageUrl ? (
-                                    <img
-                                        src={book.imageUrl}
-                                        alt={book.title}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <BookOpen className="w-16 h-16 text-gray-300" />
-                                )}
-                            </div>
-
-                            {/* Book Content */}
-                            <div className="p-5">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-base font-semibold text-gray-900">{book.title}</h3>
-                                    <span className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ml-2 ${book.isFree
-                                        ? 'bg-gray-100 text-gray-700 border border-gray-300'
-                                        : 'bg-gray-900 text-white'
-                                        }`}>
-                                        {book.isFree ? 'Gratuit' : 'Payant'}
-                                    </span>
+                        <div key={book.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-gray-400 transition-all group">
+                            <Link href={`/bibliotheque/${book.slug}`}>
+                                {/* Book Image */}
+                                <div className="h-48 bg-gray-100 flex items-center justify-center cursor-pointer">
+                                    {book.imageUrl ? (
+                                        <img
+                                            src={book.imageUrl}
+                                            alt={book.title}
+                                            className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
+                                        />
+                                    ) : (
+                                        <BookOpen className="w-16 h-16 text-gray-300 group-hover:text-gray-400 transition-colors" />
+                                    )}
                                 </div>
 
-                                <p className="text-sm text-gray-500 mb-3">par {book.author}</p>
-
-                                <p className="text-gray-600 text-sm mb-4 line-clamp-3">{book.description}</p>
-
-                                {book.price && (
-                                    <div className="text-base font-semibold text-gray-900 mb-4">
-                                        {book.price.toLocaleString()} FCFA
+                                {/* Book Content */}
+                                <div className="p-5">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">{book.title}</h3>
+                                        <span className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ml-2 ${book.isFree
+                                            ? 'bg-gray-100 text-gray-700 border border-gray-300'
+                                            : 'bg-gray-900 text-white'
+                                            }`}>
+                                            {book.isFree ? 'Gratuit' : 'Payant'}
+                                        </span>
                                     </div>
-                                )}
 
+                                    <p className="text-sm text-gray-500 mb-3">par {book.author}</p>
+
+                                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">{book.description}</p>
+
+                                    {book.price && (
+                                        <div className="text-base font-semibold text-gray-900 mb-4">
+                                            {book.price.toLocaleString()} FCFA
+                                        </div>
+                                    )}
+                                </div>
+                            </Link>
+
+                            {/* WhatsApp Button - Outside Link to prevent navigation */}
+                            <div className="px-5 pb-5">
                                 <button
-                                    onClick={() => handleWhatsAppOrder(book)}
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        handleWhatsAppOrder(book)
+                                    }}
                                     className="w-full bg-gray-900 text-white py-2.5 px-4 rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center text-sm font-medium"
                                 >
                                     <MessageCircle className="w-4 h-4 mr-2" />

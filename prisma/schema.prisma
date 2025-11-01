@@ -69,6 +69,7 @@ model UniqueLink {
 model Book {
   id                String   @id @default(cuid())
   title             String
+  slug              String   @unique
   author            String
   description       String
   price             Float?

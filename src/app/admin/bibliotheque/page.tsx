@@ -1,15 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Upload, Image as ImageIcon, BookOpen, Save, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Upload, Image as ImageIcon, BookOpen, Save, X, ExternalLink, Copy, List, LayoutGrid } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
 import { useToast } from '@/components/Toast'
 import { ToastContainer } from '@/components/ToastContainer'
+import { slugify } from '@/lib/utils'
 
 interface Book {
     id: string
     title: string
+    slug: string
     author: string
     description: string
     price?: number
@@ -29,11 +31,13 @@ export default function AdminBibliothequePage() {
     const [showEditModal, setShowEditModal] = useState(false)
     const [editingBook, setEditingBook] = useState<Book | null>(null)
     const [uploadingImage, setUploadingImage] = useState(false)
+    const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
     const router = useRouter()
     const { addToast, toasts, removeToast } = useToast()
 
     const [formData, setFormData] = useState({
         title: '',
+        slug: '',
         author: '',
         description: '',
         price: '',
@@ -178,6 +182,7 @@ export default function AdminBibliothequePage() {
         setEditingBook(book)
         setFormData({
             title: book.title,
+            slug: book.slug,
             author: book.author,
             description: book.description,
             price: book.price?.toString() || '',
@@ -220,6 +225,7 @@ export default function AdminBibliothequePage() {
     const resetForm = () => {
         setFormData({
             title: '',
+            slug: '',
             author: '',
             description: '',
             price: '',
@@ -229,6 +235,37 @@ export default function AdminBibliothequePage() {
             whatsappMessage: ''
         })
         setEditingBook(null)
+    }
+
+    // Fonction pour gérer le changement de titre et auto-générer le slug
+    const handleTitleChange = (title: string) => {
+        const newSlug = slugify(title)
+        setFormData(prev => ({
+            ...prev,
+            title,
+            slug: newSlug
+        }))
+    }
+
+    // Fonction pour copier le lien du livre
+    const handleCopyLink = async (slug: string) => {
+        const baseUrl = window.location.origin
+        const url = `${baseUrl}/bibliotheque/${slug}`
+        try {
+            await navigator.clipboard.writeText(url)
+            addToast({
+                type: 'success',
+                title: 'Lien copié',
+                message: 'Le lien a été copié dans le presse-papiers'
+            })
+        } catch (error) {
+            console.error('Erreur lors de la copie:', error)
+            addToast({
+                type: 'error',
+                title: 'Erreur',
+                message: 'Impossible de copier le lien'
+            })
+        }
     }
 
 
@@ -261,21 +298,174 @@ export default function AdminBibliothequePage() {
                                 <h1 className="text-2xl font-bold text-gray-900">Gestion de la Bibliothèque</h1>
                                 <p className="text-gray-600 mt-2">Gérez les livres et ouvrages de l'ETU-Bénin</p>
                             </div>
-                            <button
-                                onClick={() => setShowAddModal(true)}
-                                className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors flex items-center"
-                            >
-                                <Plus className="w-5 h-5 mr-2" />
-                                Ajouter un livre
-                            </button>
+                            <div className="flex items-center gap-3">
+                                {/* Toggle View Buttons */}
+                                <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setViewMode('table')}
+                                        className={`p-2 rounded transition-colors ${viewMode === 'table'
+                                            ? 'bg-white text-gray-900 shadow-sm'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                        title="Vue tableau"
+                                    >
+                                        <List className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('grid')}
+                                        className={`p-2 rounded transition-colors ${viewMode === 'grid'
+                                            ? 'bg-white text-gray-900 shadow-sm'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                        title="Vue grille"
+                                    >
+                                        <LayoutGrid className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                {/* Add Book Button */}
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors flex items-center"
+                                >
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    Ajouter un livre
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Content Area */}
                 <div className="px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Books Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Table View */}
+                    {viewMode === 'table' && books.length > 0 && (
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Image
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Titre
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Auteur
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Prix
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                URL
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Actions
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {books.map((book) => (
+                                            <tr key={book.id} className="hover:bg-gray-50 transition-colors">
+                                                {/* Image */}
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="w-16 h-20 bg-gray-100 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                        {book.imageUrl ? (
+                                                            <img
+                                                                src={book.imageUrl}
+                                                                alt={book.title}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <BookOpen className="w-6 h-6 text-gray-400" />
+                                                        )}
+                                                    </div>
+                                                </td>
+
+                                                {/* Title */}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="text-sm font-medium text-gray-900 max-w-xs">
+                                                            {book.title}
+                                                        </div>
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${book.isFree
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-blue-100 text-blue-800'
+                                                            }`}>
+                                                            {book.isFree ? 'Gratuit' : 'Payant'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+
+                                                {/* Author */}
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-600">
+                                                        {book.author}
+                                                    </div>
+                                                </td>
+
+                                                {/* Price */}
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {book.price && (
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            {book.price.toLocaleString()} FCFA
+                                                        </div>
+                                                    )}
+                                                </td>
+
+                                                {/* Slug/URL */}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <a
+                                                            href={`/bibliotheque/${book.slug}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 max-w-xs truncate"
+                                                        >
+                                                            /{book.slug}
+                                                            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                                                        </a>
+                                                        <button
+                                                            onClick={() => handleCopyLink(book.slug)}
+                                                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                                                            title="Copier le lien"
+                                                        >
+                                                            <Copy className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+
+                                                {/* Actions */}
+                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            onClick={() => handleEdit(book)}
+                                                            className="text-yellow-600 hover:text-yellow-800 transition-colors"
+                                                            title="Modifier"
+                                                        >
+                                                            <Edit className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(book.id)}
+                                                            className="text-red-600 hover:text-red-800 transition-colors"
+                                                            title="Supprimer"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Grid View */}
+                    {viewMode === 'grid' && books.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {books.map((book) => (
                             <div key={book.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                                 {/* Book Image */}
@@ -312,6 +502,33 @@ export default function AdminBibliothequePage() {
                                         </div>
                                     )}
 
+                                    {/* Slug/URL Section */}
+                                    <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs font-medium text-gray-500 uppercase">URL publique</span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleCopyLink(book.slug)
+                                                }}
+                                                className="text-gray-500 hover:text-gray-700 transition-colors"
+                                                title="Copier le lien"
+                                            >
+                                                <Copy className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                        <a
+                                            href={`/bibliotheque/${book.slug}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 break-all"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            /bibliotheque/{book.slug}
+                                            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                                        </a>
+                                    </div>
+
                                     <div className="flex space-x-2">
                                         <button
                                             onClick={() => handleEdit(book)}
@@ -331,7 +548,8 @@ export default function AdminBibliothequePage() {
                                 </div>
                             </div>
                         ))}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Empty State */}
                     {books.length === 0 && (
@@ -380,9 +598,27 @@ export default function AdminBibliothequePage() {
                                             type="text"
                                             required
                                             value={formData.title}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                            onChange={(e) => handleTitleChange(e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-gray-500 text-sm"
                                         />
+                                    </div>
+
+                                    {/* Slug */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Slug (URL) *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={formData.slug}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-gray-500 text-sm bg-gray-50"
+                                            placeholder="Généré automatiquement depuis le titre"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            URL: /bibliotheque/{formData.slug || '...'}
+                                        </p>
                                     </div>
 
                                     {/* Author */}
