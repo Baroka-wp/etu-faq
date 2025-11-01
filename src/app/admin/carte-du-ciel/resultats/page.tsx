@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Download, Sparkles, Printer } from 'lucide-react'
+import { ArrowLeft, Download, Sparkles, FileDown } from 'lucide-react'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 import { toast } from 'sonner'
 import AdminSidebar from '@/components/AdminSidebar'
 import { getPlanetSymbol, getZodiacSymbol, getZodiacName, getSpiritualGuidance, getPersonalityAnalysis, getProgressGuidance, normalizePlanetName, getPlanetNameFrench, getPlanetDisplayOrder } from '@/utils/astrologyInterpretations'
@@ -125,8 +127,542 @@ export default function ResultatsPage() {
         }
     }
 
-    const handlePrint = () => {
-        window.print()
+    const generatePDF = async () => {
+        if (!chartData) return
+        
+        setLoading(true)
+        toast.loading('Génération du PDF en cours...', { id: 'pdf-generation' })
+        
+        try {
+            // Attendre un peu pour que le DOM soit complètement chargé
+            await new Promise(resolve => setTimeout(resolve, 500))
+            
+            const pdf = new jsPDF('p', 'mm', 'a4')
+            const pageWidth = pdf.internal.pageSize.getWidth()
+            const pageHeight = pdf.internal.pageSize.getHeight()
+            const margin = 15
+            let yPosition = margin
+            
+            // Fonction pour ajouter une nouvelle page si nécessaire
+            const checkNewPage = (requiredHeight: number) => {
+                if (yPosition + requiredHeight > pageHeight - margin) {
+                    pdf.addPage()
+                    yPosition = margin
+                }
+            }
+            
+            // Fonction pour ajouter une ligne horizontale
+            const addHorizontalLine = () => {
+                pdf.setDrawColor(200, 200, 200)
+                pdf.setLineWidth(0.1)
+                pdf.line(margin, yPosition, pageWidth - margin, yPosition)
+                yPosition += 5
+            }
+            
+            // En-tête avec style
+            pdf.setFillColor(245, 245, 250)
+            pdf.rect(0, 0, pageWidth, 40, 'F')
+            
+            pdf.setFontSize(22)
+            pdf.setTextColor(30, 30, 30)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text('Votre Carte du Ciel', pageWidth / 2, yPosition + 8, { align: 'center' })
+            yPosition += 12
+            
+            pdf.setFontSize(14)
+            pdf.setTextColor(50, 50, 50)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text(chartData.basic_info.name, pageWidth / 2, yPosition, { align: 'center' })
+            yPosition += 7
+            
+            pdf.setFontSize(11)
+            pdf.setTextColor(100, 100, 100)
+            pdf.setFont('helvetica', 'normal')
+            pdf.text(`Né(e) le ${chartData.basic_info.birth_date} à ${chartData.basic_info.birth_time}`, pageWidth / 2, yPosition, { align: 'center' })
+            yPosition += 6
+            pdf.text(chartData.basic_info.location, pageWidth / 2, yPosition, { align: 'center' })
+            yPosition += 15
+            
+            // Carte SVG - Convertir et ajouter l'image avec meilleure qualité
+            if (chartData.svg.base64) {
+                checkNewPage(100)
+                
+                try {
+                    let imgData: string | null = null
+                    let imgWidth = 0
+                    let imgHeight = 0
+                    
+                    // Attendre que l'image soit chargée dans le DOM
+                    await new Promise(resolve => setTimeout(resolve, 300))
+                    
+                    // Méthode 1: Essayer de capturer depuis le DOM avec html2canvas
+                    const chartImageElement = document.querySelector('#carte-du-ciel-svg') as HTMLImageElement
+                    
+                    if (chartImageElement) {
+                        try {
+                            // Attendre que l'image soit complètement chargée
+                            if (!chartImageElement.complete) {
+                                await new Promise((resolve) => {
+                                    chartImageElement.onload = () => resolve(null)
+                                    chartImageElement.onerror = () => resolve(null)
+                                    setTimeout(() => resolve(null), 1000)
+                                })
+                            }
+                            
+                            // Utiliser html2canvas pour capturer l'image depuis le DOM
+                            const container = chartImageElement.parentElement
+                            if (container) {
+                                const canvas = await html2canvas(container, {
+                                    backgroundColor: '#ffffff',
+                                    scale: 2,
+                                    useCORS: true,
+                                    logging: false,
+                                    allowTaint: true,
+                                    width: chartImageElement.offsetWidth || 800,
+                                    height: chartImageElement.offsetHeight || 800
+                                })
+                                
+                                imgData = canvas.toDataURL('image/png', 1.0)
+                                imgWidth = (canvas.width * 0.264583)
+                                imgHeight = (canvas.height * 0.264583)
+                            }
+                        } catch (error) {
+                            console.log('Erreur html2canvas, utilisation du fallback:', error)
+                        }
+                    }
+                    
+                    // Méthode 2: Fallback - Créer une image depuis le base64 SVG directement
+                    if (!imgData) {
+                        await new Promise((resolve) => {
+                            const img = new Image()
+                            
+                            img.onload = () => {
+                                try {
+                                    const canvas = document.createElement('canvas')
+                                    // Dimensions par défaut pour les SVG
+                                    const defaultSize = 1200
+                                    canvas.width = img.naturalWidth || img.width || defaultSize
+                                    canvas.height = img.naturalHeight || img.height || defaultSize
+                                    
+                                    const ctx = canvas.getContext('2d')
+                                    if (ctx) {
+                                        // Fond blanc
+                                        ctx.fillStyle = '#ffffff'
+                                        ctx.fillRect(0, 0, canvas.width, canvas.height)
+                                        
+                                        // Dessiner l'image SVG
+                                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+                                        
+                                        imgData = canvas.toDataURL('image/png', 1.0)
+                                        imgWidth = (canvas.width * 0.264583)
+                                        imgHeight = (canvas.height * 0.264583)
+                                        
+                                        console.log('Image SVG convertie:', { imgWidth, imgHeight })
+                                    }
+                                } catch (error) {
+                                    console.error('Erreur lors de la conversion SVG:', error)
+                                }
+                                resolve(null)
+                            }
+                            
+                            img.onerror = (error) => {
+                                console.error('Erreur lors du chargement de l\'image SVG:', error)
+                                resolve(null)
+                            }
+                            
+                            // Charger l'image depuis le base64
+                            const svgDataUrl = `data:image/svg+xml;base64,${chartData.svg.base64}`
+                            img.src = svgDataUrl
+                        })
+                    }
+                    
+                    // Ajouter l'image au PDF si disponible
+                    if (imgData && imgWidth > 0 && imgHeight > 0) {
+                        // Dimensions de l'image pour le PDF
+                        const maxWidth = pageWidth - 2 * margin
+                        const maxHeight = 160 // mm
+                        
+                        // Calculer les dimensions pour s'adapter à la page
+                        const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight)
+                        const finalWidth = imgWidth * scale
+                        const finalHeight = imgHeight * scale
+                        
+                        checkNewPage(finalHeight + 25)
+                        
+                        // Titre de la section avec style
+                        pdf.setFontSize(18)
+                        pdf.setTextColor(30, 30, 30)
+                        pdf.setFont('helvetica', 'bold')
+                        pdf.text('Votre Thème Astral', pageWidth / 2, yPosition, { align: 'center' })
+                        yPosition += 12
+                        
+                        // Cadre décoratif autour de l'image
+                        pdf.setDrawColor(180, 180, 180)
+                        pdf.setFillColor(250, 250, 250)
+                        pdf.setLineWidth(0.5)
+                        const imgX = (pageWidth - finalWidth) / 2
+                        const imgY = yPosition
+                        pdf.rect(imgX - 3, imgY - 3, finalWidth + 6, finalHeight + 6, 'FD')
+                        
+                        // Ajouter l'image
+                        pdf.addImage(imgData, 'PNG', imgX, imgY, finalWidth, finalHeight)
+                        yPosition += finalHeight + 20
+                        
+                        console.log('Image ajoutée au PDF avec succès')
+                    } else {
+                        console.warn('Image SVG non disponible pour le PDF')
+                        // Ajouter un message si l'image n'est pas disponible
+                        pdf.setFontSize(12)
+                        pdf.setTextColor(150, 150, 150)
+                        pdf.setFont('helvetica', 'italic')
+                        pdf.text('Carte astrologique non disponible dans ce PDF', pageWidth / 2, yPosition, { align: 'center' })
+                        yPosition += 15
+                    }
+                } catch (error) {
+                    console.error('Erreur lors du traitement de la carte SVG:', error)
+                    // Continuer même si l'image ne peut pas être ajoutée
+                }
+            }
+            
+            // Section Planètes et Maisons avec style
+            checkNewPage(70)
+            
+            addHorizontalLine()
+            
+            pdf.setFillColor(250, 250, 255)
+            pdf.rect(margin - 5, yPosition - 3, pageWidth - 2 * margin + 10, 12, 'F')
+            
+            pdf.setFontSize(16)
+            pdf.setTextColor(30, 30, 30)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text('Planètes et Maisons', pageWidth / 2, yPosition + 8, { align: 'center' })
+            yPosition += 12
+            
+            // Sous-section Planètes
+            pdf.setFontSize(12)
+            pdf.setTextColor(100, 100, 150)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text('Planètes', margin, yPosition)
+            yPosition += 8
+            
+            pdf.setFontSize(10)
+            pdf.setTextColor(60, 60, 60)
+            pdf.setFont('helvetica', 'normal')
+            
+            const planetsArray = Object.entries(chartData.planets).map(([key, planet]: [string, any]) => ({
+                key,
+                planet,
+                frenchName: getPlanetNameFrench(planet.planet_name)
+            }))
+            
+            const displayOrder = getPlanetDisplayOrder()
+            planetsArray.sort((a, b) => {
+                const indexA = displayOrder.indexOf(a.frenchName)
+                const indexB = displayOrder.indexOf(b.frenchName)
+                if (indexA !== -1 && indexB !== -1) return indexA - indexB
+                if (indexA !== -1) return -1
+                if (indexB !== -1) return 1
+                return 0
+            })
+            
+            planetsArray.forEach(({ planet, frenchName }) => {
+                checkNewPage(7)
+                const houseNumber = planet.house ? planet.house.split(' ')[1] : ''
+                // Format: Symbole | Nom | Signe Position | Maison
+                const symbol = getPlanetSymbol(planet.planet_name)
+                const zodiacSymbol = getZodiacSymbol(planet.sign)
+                pdf.text(`${symbol} ${frenchName}`, margin + 5, yPosition)
+                pdf.setTextColor(150, 100, 200)
+                pdf.text(`${zodiacSymbol} ${Math.floor(planet.position)}°`, pageWidth / 2, yPosition)
+                if (houseNumber) {
+                    pdf.setTextColor(100, 100, 100)
+                    pdf.text(`Maison ${houseNumber}`, pageWidth - margin - 15, yPosition, { align: 'right' })
+                }
+                pdf.setTextColor(60, 60, 60)
+                yPosition += 6
+            })
+            
+            yPosition += 8
+            
+            // Sous-section Maisons
+            pdf.setFontSize(12)
+            pdf.setTextColor(100, 100, 150)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text('Maisons', margin, yPosition)
+            yPosition += 8
+            
+            pdf.setFontSize(10)
+            pdf.setTextColor(60, 60, 60)
+            pdf.setFont('helvetica', 'normal')
+            
+            Object.entries(chartData.houses).forEach(([key, house]) => {
+                checkNewPage(7)
+                const houseNumber = key.replace('_house', '').replace('first', '1').replace('second', '2').replace('third', '3').replace('fourth', '4').replace('fifth', '5').replace('sixth', '6').replace('seventh', '7').replace('eighth', '8').replace('ninth', '9').replace('tenth', '10').replace('eleventh', '11').replace('twelfth', '12')
+                const signName = getZodiacName(house.sign)
+                const zodiacSymbol = getZodiacSymbol(house.sign)
+                pdf.text(`Maison ${houseNumber}`, margin + 5, yPosition)
+                pdf.setTextColor(150, 100, 200)
+                pdf.text(`${zodiacSymbol} ${signName}`, pageWidth / 2, yPosition)
+                pdf.setTextColor(100, 100, 100)
+                pdf.text(`${Math.floor(house.position)}°`, pageWidth - margin - 15, yPosition, { align: 'right' })
+                pdf.setTextColor(60, 60, 60)
+                yPosition += 6
+            })
+            
+            yPosition += 12
+            
+            // Interprétation Spirituelle avec style
+            checkNewPage(60)
+            
+            addHorizontalLine()
+            
+            pdf.setFillColor(255, 250, 250)
+            pdf.rect(margin - 5, yPosition - 3, pageWidth - 2 * margin + 10, 12, 'F')
+            
+            pdf.setFontSize(16)
+            pdf.setTextColor(30, 30, 30)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text('Interprétation Spirituelle', pageWidth / 2, yPosition + 8, { align: 'center' })
+            yPosition += 15
+            
+            pdf.setFontSize(10)
+            pdf.setFont('helvetica', 'normal')
+            
+            if (sun) {
+                checkNewPage(25)
+                pdf.setFillColor(255, 245, 230)
+                pdf.rect(margin - 3, yPosition - 4, pageWidth - 2 * margin + 6, 25, 'F')
+                
+                pdf.setFont('helvetica', 'bold')
+                pdf.setFontSize(12)
+                pdf.setTextColor(200, 100, 0)
+                pdf.text('☉ Votre Mission d\'Âme', margin, yPosition)
+                yPosition += 7
+                
+                pdf.setFontSize(10)
+                pdf.setTextColor(80, 80, 80)
+                pdf.setFont('helvetica', 'normal')
+                pdf.text(`Soleil en ${getZodiacName(sun.sign)}`, margin, yPosition)
+                yPosition += 6
+                
+                pdf.setFontSize(9)
+                pdf.setTextColor(60, 60, 60)
+                const spiritualText = getSpiritualGuidance('Soleil', sun.sign)
+                const spiritualLines = pdf.splitTextToSize(spiritualText, pageWidth - 2 * margin)
+                spiritualLines.forEach((line: string) => {
+                    checkNewPage(5)
+                    pdf.text(line, margin + 2, yPosition)
+                    yPosition += 4
+                })
+                yPosition += 5
+            }
+            
+            if (moon) {
+                checkNewPage(25)
+                pdf.setFillColor(240, 245, 255)
+                pdf.rect(margin - 3, yPosition - 4, pageWidth - 2 * margin + 6, 25, 'F')
+                
+                pdf.setFont('helvetica', 'bold')
+                pdf.setFontSize(12)
+                pdf.setTextColor(50, 100, 200)
+                pdf.text('☽ Votre Intuition Divine', margin, yPosition)
+                yPosition += 7
+                
+                pdf.setFontSize(10)
+                pdf.setTextColor(80, 80, 80)
+                pdf.setFont('helvetica', 'normal')
+                pdf.text(`Lune en ${getZodiacName(moon.sign)}`, margin, yPosition)
+                yPosition += 6
+                
+                pdf.setFontSize(9)
+                pdf.setTextColor(60, 60, 60)
+                const spiritualText = getSpiritualGuidance('Lune', moon.sign)
+                const spiritualLines = pdf.splitTextToSize(spiritualText, pageWidth - 2 * margin)
+                spiritualLines.forEach((line: string) => {
+                    checkNewPage(5)
+                    pdf.text(line, margin + 2, yPosition)
+                    yPosition += 4
+                })
+                yPosition += 5
+            }
+            
+            if (jupiter) {
+                checkNewPage(25)
+                pdf.setFillColor(255, 245, 255)
+                pdf.rect(margin - 3, yPosition - 4, pageWidth - 2 * margin + 6, 25, 'F')
+                
+                pdf.setFont('helvetica', 'bold')
+                pdf.setFontSize(12)
+                pdf.setTextColor(150, 50, 200)
+                pdf.text('♃ Votre Expansion Spirituelle', margin, yPosition)
+                yPosition += 7
+                
+                pdf.setFontSize(10)
+                pdf.setTextColor(80, 80, 80)
+                pdf.setFont('helvetica', 'normal')
+                pdf.text(`Jupiter en ${getZodiacName(jupiter.sign)}`, margin, yPosition)
+                yPosition += 6
+                
+                pdf.setFontSize(9)
+                pdf.setTextColor(60, 60, 60)
+                const spiritualText = getSpiritualGuidance('Jupiter', jupiter.sign)
+                const spiritualLines = pdf.splitTextToSize(spiritualText, pageWidth - 2 * margin)
+                spiritualLines.forEach((line: string) => {
+                    checkNewPage(5)
+                    pdf.text(line, margin + 2, yPosition)
+                    yPosition += 4
+                })
+                yPosition += 5
+            }
+            
+            yPosition += 12
+            
+            // Analyse de Personnalité avec style
+            checkNewPage(60)
+            
+            addHorizontalLine()
+            
+            pdf.setFillColor(250, 255, 250)
+            pdf.rect(margin - 5, yPosition - 3, pageWidth - 2 * margin + 10, 12, 'F')
+            
+            pdf.setFontSize(16)
+            pdf.setTextColor(30, 30, 30)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text('Analyse de votre Personnalité', pageWidth / 2, yPosition + 8, { align: 'center' })
+            yPosition += 15
+            
+            pdf.setFontSize(9)
+            pdf.setFont('helvetica', 'normal')
+            
+            const personalityPlanets = [
+                { planet: sun, name: 'Soleil', title: 'Votre Essence', symbol: '☉', color: [200, 100, 0] },
+                { planet: moon, name: 'Lune', title: 'Vos Émotions', symbol: '☽', color: [50, 100, 200] },
+                { planet: ascendant, name: 'Ascendant', title: 'Votre Image', symbol: 'Ac', color: [100, 150, 200] },
+                { planet: jupiter, name: 'Jupiter', title: 'Vos Talents', symbol: '♃', color: [150, 50, 200] },
+                { planet: saturn, name: 'Saturne', title: 'Vos Défis', symbol: '♄', color: [100, 100, 100] },
+                { planet: mars, name: 'Mars', title: 'Votre Énergie', symbol: '♂', color: [200, 50, 50] }
+            ]
+            
+            personalityPlanets.forEach(({ planet, name, title, symbol, color }) => {
+                if (planet) {
+                    checkNewPage(30)
+                    
+                    // Encadré avec couleur
+                    pdf.setFillColor(color[0] + 50, color[1] + 50, color[2] + 50)
+                    pdf.setDrawColor(color[0], color[1], color[2])
+                    pdf.setLineWidth(0.2)
+                    pdf.rect(margin - 3, yPosition - 4, pageWidth - 2 * margin + 6, 28, 'FD')
+                    
+                    pdf.setFont('helvetica', 'bold')
+                    pdf.setFontSize(11)
+                    pdf.setTextColor(color[0], color[1], color[2])
+                    pdf.text(`${symbol} ${title} (${name})`, margin, yPosition)
+                    yPosition += 7
+                    
+                    pdf.setFontSize(9)
+                    pdf.setTextColor(80, 80, 80)
+                    pdf.setFont('helvetica', 'normal')
+                    pdf.text(`${name} en ${getZodiacName(planet.sign)}`, margin, yPosition)
+                    yPosition += 6
+                    
+                    pdf.setFontSize(9)
+                    pdf.setTextColor(60, 60, 60)
+                    const personalityText = getPersonalityAnalysis(name, planet.sign)
+                    const personalityLines = pdf.splitTextToSize(personalityText, pageWidth - 2 * margin)
+                    personalityLines.forEach((line: string) => {
+                        checkNewPage(5)
+                        pdf.text(line, margin + 2, yPosition)
+                        yPosition += 4
+                    })
+                    yPosition += 5
+                }
+            })
+            
+            yPosition += 12
+            
+            // Programme de Progrès avec style
+            checkNewPage(60)
+            
+            addHorizontalLine()
+            
+            pdf.setFillColor(255, 255, 250)
+            pdf.rect(margin - 5, yPosition - 3, pageWidth - 2 * margin + 10, 12, 'F')
+            
+            pdf.setFontSize(16)
+            pdf.setTextColor(30, 30, 30)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text('Programme de Progrès', pageWidth / 2, yPosition + 8, { align: 'center' })
+            yPosition += 15
+            
+            pdf.setFontSize(9)
+            pdf.setFont('helvetica', 'normal')
+            
+            const progressPlanets = [
+                { planet: sun, name: 'Soleil', title: 'Mission de Vie', symbol: '☉', color: [200, 100, 0] },
+                { planet: moon, name: 'Lune', title: 'Équilibre Émotionnel', symbol: '☽', color: [50, 100, 200] },
+                { planet: ascendant, name: 'Ascendant', title: 'Image Personnelle', symbol: 'Ac', color: [100, 150, 200] },
+                { planet: jupiter, name: 'Jupiter', title: 'Développement des Talents', symbol: '♃', color: [150, 50, 200] },
+                { planet: saturn, name: 'Saturne', title: 'Surmonter les Défis', symbol: '♄', color: [100, 100, 100] },
+                { planet: mars, name: 'Mars', title: 'Énergie et Action', symbol: '♂', color: [200, 50, 50] }
+            ]
+            
+            progressPlanets.forEach(({ planet, name, title, symbol, color }) => {
+                if (planet) {
+                    checkNewPage(30)
+                    
+                    // Encadré avec couleur
+                    pdf.setFillColor(color[0] + 55, color[1] + 55, color[2] + 55)
+                    pdf.setDrawColor(color[0], color[1], color[2])
+                    pdf.setLineWidth(0.2)
+                    pdf.rect(margin - 3, yPosition - 4, pageWidth - 2 * margin + 6, 28, 'FD')
+                    
+                    pdf.setFont('helvetica', 'bold')
+                    pdf.setFontSize(11)
+                    pdf.setTextColor(color[0], color[1], color[2])
+                    pdf.text(`${symbol} ${title} (${name})`, margin, yPosition)
+                    yPosition += 7
+                    
+                    pdf.setFont('helvetica', 'bold')
+                    pdf.setFontSize(9)
+                    pdf.setTextColor(150, 50, 200)
+                    pdf.text('OBJECTIF :', margin, yPosition)
+                    yPosition += 6
+                    
+                    pdf.setFont('helvetica', 'normal')
+                    pdf.setFontSize(9)
+                    pdf.setTextColor(60, 60, 60)
+                    const progressText = getProgressGuidance(name, planet.sign, '30days')
+                    const progressLines = pdf.splitTextToSize(progressText, pageWidth - 2 * margin)
+                    progressLines.forEach((line: string) => {
+                        checkNewPage(5)
+                        pdf.text(line, margin + 2, yPosition)
+                        yPosition += 4
+                    })
+                    yPosition += 5
+                }
+            })
+            
+            // Footer
+            const totalPages = pdf.getNumberOfPages()
+            for (let i = 1; i <= totalPages; i++) {
+                pdf.setPage(i)
+                pdf.setFontSize(8)
+                pdf.setFont('helvetica', 'italic')
+                pdf.text(`Page ${i} sur ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' })
+                pdf.text('Propulsé par Kerykeion - Bibliothèque d\'Astrologie Python', pageWidth / 2, pageHeight - 5, { align: 'center' })
+            }
+            
+            // Sauvegarder le PDF
+            const fileName = `carte-du-ciel-${chartData.basic_info.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
+            pdf.save(fileName)
+            
+            toast.success('PDF généré avec succès!', { id: 'pdf-generation' })
+        } catch (error) {
+            console.error('Erreur lors de la génération du PDF:', error)
+            toast.error('Erreur lors de la génération du PDF', { id: 'pdf-generation' })
+        } finally {
+            setLoading(false)
+        }
     }
 
     // Trouver les planètes spécifiques (en utilisant la normalisation pour être plus robuste)
@@ -311,6 +847,7 @@ export default function ResultatsPage() {
                                 <CardContent>
                                     <div className="bg-gray-50 rounded-lg p-6 flex justify-center">
                                         <img
+                                            id="carte-du-ciel-svg"
                                             src={`data:image/svg+xml;base64,${chartData.svg.base64}`}
                                             alt={`Carte du Ciel de ${chartData.basic_info.name}`}
                                             className="max-w-full h-auto max-h-[600px] object-contain"
@@ -789,9 +1326,9 @@ export default function ResultatsPage() {
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Nouvelle Carte
                         </Button>
-                        <Button onClick={handlePrint} variant="default">
-                            <Printer className="w-4 h-4 mr-2" />
-                            Imprimer
+                        <Button onClick={generatePDF} variant="default" disabled={loading}>
+                            <FileDown className="w-4 h-4 mr-2" />
+                            {loading ? 'Génération...' : 'Télécharger PDF'}
                         </Button>
                     </div>
 
