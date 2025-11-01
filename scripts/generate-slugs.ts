@@ -23,13 +23,10 @@ async function generateSlugs() {
   try {
     console.log('🔍 Recherche des livres sans slug...')
 
-    // Récupérer tous les livres
+    // Récupérer tous les livres sans slug (slug vide uniquement car non-nullable)
     const books = await prisma.book.findMany({
       where: {
-        OR: [
-          { slug: null },
-          { slug: '' }
-        ]
+        slug: ''
       }
     })
 

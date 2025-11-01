@@ -6,10 +6,10 @@ const prisma = new PrismaClient()
 // GET - Récupérer un livre par son slug (API publique)
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params
+    const { slug } = await params
 
     const book = await prisma.book.findUnique({
       where: {

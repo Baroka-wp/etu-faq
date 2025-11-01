@@ -118,7 +118,7 @@ export default function AstrologyInterpretations({ chartData }: AstrologyInterpr
     const ensureMinimumCards = (data: any[], minCards: number = 6) => {
         if (data.length >= minCards) return data
 
-        const fallbackCards = []
+        const fallbackCards: any[] = []
         for (let i = data.length; i < minCards; i++) {
             const aspects = ['Identité profonde', 'Nature émotionnelle', 'Image publique', 'Talents naturels', 'Défis et leçons', 'Énergie et action']
             const titles = ['Identité profonde, essence, mission de vie', 'Nature émotionnelle, besoins intérieurs', 'Image publique, première impression', 'Talents naturels, domaines d\'excellence', 'Défis, leçons de vie, croissance', 'Énergie, action, affirmation de soi']

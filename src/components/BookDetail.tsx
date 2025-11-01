@@ -11,9 +11,9 @@ interface Book {
     slug: string
     author: string
     description: string
-    price?: number
+    price: number | null
     isFree: boolean
-    category: 'etu' | 'recommended'
+    category: string
     imageUrl: string
     whatsappMessage: string
 }
