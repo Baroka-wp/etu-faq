@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 
@@ -40,6 +40,10 @@ export default function HomePage() {
                 <a href="#enseignements" className="text-gray-700 hover:text-gray-900 font-serif">Enseignements</a>
                 <Link href="/faq" className="text-gray-700 hover:text-gray-900 font-serif">FAQ</Link>
                 <Link href="/bibliotheque" className="text-gray-700 hover:text-gray-900 font-serif">Bibliothèque</Link>
+                <Link href="/cours-enregistres" className="text-gray-700 hover:text-gray-900 font-serif flex items-center">
+                  <BookOpen className="w-4 h-4 mr-1" />
+                  Cours enregistrés
+                </Link>
                 <Link href="/inscription" className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors font-serif">
                   S'inscrire
                 </Link>
@@ -66,6 +70,10 @@ export default function HomePage() {
                   <a href="#enseignements" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Enseignements</a>
                   <Link href="/faq" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">FAQ</Link>
                   <Link href="/bibliotheque" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Bibliothèque</Link>
+                  <Link href="/cours-enregistres" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif flex items-center">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Cours enregistrés
+                  </Link>
                   <Link href="/inscription" className="block px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-serif">
                     S'inscrire
                   </Link>
@@ -107,6 +115,10 @@ export default function HomePage() {
                 <Link href="/inscription" className="bg-gray-800 text-white px-8 py-4 rounded-lg hover:bg-gray-900 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                   <User className="w-5 h-5 inline mr-2" />
                   S'inscrire maintenant
+                </Link>
+                <Link href="/cours-enregistres" className="bg-white text-gray-800 px-8 py-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center">
+                  <BookOpen className="w-5 h-5 inline mr-2" />
+                  Cours enregistrés
                 </Link>
                 <Link href="/faq" className="bg-white text-gray-800 px-8 py-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                   En savoir plus

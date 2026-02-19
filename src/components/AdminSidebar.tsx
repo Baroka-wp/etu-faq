@@ -12,7 +12,8 @@ import {
     FileText,
     Shield,
     BookOpen,
-    Sparkles
+    Sparkles,
+    Video
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -38,6 +39,12 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             label: 'Inscriptions',
             icon: Users,
             href: '/admin/inscriptions'
+        },
+        {
+            id: 'cours',
+            label: 'Cours enregistrés',
+            icon: Video,
+            href: '/admin/cours'
         },
         {
             id: 'bibliotheque',
