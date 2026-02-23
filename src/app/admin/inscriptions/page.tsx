@@ -332,7 +332,9 @@ export default function AdminInscriptions() {
             inscription.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
             inscription.telephone.includes(searchTerm)
         const matchesStatut = !filterStatut || inscription.statut === filterStatut
-        return matchesSearch && matchesStatut
+        // Afficher uniquement les prospects "En attente"
+        const matchesProspects = inscription.statut === 'En attente'
+        return matchesSearch && matchesStatut && matchesProspects
     })
 
     if (loading) {
@@ -368,8 +370,8 @@ export default function AdminInscriptions() {
                     <div className="px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Gestion des inscriptions</h1>
-                                <p className="text-sm text-gray-600 mt-1">Gérer les inscriptions et mots de passe</p>
+                                <h1 className="text-2xl font-bold text-gray-900">Gestion des Prospects</h1>
+                                <p className="text-sm text-gray-600 mt-1">Gérer les inscriptions en attente</p>
                             </div>
                             <div className="flex items-center space-x-3">
                                 <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">

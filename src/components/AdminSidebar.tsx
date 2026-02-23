@@ -35,8 +35,8 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             href: '/admin/dashboard'
         },
         {
-            id: 'inscriptions',
-            label: 'Inscriptions',
+            id: 'prospects',
+            label: 'Prospects',
             icon: Users,
             href: '/admin/inscriptions'
         },
