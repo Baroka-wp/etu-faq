@@ -21,7 +21,8 @@ export async function PUT(
       isFree,
       category,
       imageUrl,
-      whatsappMessage
+      whatsappMessage,
+      driveUrl
     } = body
 
     // Validation des champs requis
@@ -56,7 +57,8 @@ export async function PUT(
         isFree,
         category,
         imageUrl: imageUrl || '',
-        whatsappMessage: whatsappMessage || ''
+        whatsappMessage: whatsappMessage || '',
+        driveUrl: driveUrl || ''
       }
     })
 

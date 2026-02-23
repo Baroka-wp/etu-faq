@@ -28,7 +28,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
     const {
       title,
       slug,
@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
       isFree,
       category,
       imageUrl,
-      whatsappMessage
+      whatsappMessage,
+      driveUrl
     } = body
 
     // Validation des champs requis
@@ -60,7 +61,8 @@ export async function POST(request: NextRequest) {
         isFree,
         category,
         imageUrl: imageUrl || '',
-        whatsappMessage: whatsappMessage || ''
+        whatsappMessage: whatsappMessage || '',
+        driveUrl: driveUrl || ''
       }
     })
 
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Erreur lors de la création du livre:', error)
-    
+
     return NextResponse.json(
       { error: 'Une erreur est survenue lors de la création du livre' },
       { status: 500 }

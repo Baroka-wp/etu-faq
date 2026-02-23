@@ -16,6 +16,7 @@ interface Book {
     category: 'etu' | 'recommended'
     imageUrl: string
     whatsappMessage: string
+    driveUrl: string
 }
 
 export default function BibliothequePage() {
@@ -54,6 +55,26 @@ export default function BibliothequePage() {
         const message = encodeURIComponent(book.whatsappMessage)
         const whatsappUrl = `https://wa.me/22967153974?text=${message}`
         window.open(whatsappUrl, '_blank')
+    }
+
+    // Convertir le lien Google Drive en lien de téléchargement direct
+    const getDirectDownloadUrl = (url: string) => {
+        const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=download&id=${match[1]}`
+        }
+        const openMatch = url.match(/open\?id=([a-zA-Z0-9_-]+)/)
+        if (openMatch && openMatch[1]) {
+            return `https://drive.google.com/uc?export=download&id=${openMatch[1]}`
+        }
+        return url
+    }
+
+    const handleDownload = (book: Book) => {
+        if (book.driveUrl) {
+            const downloadUrl = getDirectDownloadUrl(book.driveUrl)
+            window.open(downloadUrl, '_blank')
+        }
     }
 
     if (loading) {
@@ -188,18 +209,26 @@ export default function BibliothequePage() {
                                 </div>
                             </Link>
 
-                            {/* WhatsApp Button - Outside Link to prevent navigation */}
+                            {/* Action Button - Outside Link to prevent navigation */}
                             <div className="px-5 pb-5">
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        handleWhatsAppOrder(book)
-                                    }}
-                                    className="w-full bg-gray-900 text-white py-2.5 px-4 rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center text-sm font-medium"
+                                <Link
+                                    href={`/bibliotheque/${book.slug}`}
+                                    className="block w-full bg-gray-900 text-white py-2.5 px-4 rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center text-sm font-medium text-center"
                                 >
-                                    <MessageCircle className="w-4 h-4 mr-2" />
-                                    {book.isFree ? 'Demander des infos' : 'Commander'}
-                                </button>
+                                    {book.isFree && book.driveUrl ? (
+                                        <>
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            Télécharger ce livre
+                                        </>
+                                    ) : (
+                                        <>
+                                            <MessageCircle className="w-4 h-4 mr-2" />
+                                            Commander
+                                        </>
+                                    )}
+                                </Link>
                             </div>
                         </div>
                     ))}

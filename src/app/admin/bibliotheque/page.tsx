@@ -19,6 +19,7 @@ interface Book {
     category: 'etu' | 'recommended'
     imageUrl: string
     whatsappMessage: string
+    driveUrl: string
     createdAt: string
     updatedAt: string
 }
@@ -44,7 +45,8 @@ export default function AdminBibliothequePage() {
         isFree: false,
         category: 'etu' as 'etu' | 'recommended',
         imageUrl: '',
-        whatsappMessage: ''
+        whatsappMessage: '',
+        driveUrl: ''
     })
 
     useEffect(() => {
@@ -189,7 +191,8 @@ export default function AdminBibliothequePage() {
             isFree: book.isFree,
             category: book.category,
             imageUrl: book.imageUrl,
-            whatsappMessage: book.whatsappMessage
+            whatsappMessage: book.whatsappMessage,
+            driveUrl: book.driveUrl || ''
         })
         setShowEditModal(true)
     }
@@ -232,7 +235,8 @@ export default function AdminBibliothequePage() {
             isFree: false,
             category: 'etu',
             imageUrl: '',
-            whatsappMessage: ''
+            whatsappMessage: '',
+            driveUrl: ''
         })
         setEditingBook(null)
     }
@@ -748,6 +752,25 @@ export default function AdminBibliothequePage() {
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-gray-500 text-sm"
                                         />
                                     </div>
+
+                                    {/* Drive URL - Lien de téléchargement gratuit */}
+                                    {formData.isFree && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Lien de téléchargement (Google Drive)
+                                            </label>
+                                            <input
+                                                type="url"
+                                                value={formData.driveUrl}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, driveUrl: e.target.value }))}
+                                                placeholder="https://drive.google.com/..."
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-gray-500 text-sm"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Lien de téléchargement gratuit pour les livres numériques
+                                            </p>
+                                        </div>
+                                    )}
 
                                     {/* Submit Buttons */}
                                     <div className="flex justify-end space-x-3 pt-3">
