@@ -166,45 +166,137 @@ export default function MembersPage() {
         pdf.setFontSize(16)
         pdf.text('Liste des Membres - OMP', 105, 15, { align: 'center' })
 
-        pdf.setFontSize(10)
-        let y = 30
+        pdf.setFontSize(8)
+        pdf.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}`, 105, 22, { align: 'center' })
+        pdf.text(`Total: ${filteredMembers.length} membre(s)`, 105, 27, { align: 'center' })
+
+        pdf.setFontSize(9)
+        let y = 35
 
         filteredMembers.forEach((membre, index) => {
-            if (y > 270) {
+            // Vérifier s'il faut une nouvelle page
+            if (y > 260) {
                 pdf.addPage()
                 y = 20
             }
 
+            // En-tête du membre (nom et prénoms en gras)
+            pdf.setFont(undefined, 'bold')
             pdf.text(`${index + 1}. ${membre.nom} ${membre.prenoms}`, 10, y)
+            pdf.setFont(undefined, 'normal')
             y += 5
+
+            // Nom Sacré
+            if (membre.nomSacre) {
+                pdf.text(`   Nom Sacré: ${membre.nomSacre}`, 10, y)
+                y += 4
+            }
+
+            // Profession
+            if (membre.profession) {
+                pdf.text(`   Profession: ${membre.profession}`, 10, y)
+                y += 4
+            }
+
+            // Date et heure de naissance
+            const dateNaissance = new Date(membre.dateNaissance).toLocaleDateString('fr-FR')
+            pdf.text(`   Né(e) le: ${dateNaissance}${membre.heureNaissance ? ' à ' + membre.heureNaissance : ''}`, 10, y)
+            y += 4
+
+            // Lieu de naissance
+            pdf.text(`   Lieu de naissance: ${membre.lieuNaissance}`, 10, y)
+            y += 4
+
+            // Lieu de résidence
+            pdf.text(`   Résidence: ${membre.lieuResidence}`, 10, y)
+            y += 4
+
+            // Religion pratiquée
+            pdf.text(`   Religion pratiquée: ${membre.religionPratique}`, 10, y)
+            y += 4
+
+            // Appartenance à un autre ordre
+            const autreOrdre = membre.appartientAutreOrdre ? 'Oui' : 'Non'
+            pdf.text(`   Appartient à un autre Ordre: ${autreOrdre}`, 10, y)
+            y += 4
+
+            if (membre.appartientAutreOrdre && membre.precisionOrdre) {
+                pdf.text(`   Précision: ${membre.precisionOrdre}`, 10, y)
+                y += 4
+            }
+
+            // Grade et Statut
             pdf.text(`   Grade: ${membre.grade} | Statut: ${membre.statut}`, 10, y)
-            y += 5
-            pdf.text(`   Téléphone: ${membre.telephoneWhatsapp} | Résidence: ${membre.lieuResidence}`, 10, y)
-            y += 8
+            y += 4
+
+            // Téléphone WhatsApp
+            pdf.text(`   Téléphone WhatsApp: ${membre.telephoneWhatsapp}`, 10, y)
+            y += 4
+
+            // Date d'inscription
+            const dateInscription = new Date(membre.createdAt).toLocaleDateString('fr-FR')
+            pdf.setFontSize(7)
+            pdf.text(`   Inscrit le: ${dateInscription}`, 10, y)
+            pdf.setFontSize(9)
+            y += 6
+
+            // Ligne de séparation
+            pdf.setDrawColor(200, 200, 200)
+            pdf.line(10, y, 200, y)
+            y += 4
         })
 
         pdf.save('membres-omp.pdf')
     }
 
     const exportToTxt = () => {
-        let content = 'LISTE DES MEMBRES - OMP\n'
+        let content = 'LISTE DES MEMBRES - ORDRE DES MARINS PECHEURS (OMP)\n'
+        content += '='.repeat(80) + '\n'
+        content += `Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}\n`
+        content += `Total: ${filteredMembers.length} membre(s)\n`
         content += '='.repeat(80) + '\n\n'
 
         filteredMembers.forEach((membre, index) => {
             content += `${index + 1}. ${membre.nom} ${membre.prenoms}\n`
-            content += `   Nom Sacré: ${membre.nomSacre || 'N/A'}\n`
-            content += `   Grade: ${membre.grade} | Statut: ${membre.statut}\n`
-            content += `   Profession: ${membre.profession || 'N/A'}\n`
-            content += `   Date de naissance: ${new Date(membre.dateNaissance).toLocaleDateString('fr-FR')}\n`
+
+            if (membre.nomSacre) {
+                content += `   Nom Sacré: ${membre.nomSacre}\n`
+            }
+
+            if (membre.profession) {
+                content += `   Profession: ${membre.profession}\n`
+            }
+
+            const dateNaissance = new Date(membre.dateNaissance).toLocaleDateString('fr-FR')
+            content += `   Date de naissance: ${dateNaissance}\n`
+
+            if (membre.heureNaissance) {
+                content += `   Heure de naissance: ${membre.heureNaissance}\n`
+            }
+
             content += `   Lieu de naissance: ${membre.lieuNaissance}\n`
-            content += `   Religion: ${membre.religionPratique}\n`
-            content += `   Téléphone: ${membre.telephoneWhatsapp}\n`
-            content += `   Résidence: ${membre.lieuResidence}\n`
-            content += `   Inscrit le: ${new Date(membre.createdAt).toLocaleDateString('fr-FR')}\n`
+            content += `   Lieu de résidence: ${membre.lieuResidence}\n`
+            content += `   Religion pratiquée: ${membre.religionPratique}\n`
+
+            const autreOrdre = membre.appartientAutreOrdre ? 'Oui' : 'Non'
+            content += `   Appartient à un autre Ordre: ${autreOrdre}\n`
+
+            if (membre.appartientAutreOrdre && membre.precisionOrdre) {
+                content += `   Précision sur l'ordre: ${membre.precisionOrdre}\n`
+            }
+
+            content += `   Grade: ${membre.grade}\n`
+            content += `   Statut: ${membre.statut}\n`
+            content += `   Téléphone WhatsApp: ${membre.telephoneWhatsapp}\n`
+
+            const dateInscription = new Date(membre.createdAt).toLocaleDateString('fr-FR')
+            const heureInscription = new Date(membre.createdAt).toLocaleTimeString('fr-FR')
+            content += `   Inscrit le: ${dateInscription} à ${heureInscription}\n`
+
             content += '-'.repeat(80) + '\n\n'
         })
 
-        const blob = new Blob([content], { type: 'text/plain' })
+        const blob = new Blob([content], { type: 'text/plain; charset=utf-8' })
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
