@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
       grade,
       telephoneWhatsapp,
       lieuResidence,
-      statut
+      statut,
+      imageUrl
     } = body
 
     // Validation des champs requis
@@ -48,7 +49,8 @@ export async function POST(request: NextRequest) {
         grade: grade || 'Explorateur',
         telephoneWhatsapp,
         lieuResidence,
-        statut: statut || 'actif'
+        statut: statut || 'actif',
+        imageUrl: imageUrl || null
       }
     })
 

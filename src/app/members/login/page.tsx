@@ -1,28 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Lock, ArrowLeft, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ClientOnly from '@/components/ClientOnly'
 
-const MEMBER_ACCESS_PASSWORD = 'ETU2024MEMBRE' // Mot de passe pour accéder au formulaire
+const MEMBER_ACCESS_PASSWORD = process.env.NEXT_PUBLIC_MEMBER_ACCESS_PASSWORD
 
 export default function MemberLoginPage() {
     const router = useRouter()
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-    useEffect(() => {
-        // Vérifier si l'utilisateur est déjà authentifié
-        const authStatus = sessionStorage.getItem('memberFormAuth')
-        if (authStatus === 'true') {
-            setIsAuthenticated(true)
-            router.push('/members/inscription')
-        }
-    }, [router])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -31,32 +21,11 @@ export default function MemberLoginPage() {
 
         if (password === MEMBER_ACCESS_PASSWORD) {
             sessionStorage.setItem('memberFormAuth', 'true')
-            setIsAuthenticated(true)
             router.push('/members/inscription')
         } else {
             setError('Mot de passe incorrect')
             setIsSubmitting(false)
         }
-    }
-
-    if (isAuthenticated) {
-        return (
-            <ClientOnly fallback={
-                <div className="min-h-screen bg-white flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Chargement...</p>
-                    </div>
-                </div>
-            }>
-                <div className="min-h-screen bg-white flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Redirection vers le formulaire...</p>
-                    </div>
-                </div>
-            </ClientOnly>
-        )
     }
 
     return (

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ArrowLeft, User, Calendar, MapPin, Phone, BookOpen, Briefcase, Shield, Hash } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { ArrowLeft, User, Calendar, MapPin, Phone, BookOpen, Briefcase, Shield, Hash, Upload, X, CheckCircle, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 import { useRouter } from 'next/navigation'
@@ -24,13 +24,17 @@ interface MemberFormData {
 
 export default function MemberInscriptionPage() {
     const router = useRouter()
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     // Tous les Hooks doivent être au début, avant tout retour conditionnel
     const [isAuthorized, setIsAuthorized] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
-    const [error, setError] = useState('')
+    const [showPhotoModal, setShowPhotoModal] = useState(false)
+    const [uploadingPhoto, setUploadingPhoto] = useState(false)
+    const [photoUploaded, setPhotoUploaded] = useState(false)
+    const [selectedMemberId, setSelectedMemberId] = useState<string>('')
     const [formData, setFormData] = useState<MemberFormData>({
         nom: '',
         prenoms: '',
@@ -56,7 +60,7 @@ export default function MemberInscriptionPage() {
             setIsAuthorized(true)
         }
         setIsLoading(false)
-    }, [router])
+    }, [])
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
@@ -66,7 +70,6 @@ export default function MemberInscriptionPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
-        setError('')
 
         try {
             const response = await fetch('/api/members', {
@@ -81,16 +84,51 @@ export default function MemberInscriptionPage() {
             })
 
             if (response.ok) {
-                setIsSuccess(true)
+                const result = await response.json()
+                setSelectedMemberId(result.id)
+                setShowPhotoModal(true)
             } else {
                 const errorData = await response.json()
-                setError(errorData.error || 'Une erreur est survenue')
+                alert(errorData.error || 'Une erreur est survenue')
             }
         } catch (err) {
-            setError('Une erreur de connexion est survenue')
+            alert('Une erreur de connexion est survenue')
         } finally {
             setIsSubmitting(false)
         }
+    }
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file || !selectedMemberId) return
+
+        setUploadingPhoto(true)
+
+        try {
+            const formDataUpload = new FormData()
+            formDataUpload.append('file', file)
+            formDataUpload.append('memberId', selectedMemberId)
+
+            const response = await fetch('/api/members/upload-photo', {
+                method: 'POST',
+                body: formDataUpload,
+            })
+
+            if (response.ok) {
+                setPhotoUploaded(true)
+            } else {
+                alert('Erreur lors de l\'upload de la photo')
+            }
+        } catch (err) {
+            console.error('Erreur upload:', err)
+            alert('Erreur lors de l\'upload de la photo')
+        } finally {
+            setUploadingPhoto(false)
+        }
+    }
+
+    const handleWhatsAppRedirect = () => {
+        window.open(`https://wa.me/22967153974?text=Bonjour, je viens de m'inscrire à l'OMP-ETU Bénin. Je souhaite envoyer ma photo pour compléter mon dossier.`, '_blank')
     }
 
     if (isLoading) {
@@ -215,11 +253,6 @@ export default function MemberInscriptionPage() {
                     {/* Formulaire */}
                     <div className="max-w-2xl mx-auto">
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                    <p className="text-red-600 text-sm font-serif">{error}</p>
-                                </div>
-                            )}
 
                             {/* Nom, Prénoms */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -488,6 +521,165 @@ export default function MemberInscriptionPage() {
                         </p>
                     </div>
                 </footer>
+
+                {/* Modal Photo */}
+                {showPhotoModal && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                        <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full my-8 relative">
+                            {/* Header avec logo et titre */}
+                            <div className="border-b border-gray-200 p-6">
+                                <div className="flex items-center justify-center space-x-4 mb-4">
+                                    <img
+                                        src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
+                                        alt="Logo ETU"
+                                        className="w-12 h-12"
+                                    />
+                                    <div className="text-center">
+                                        <h3 className="text-xl font-serif text-gray-900">
+                                            École Transcendantaliste Universelle
+                                        </h3>
+                                        <p className="text-sm text-gray-600 font-serif uppercase tracking-wider">
+                                            Ordre des Marins Pêcheurs
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-center">
+                                    <h4 className="text-lg font-serif text-gray-900">
+                                        Photo de profil
+                                    </h4>
+                                    <p className="text-sm text-gray-600 font-serif mt-1">
+                                        Complétez votre dossier membre
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6">
+                                {photoUploaded ? (
+                                    <div className="text-center py-8">
+                                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <CheckCircle className="w-10 h-10 text-green-600" />
+                                        </div>
+                                        <h4 className="text-xl font-serif text-gray-900 mb-3">
+                                            Photo uploadée avec succès !
+                                        </h4>
+                                        <p className="text-base text-gray-600 font-serif mb-6 max-w-md mx-auto">
+                                            Votre photo a été enregistrée dans notre base de données.
+                                        </p>
+                                        <button
+                                            onClick={() => {
+                                                setShowPhotoModal(false)
+                                                setIsSuccess(true)
+                                            }}
+                                            className="bg-gray-800 hover:bg-gray-900 text-white px-8 py-3 rounded-lg transition-colors font-semibold shadow-lg"
+                                        >
+                                            Terminer
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="py-6">
+                                        <div className="text-center mb-8">
+                                            <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <Upload className="w-10 h-10 text-white" />
+                                            </div>
+                                            <h4 className="text-xl font-serif text-gray-900 mb-3">
+                                                Avez-vous une photo récente sous la main ?
+                                            </h4>
+                                            <p className="text-base text-gray-600 font-serif max-w-md mx-auto">
+                                                Pour compléter votre dossier, nous avons besoin d'une photo récente de vous.
+                                            </p>
+                                        </div>
+
+                                        <div className="max-w-md mx-auto space-y-4">
+                                            <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                                                <div className="flex items-center mb-3">
+                                                    <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                                        <span className="text-white font-bold text-sm">1</span>
+                                                    </div>
+                                                    <h5 className="font-serif text-gray-900">Upload maintenant</h5>
+                                                </div>
+                                                <input
+                                                    ref={fileInputRef}
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handlePhotoUpload}
+                                                    disabled={uploadingPhoto}
+                                                    className="hidden"
+                                                />
+                                                <button
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    disabled={uploadingPhoto}
+                                                    className="w-full bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg transition-colors font-semibold flex items-center justify-center shadow-md"
+                                                >
+                                                    {uploadingPhoto ? (
+                                                        <>
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                            Upload en cours...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Upload className="w-4 h-4 mr-2" />
+                                                            Choisir une photo
+                                                        </>
+                                                    )}
+                                                </button>
+                                                <p className="text-xs text-gray-500 mt-2 text-center font-serif">
+                                                    Formats acceptés : JPG, PNG, WEBP (max 10MB)
+                                                </p>
+                                            </div>
+
+                                            <div className="relative">
+                                                <div className="absolute inset-0 flex items-center">
+                                                    <div className="w-full border-t border-gray-300"></div>
+                                                </div>
+                                                <div className="relative flex justify-center text-sm">
+                                                    <span className="px-3 bg-white text-gray-500 font-serif">ou</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                                                <div className="flex items-center mb-3">
+                                                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                                        <span className="text-white font-bold text-sm">2</span>
+                                                    </div>
+                                                    <h5 className="font-serif text-gray-900">Envoyer par WhatsApp plus tard</h5>
+                                                </div>
+                                                <button
+                                                    onClick={handleWhatsAppRedirect}
+                                                    className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold flex items-center justify-center shadow-md"
+                                                >
+                                                    <MessageCircle className="w-4 h-4 mr-2" />
+                                                    Envoyer par WhatsApp
+                                                </button>
+                                                <p className="text-xs text-gray-500 mt-2 text-center font-serif">
+                                                    Envoyez votre photo au <span className="font-semibold text-gray-700">+229 67 15 39 74</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Footer du modal - Bouton Passer */}
+                            {!photoUploaded && (
+                                <div className="p-6 border-t border-gray-200 bg-gray-50">
+                                    <button
+                                        onClick={() => {
+                                            setShowPhotoModal(false)
+                                            setIsSuccess(true)
+                                        }}
+                                        className="w-full bg-transparent hover:bg-gray-100 text-gray-700 px-6 py-3 rounded-lg transition-colors font-semibold border border-gray-300"
+                                    >
+                                        Passer pour l'instant
+                                    </button>
+                                    <p className="text-xs text-gray-500 text-center mt-3 font-serif">
+                                        Vous pourrez toujours envoyer votre photo plus tard
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </ClientOnly>
     )

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, Search, Filter, Eye, Edit, Trash2, Shield, MapPin, Phone, Calendar, Briefcase, UserCheck, AlertCircle } from 'lucide-react'
+import { Users, Search, Filter, Eye, Edit, Trash2, Shield, MapPin, Phone, Calendar, Briefcase, UserCheck, AlertCircle, Download, FileText } from 'lucide-react'
+import jsPDF from 'jspdf'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
 import {
@@ -58,6 +59,10 @@ export default function MembersPage() {
     const [gradeFilter, setGradeFilter] = useState<string>('all')
     const [selectedMembre, setSelectedMembre] = useState<Membre | null>(null)
     const [viewDialogOpen, setViewDialogOpen] = useState(false)
+    const [editDialogOpen, setEditDialogOpen] = useState(false)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [editFormData, setEditFormData] = useState<Partial<Membre>>({})
+    const [submitting, setSubmitting] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
@@ -94,6 +99,118 @@ export default function MembersPage() {
     const handleViewMembre = (membre: Membre) => {
         setSelectedMembre(membre)
         setViewDialogOpen(true)
+    }
+
+    const handleEditMembre = (membre: Membre) => {
+        setSelectedMembre(membre)
+        setEditFormData(membre)
+        setEditDialogOpen(true)
+    }
+
+    const handleDeleteMembre = (membre: Membre) => {
+        setSelectedMembre(membre)
+        setDeleteDialogOpen(true)
+    }
+
+    const handleUpdateMembre = async () => {
+        if (!selectedMembre) return
+
+        setSubmitting(true)
+        try {
+            const response = await fetch(`/api/members/${selectedMembre.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(editFormData)
+            })
+
+            if (response.ok) {
+                setEditDialogOpen(false)
+                fetchMembers()
+            } else {
+                console.error('Erreur lors de la mise à jour du membre')
+            }
+        } catch (error) {
+            console.error('Erreur:', error)
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    const handleConfirmDelete = async () => {
+        if (!selectedMembre) return
+
+        setSubmitting(true)
+        try {
+            const response = await fetch(`/api/members/${selectedMembre.id}`, {
+                method: 'DELETE'
+            })
+
+            if (response.ok) {
+                setDeleteDialogOpen(false)
+                fetchMembers()
+            } else {
+                console.error('Erreur lors de la suppression du membre')
+            }
+        } catch (error) {
+            console.error('Erreur:', error)
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    const exportToPDF = () => {
+        const pdf = new jsPDF('p', 'mm', 'a4')
+
+        pdf.setFontSize(16)
+        pdf.text('Liste des Membres - OMP', 105, 15, { align: 'center' })
+
+        pdf.setFontSize(10)
+        let y = 30
+
+        filteredMembers.forEach((membre, index) => {
+            if (y > 270) {
+                pdf.addPage()
+                y = 20
+            }
+
+            pdf.text(`${index + 1}. ${membre.nom} ${membre.prenoms}`, 10, y)
+            y += 5
+            pdf.text(`   Grade: ${membre.grade} | Statut: ${membre.statut}`, 10, y)
+            y += 5
+            pdf.text(`   Téléphone: ${membre.telephoneWhatsapp} | Résidence: ${membre.lieuResidence}`, 10, y)
+            y += 8
+        })
+
+        pdf.save('membres-omp.pdf')
+    }
+
+    const exportToTxt = () => {
+        let content = 'LISTE DES MEMBRES - OMP\n'
+        content += '='.repeat(80) + '\n\n'
+
+        filteredMembers.forEach((membre, index) => {
+            content += `${index + 1}. ${membre.nom} ${membre.prenoms}\n`
+            content += `   Nom Sacré: ${membre.nomSacre || 'N/A'}\n`
+            content += `   Grade: ${membre.grade} | Statut: ${membre.statut}\n`
+            content += `   Profession: ${membre.profession || 'N/A'}\n`
+            content += `   Date de naissance: ${new Date(membre.dateNaissance).toLocaleDateString('fr-FR')}\n`
+            content += `   Lieu de naissance: ${membre.lieuNaissance}\n`
+            content += `   Religion: ${membre.religionPratique}\n`
+            content += `   Téléphone: ${membre.telephoneWhatsapp}\n`
+            content += `   Résidence: ${membre.lieuResidence}\n`
+            content += `   Inscrit le: ${new Date(membre.createdAt).toLocaleDateString('fr-FR')}\n`
+            content += '-'.repeat(80) + '\n\n'
+        })
+
+        const blob = new Blob([content], { type: 'text/plain' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'membres-omp.txt'
+        a.click()
+        window.URL.revokeObjectURL(url)
     }
 
     const getStatutBadgeVariant = (statut: string) => {
@@ -163,6 +280,20 @@ export default function MembersPage() {
                                 <p className="text-sm text-gray-600 mt-1">Gestion des membres de l'Ordre des Marins Pêcheurs</p>
                             </div>
                             <div className="flex items-center space-x-3">
+                                <Button
+                                    onClick={exportToPDF}
+                                    variant="outline"
+                                >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    Export PDF
+                                </Button>
+                                <Button
+                                    onClick={exportToTxt}
+                                    variant="outline"
+                                >
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Export TXT
+                                </Button>
                                 <Button
                                     onClick={() => router.push('/members/login')}
                                     variant="outline"
@@ -337,8 +468,25 @@ export default function MembersPage() {
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 onClick={() => handleViewMembre(membre)}
+                                                                title="Voir les détails"
                                                             >
                                                                 <Eye className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleEditMembre(membre)}
+                                                                title="Modifier"
+                                                            >
+                                                                <Edit className="w-4 h-4 text-blue-600" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleDeleteMembre(membre)}
+                                                                title="Supprimer"
+                                                            >
+                                                                <Trash2 className="w-4 h-4 text-red-600" />
                                                             </Button>
                                                         </div>
                                                     </TableCell>
@@ -472,6 +620,153 @@ export default function MembersPage() {
                                         minute: '2-digit'
                                     })}
                                 </p>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Modifier le membre</DialogTitle>
+                    </DialogHeader>
+                    {selectedMembre && (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                                    <Input
+                                        value={editFormData.nom || ''}
+                                        onChange={(e) => setEditFormData({ ...editFormData, nom: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Prénoms</label>
+                                    <Input
+                                        value={editFormData.prenoms || ''}
+                                        onChange={(e) => setEditFormData({ ...editFormData, prenoms: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Nom Sacré</label>
+                                <Input
+                                    value={editFormData.nomSacre || ''}
+                                    onChange={(e) => setEditFormData({ ...editFormData, nomSacre: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Profession</label>
+                                <Input
+                                    value={editFormData.profession || ''}
+                                    onChange={(e) => setEditFormData({ ...editFormData, profession: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone WhatsApp</label>
+                                <Input
+                                    value={editFormData.telephoneWhatsapp || ''}
+                                    onChange={(e) => setEditFormData({ ...editFormData, telephoneWhatsapp: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Lieu de résidence</label>
+                                <Input
+                                    value={editFormData.lieuResidence || ''}
+                                    onChange={(e) => setEditFormData({ ...editFormData, lieuResidence: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Grade</label>
+                                <Select
+                                    value={editFormData.grade || ''}
+                                    onValueChange={(value) => setEditFormData({ ...editFormData, grade: value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Explorateur">Explorateur</SelectItem>
+                                        <SelectItem value="Constructeur">Constructeur</SelectItem>
+                                        <SelectItem value="Navigateur">Navigateur</SelectItem>
+                                        <SelectItem value="Alchimiste">Alchimiste</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                                <Select
+                                    value={editFormData.statut || ''}
+                                    onValueChange={(value) => setEditFormData({ ...editFormData, statut: value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="actif">Actif</SelectItem>
+                                        <SelectItem value="suspendu">Suspendu</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex justify-end space-x-2 pt-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setEditDialogOpen(false)}
+                                    disabled={submitting}
+                                >
+                                    Annuler
+                                </Button>
+                                <Button
+                                    onClick={handleUpdateMembre}
+                                    disabled={submitting}
+                                >
+                                    {submitting ? 'Mise à jour...' : 'Enregistrer'}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirmer la suppression</DialogTitle>
+                    </DialogHeader>
+                    {selectedMembre && (
+                        <div className="space-y-4">
+                            <p className="text-gray-600">
+                                Êtes-vous sûr de vouloir supprimer le membre <strong>{selectedMembre.nom} {selectedMembre.prenoms}</strong> ?
+                            </p>
+                            <p className="text-sm text-red-600">
+                                Cette action est irréversible.
+                            </p>
+
+                            <div className="flex justify-end space-x-2 pt-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setDeleteDialogOpen(false)}
+                                    disabled={submitting}
+                                >
+                                    Annuler
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    onClick={handleConfirmDelete}
+                                    disabled={submitting}
+                                >
+                                    {submitting ? 'Suppression...' : 'Supprimer'}
+                                </Button>
                             </div>
                         </div>
                     )}
