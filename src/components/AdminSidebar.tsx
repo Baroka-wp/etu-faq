@@ -63,24 +63,6 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             label: 'Membres',
             icon: UserPlus,
             href: '/admin/members'
-        },
-        {
-            id: 'grades',
-            label: 'Grades & Programmes',
-            icon: Shield,
-            href: '/admin/grades'
-        },
-        {
-            id: 'reports',
-            label: 'Rapports',
-            icon: FileText,
-            href: '/admin/reports'
-        },
-        {
-            id: 'settings',
-            label: 'Paramètres',
-            icon: Settings,
-            href: '/admin/settings'
         }
     ]
 

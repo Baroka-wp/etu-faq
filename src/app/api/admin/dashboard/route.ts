@@ -16,9 +16,9 @@ export async function GET(request: NextRequest) {
 
     // Récupérer les statistiques
     const totalInscriptions = await (prisma as any).inscription.count()
-    const totalMembers = await (prisma as any).inscription.count({
+    const totalMembers = await (prisma as any).membre.count({
       where: {
-        statut: 'Actif'
+        statut: 'actif'
       }
     })
     const pendingApprovals = await (prisma as any).inscription.count({

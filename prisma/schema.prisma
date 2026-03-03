@@ -48,8 +48,9 @@ model Inscription {
   statut            String   @default("En attente")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   uniqueLinks       UniqueLink[]
+  payments          Payment[]
 }
 
 model UniqueLink {
@@ -93,4 +94,46 @@ model Course {
   published         Boolean  @default(true)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  inscriptionId     String
+  type              String   // "INSCRIPTION" ou "MENSUEL"
+  montant           Float    // 12000 pour inscription, 10000 pour mensuel
+  estPaye           Boolean  @default(false)
+  mois              Int?     // 1-12 (pour paiements mensuels)
+  annee             Int?     // année (pour paiements mensuels)
+  datePaiement      DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  inscription       Inscription @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([inscriptionId, type, mois, annee])
+  @@index([inscriptionId])
+  @@index([estPaye])
+}
+
+model Membre {
+  id                    String   @id @default(cuid())
+  nom                   String
+  prenoms               String
+  nomSacre              String?
+  profession            String?
+  dateNaissance         String
+  heureNaissance        String?
+  lieuNaissance         String
+  religionPratique      String
+  appartientAutreOrdre  Boolean  @default(false)
+  precisionOrdre        String?
+  grade                 String   @default("Explorateur") // Explorateur | Constructeur | Navigateur | Alchimiste
+  telephoneWhatsapp     String
+  lieuResidence         String
+  statut                String   @default("actif") // actif | suspendu
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([statut])
+  @@index([grade])
 }
