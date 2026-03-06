@@ -63,6 +63,8 @@ export default function MembersPage() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [editFormData, setEditFormData] = useState<Partial<Membre>>({})
     const [submitting, setSubmitting] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage] = useState(10)
     const router = useRouter()
 
     useEffect(() => {
@@ -96,10 +98,24 @@ export default function MembersPage() {
         return matchesSearch && matchesStatut && matchesGrade
     })
 
+    // Pagination
+    const totalPages = Math.ceil(filteredMembers.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const paginatedMembers = filteredMembers.slice(startIndex, endIndex)
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page)
+    }
+
     const handleViewMembre = (membre: Membre) => {
         setSelectedMembre(membre)
         setViewDialogOpen(true)
     }
+
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [searchTerm, statutFilter, gradeFilter])
 
     const handleEditMembre = (membre: Membre) => {
         setSelectedMembre(membre)
@@ -401,7 +417,7 @@ export default function MembersPage() {
                 {/* Members Content */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden">
                     <div className="p-4 sm:p-6 lg:p-8">
-                        {/* Stats Cards */}
+                        {/* Stats Cards - Réactives au filtrage */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                                 <div className="flex items-center">
@@ -410,52 +426,46 @@ export default function MembersPage() {
                                     </div>
                                     <div className="ml-4">
                                         <p className="text-sm font-medium text-gray-500">Total membres</p>
-                                        <p className="text-2xl font-bold text-gray-900">{membres.length}</p>
+                                        <p className="text-2xl font-bold text-gray-900">{filteredMembers.length}</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <div className="flex items-center">
-                                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                        <UserCheck className="w-6 h-6 text-green-600" />
+                            {['Constructeur', 'Navigateur', 'Alchimiste'].map((grade) => {
+                                const count = filteredMembers.filter(m => m.grade === grade).length
+                                const percentage = filteredMembers.length > 0
+                                    ? Math.round((count / filteredMembers.length) * 100)
+                                    : 0
+                                return (
+                                    <div key={grade} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                        <div className="flex flex-col items-center">
+                                            <p className="text-xs font-medium text-gray-500 text-center mb-2">{grade}</p>
+                                            <div className="w-16 h-16 relative mb-2">
+                                                <svg className="w-full h-full" viewBox="0 0 36 36">
+                                                    <path
+                                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                        fill="none"
+                                                        stroke="#e5e7eb"
+                                                        strokeWidth="3"
+                                                    />
+                                                    <path
+                                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                        fill="none"
+                                                        stroke="#eab308"
+                                                        strokeWidth="3"
+                                                        strokeDasharray={`${percentage}, 100`}
+                                                        className="transition-all duration-500"
+                                                    />
+                                                </svg>
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <span className="text-xs font-bold text-gray-900">{percentage}%</span>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs font-medium text-gray-600 text-center">{count}</p>
+                                        </div>
                                     </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-500">Membres actifs</p>
-                                        <p className="text-2xl font-bold text-gray-900">
-                                            {membres.filter(m => m.statut === 'actif').length}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <div className="flex items-center">
-                                    <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                        <Shield className="w-6 h-6 text-yellow-600" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-500">Explorateurs</p>
-                                        <p className="text-2xl font-bold text-gray-900">
-                                            {membres.filter(m => m.grade === 'Explorateur').length}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <div className="flex items-center">
-                                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                                        <AlertCircle className="w-6 h-6 text-red-600" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-500">Suspendus</p>
-                                        <p className="text-2xl font-bold text-gray-900">
-                                            {membres.filter(m => m.statut === 'suspendu').length}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                                )
+                            })}
                         </div>
 
                         {/* Filters */}
@@ -530,7 +540,7 @@ export default function MembersPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredMembers.length === 0 ? (
+                                        {paginatedMembers.length === 0 ? (
                                             <TableRow>
                                                 <TableCell colSpan={7} className="text-center py-8">
                                                     <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -538,7 +548,7 @@ export default function MembersPage() {
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            filteredMembers.map((membre) => (
+                                            paginatedMembers.map((membre) => (
                                                 <TableRow key={membre.id}>
                                                     <TableCell className="font-medium">{membre.nom}</TableCell>
                                                     <TableCell>{membre.prenoms}</TableCell>
@@ -589,6 +599,48 @@ export default function MembersPage() {
                                 </Table>
                             </div>
                         </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-6">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm text-gray-600">
+                                        Affichage de {startIndex + 1} à {Math.min(endIndex, filteredMembers.length)} sur {filteredMembers.length} membres
+                                    </p>
+                                    <div className="flex items-center space-x-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            Précédent
+                                        </Button>
+                                        <div className="flex items-center space-x-1">
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                                <Button
+                                                    key={page}
+                                                    variant={currentPage === page ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => handlePageChange(page)}
+                                                    className="w-10"
+                                                >
+                                                    {page}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Suivant
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
