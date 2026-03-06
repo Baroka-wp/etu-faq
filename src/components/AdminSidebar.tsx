@@ -35,8 +35,14 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             href: '/admin/dashboard'
         },
         {
+            id: 'members',
+            label: 'Membres OMP',
+            icon: UserPlus,
+            href: '/admin/members'
+        },
+        {
             id: 'prospects',
-            label: 'Prospects',
+            label: 'Aspirants Explorateurs',
             icon: Users,
             href: '/admin/inscriptions'
         },
@@ -57,12 +63,6 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             label: 'Carte du ciel',
             icon: Sparkles,
             href: '/admin/carte-du-ciel'
-        },
-        {
-            id: 'members',
-            label: 'Membres',
-            icon: UserPlus,
-            href: '/admin/members'
         }
     ]
 
