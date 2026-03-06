@@ -45,6 +45,8 @@ export default function AdminInscriptions() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [filterStatut, setFilterStatut] = useState('')
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage] = useState(10)
     const [selectedInscription, setSelectedInscription] = useState<Inscription | null>(null)
     const [showPasswordModal, setShowPasswordModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
@@ -327,15 +329,33 @@ export default function AdminInscriptions() {
         })
     }
 
+    // Calculer les statistiques
+    const stats = {
+        total: inscriptions.length,
+        actifs: inscriptions.filter(i => i.statut === 'Actif').length,
+        enAttente: inscriptions.filter(i => i.statut === 'En attente').length,
+        suspendus: inscriptions.filter(i => i.statut === 'Suspendu').length,
+    }
+
     const filteredInscriptions = inscriptions.filter(inscription => {
         const matchesSearch = inscription.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
             inscription.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
             inscription.telephone.includes(searchTerm)
         const matchesStatut = !filterStatut || inscription.statut === filterStatut
-        // Afficher uniquement les prospects "En attente"
-        const matchesProspects = inscription.statut === 'En attente'
-        return matchesSearch && matchesStatut && matchesProspects
+        return matchesSearch && matchesStatut
     })
+
+    // Pagination
+    const totalPages = Math.ceil(filteredInscriptions.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const paginatedInscriptions = filteredInscriptions.slice(startIndex, endIndex)
+
+    // Réinitialiser la page quand le filtre change
+    const handleFilterChange = (statut: string) => {
+        setFilterStatut(statut)
+        setCurrentPage(1)
+    }
 
     if (loading) {
         return (
@@ -370,8 +390,8 @@ export default function AdminInscriptions() {
                     <div className="px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Gestion des Prospects</h1>
-                                <p className="text-sm text-gray-600 mt-1">Gérer les inscriptions en attente</p>
+                                <h1 className="text-2xl font-bold text-gray-900">Gestion des Inscriptions</h1>
+                                <p className="text-sm text-gray-600 mt-1">Gérer tous les inscrits (aspirants explorateurs)</p>
                             </div>
                             <div className="flex items-center space-x-3">
                                 <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
@@ -386,33 +406,95 @@ export default function AdminInscriptions() {
                 {/* Main Content */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden">
                     <div className="p-4 sm:p-6 lg:p-8">
-                    {/* Filters */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="flex-1">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                    <input
-                                        type="text"
-                                        placeholder="Rechercher par nom, prénom ou téléphone..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm"
-                                    />
+                    {/* KPI Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        {/* Tous */}
+                        <button
+                            onClick={() => handleFilterChange('')}
+                            className={`bg-white rounded-lg shadow-sm border-2 p-6 text-left transition-all hover:shadow-md ${
+                                filterStatut === '' ? 'border-gray-900 ring-2 ring-gray-900' : 'border-gray-200'
+                            }`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Tous</p>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">{stats.total}</p>
+                                </div>
+                                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <Users className="w-6 h-6 text-gray-600" />
                                 </div>
                             </div>
-                            <div className="sm:w-48">
-                                <select
-                                    value={filterStatut}
-                                    onChange={(e) => setFilterStatut(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm"
-                                >
-                                    <option value="">Tous les statuts</option>
-                                    <option value="En attente">En attente</option>
-                                    <option value="Actif">Actif</option>
-                                    <option value="Suspendu">Suspendu</option>
-                                </select>
+                        </button>
+
+                        {/* En attente */}
+                        <button
+                            onClick={() => handleFilterChange('En attente')}
+                            className={`bg-white rounded-lg shadow-sm border-2 p-6 text-left transition-all hover:shadow-md ${
+                                filterStatut === 'En attente' ? 'border-yellow-500 ring-2 ring-yellow-500' : 'border-gray-200'
+                            }`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">En attente</p>
+                                    <p className="text-3xl font-bold text-yellow-600 mt-2">{stats.enAttente}</p>
+                                </div>
+                                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                                    <Clock className="w-6 h-6 text-yellow-600" />
+                                </div>
                             </div>
+                        </button>
+
+                        {/* Actifs */}
+                        <button
+                            onClick={() => handleFilterChange('Actif')}
+                            className={`bg-white rounded-lg shadow-sm border-2 p-6 text-left transition-all hover:shadow-md ${
+                                filterStatut === 'Actif' ? 'border-green-500 ring-2 ring-green-500' : 'border-gray-200'
+                            }`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Actifs</p>
+                                    <p className="text-3xl font-bold text-green-600 mt-2">{stats.actifs}</p>
+                                </div>
+                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <UserCheck className="w-6 h-6 text-green-600" />
+                                </div>
+                            </div>
+                        </button>
+
+                        {/* Suspendus */}
+                        <button
+                            onClick={() => handleFilterChange('Suspendu')}
+                            className={`bg-white rounded-lg shadow-sm border-2 p-6 text-left transition-all hover:shadow-md ${
+                                filterStatut === 'Suspendu' ? 'border-red-500 ring-2 ring-red-500' : 'border-gray-200'
+                            }`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Suspendus</p>
+                                    <p className="text-3xl font-bold text-red-600 mt-2">{stats.suspendus}</p>
+                                </div>
+                                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                    <X className="w-6 h-6 text-red-600" />
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <input
+                                type="text"
+                                placeholder="Rechercher par nom, prénom ou téléphone..."
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value)
+                                    setCurrentPage(1)
+                                }}
+                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm"
+                            />
                         </div>
                     </div>
 
@@ -430,6 +512,7 @@ export default function AdminInscriptions() {
                                 <p className="text-gray-500">Aucune inscription trouvée</p>
                             </div>
                         ) : (
+                            <>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
@@ -455,7 +538,7 @@ export default function AdminInscriptions() {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                        {filteredInscriptions.map((inscription) => (
+                                        {paginatedInscriptions.map((inscription) => (
                                             <tr key={inscription.id} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">
@@ -576,6 +659,64 @@ export default function AdminInscriptions() {
                                     </tbody>
                                 </table>
                             </div>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                                    <div className="text-sm text-gray-700">
+                                        Affichage de <span className="font-medium">{startIndex + 1}</span> à{' '}
+                                        <span className="font-medium">{Math.min(endIndex, filteredInscriptions.length)}</span> sur{' '}
+                                        <span className="font-medium">{filteredInscriptions.length}</span> résultats
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
+                                            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Précédent
+                                        </button>
+                                        <div className="flex items-center space-x-1">
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                                // Afficher les 3 premières pages, les 3 dernières, et 2 autour de la page actuelle
+                                                if (
+                                                    page === 1 ||
+                                                    page === totalPages ||
+                                                    (page >= currentPage - 1 && page <= currentPage + 1)
+                                                ) {
+                                                    return (
+                                                        <button
+                                                            key={page}
+                                                            onClick={() => setCurrentPage(page)}
+                                                            className={`px-3 py-1 border rounded-md text-sm font-medium transition-colors ${
+                                                                currentPage === page
+                                                                    ? 'bg-gray-900 text-white border-gray-900'
+                                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                            }`}
+                                                        >
+                                                            {page}
+                                                        </button>
+                                                    )
+                                                } else if (
+                                                    page === currentPage - 2 ||
+                                                    page === currentPage + 2
+                                                ) {
+                                                    return <span key={page} className="px-2 text-gray-500">...</span>
+                                                }
+                                                return null
+                                            })}
+                                        </div>
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Suivant
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            </>
                         )}
                     </div>
                     </div>
