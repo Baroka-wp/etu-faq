@@ -181,9 +181,9 @@ export default function MembersPage() {
             }
 
             // En-tête du membre (nom et prénoms en gras)
-            pdf.setFont(undefined, 'bold')
+            pdf.setFont('helvetica', 'bold')
             pdf.text(`${index + 1}. ${membre.nom} ${membre.prenoms}`, 10, y)
-            pdf.setFont(undefined, 'normal')
+            pdf.setFont('helvetica', 'normal')
             y += 5
 
             // Nom Sacré

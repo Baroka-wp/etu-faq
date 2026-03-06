@@ -238,11 +238,21 @@ export default function InscriptionPage() {
                                     Date de naissance *
                                 </label>
                                 <input
-                                    type="date"
+                                    type="text"
                                     id="dateNaissance"
                                     name="dateNaissance"
                                     value={formData.dateNaissance}
-                                    onChange={handleInputChange}
+                                    onChange={(e) => {
+                                        let value = e.target.value.replace(/\D/g, '')
+                                        if (value.length > 8) value = value.slice(0, 8)
+                                        if (value.length >= 5) {
+                                            value = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`
+                                        } else if (value.length >= 3) {
+                                            value = `${value.slice(0, 2)}/${value.slice(2)}`
+                                        }
+                                        setFormData(prev => ({ ...prev, dateNaissance: value }))
+                                    }}
+                                    placeholder="jj/mm/aaaa"
                                     required
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
                                 />
@@ -255,11 +265,21 @@ export default function InscriptionPage() {
                                     Heure de naissance (optionnel)
                                 </label>
                                 <input
-                                    type="time"
+                                    type="text"
                                     id="heureNaissance"
                                     name="heureNaissance"
                                     value={formData.heureNaissance}
-                                    onChange={handleInputChange}
+                                    onChange={(e) => {
+                                        let value = e.target.value.replace(/\D/g, '')
+                                        if (value.length > 4) value = value.slice(0, 4)
+                                        if (value.length >= 3) {
+                                            value = `${value.slice(0, 2)}:${value.slice(2)}`
+                                        } else {
+                                            value = value.slice(0, 2)
+                                        }
+                                        setFormData(prev => ({ ...prev, heureNaissance: value }))
+                                    }}
+                                    placeholder="hh:mm"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
                                 />
                             </div>
