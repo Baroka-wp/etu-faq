@@ -669,35 +669,31 @@ export default function MembersPage() {
 
             {/* View Dialog */}
             <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
-                    <DialogHeader className="sr-only">
-                        <DialogTitle>Détails du membre</DialogTitle>
-                    </DialogHeader>
-                    {/* En-tête style passeport */}
-                    <div className="bg-gradient-to-r from-yellow-600 to-yellow-700 px-6 py-4">
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <h2 className="text-xl font-bold text-white">FICHE MEMBRE</h2>
-                                <p className="text-yellow-100 text-sm">Ordre des Marins Pêcheurs</p>
+                                <DialogTitle className="text-lg font-semibold">FICHE MEMBRE</DialogTitle>
+                                <p className="text-sm text-gray-500">Ordre des Marins Pêcheurs</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Badge variant={getStatutBadgeVariant(selectedMembre?.statut || 'actif')} className="text-sm px-3 py-1">
+                                <Badge variant={getStatutBadgeVariant(selectedMembre?.statut || 'actif')} className="text-sm">
                                     {selectedMembre?.statut?.toUpperCase()}
                                 </Badge>
-                                <Badge variant={getGradeBadgeVariant(selectedMembre?.grade || 'Explorateur')} className="text-sm px-3 py-1">
+                                <Badge variant={getGradeBadgeVariant(selectedMembre?.grade || 'Explorateur')} className="text-sm">
                                     {selectedMembre?.grade?.toUpperCase()}
                                 </Badge>
                             </div>
                         </div>
-                    </div>
+                    </DialogHeader>
 
-                    <div className="p-6">
+                    <div className="mt-4">
                         {selectedMembre && (
                             <>
                                 <div className="flex gap-6 mb-6">
                                     {/* Photo style passeport */}
                                     <div className="flex-shrink-0">
-                                        <div className="w-40 h-48 rounded-lg bg-gray-100 border-2 border-gray-300 flex items-center justify-center overflow-hidden shadow-md">
+                                        <div className="w-32 h-40 rounded-lg bg-gray-100 border-2 border-gray-200 flex items-center justify-center overflow-hidden">
                                             {selectedMembre.imageUrl ? (
                                                 <img
                                                     src={selectedMembre.imageUrl}
@@ -706,7 +702,7 @@ export default function MembersPage() {
                                                 />
                                             ) : (
                                                 <div className="text-center text-gray-400">
-                                                    <User className="w-16 h-16 mx-auto mb-2" />
+                                                    <User className="w-12 h-12 mx-auto mb-2" />
                                                     <span className="text-xs">Sans photo</span>
                                                 </div>
                                             )}
@@ -717,16 +713,16 @@ export default function MembersPage() {
                                     <div className="flex-1 space-y-3">
                                         <div>
                                             <p className="text-xs text-gray-500 uppercase tracking-wide">Nom</p>
-                                            <p className="text-lg font-semibold text-gray-900">{selectedMembre.nom}</p>
+                                            <p className="text-base font-semibold text-gray-900">{selectedMembre.nom}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-500 uppercase tracking-wide">Prénoms</p>
-                                            <p className="text-lg font-semibold text-gray-900">{selectedMembre.prenoms}</p>
+                                            <p className="text-base font-semibold text-gray-900">{selectedMembre.prenoms}</p>
                                         </div>
                                         {selectedMembre.nomSacre && (
                                             <div>
                                                 <p className="text-xs text-gray-500 uppercase tracking-wide">Nom Sacré</p>
-                                                <p className="text-base font-medium text-yellow-700">{selectedMembre.nomSacre}</p>
+                                                <p className="text-sm font-medium text-gray-700">{selectedMembre.nomSacre}</p>
                                             </div>
                                         )}
                                         {selectedMembre.profession && (
