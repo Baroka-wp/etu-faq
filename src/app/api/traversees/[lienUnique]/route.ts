@@ -12,6 +12,7 @@ export async function GET(
       where: { lienUnique },
       select: {
         id: true,
+        type: true,
         titre: true,
         description: true,
         date: true,

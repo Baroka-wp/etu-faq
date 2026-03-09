@@ -12,7 +12,7 @@ export async function PUT(
     }
 
     const { id } = await params
-    const { titre, description, date, lieu, lienUnique } = await request.json()
+    const { type, titre, description, date, lieu, lienUnique } = await request.json()
 
     if (!titre || !description || !date || !lieu || !lienUnique) {
       return NextResponse.json({ error: 'Tous les champs sont obligatoires' }, { status: 400 })
@@ -27,12 +27,12 @@ export async function PUT(
 
     const existing = await db.traversee.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json({ error: 'Traversée non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Planification non trouvée' }, { status: 404 })
     }
 
     const traversee = await db.traversee.update({
       where: { id },
-      data: { titre, description, date: new Date(date), lieu, lienUnique },
+      data: { type: type || 'Traversée Grand Navire', titre, description, date: new Date(date), lieu, lienUnique },
       include: { _count: { select: { inscriptions: true } } }
     })
 

@@ -43,7 +43,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
         },
         {
             id: 'traversees',
-            label: 'Traversées',
+            label: 'Planifications',
             icon: Compass,
             href: '/admin/traversees'
         },

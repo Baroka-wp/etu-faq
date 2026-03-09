@@ -143,6 +143,7 @@ model Membre {
 
 model Traversee {
   id           String   @id @default(cuid())
+  type         String   @default("Traversée Grand Navire")
   titre        String
   description  String
   date         DateTime

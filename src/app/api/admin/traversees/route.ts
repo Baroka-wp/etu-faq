@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
-    const { titre, description, date, lieu, lienUnique } = await request.json()
+    const { type, titre, description, date, lieu, lienUnique } = await request.json()
 
     if (!titre || !description || !date || !lieu || !lienUnique) {
       return NextResponse.json({ error: 'Tous les champs sont obligatoires' }, { status: 400 })
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const traversee = await db.traversee.create({
-      data: { titre, description, date: new Date(date), lieu, lienUnique },
+      data: { type: type || 'Traversée Grand Navire', titre, description, date: new Date(date), lieu, lienUnique },
       include: { _count: { select: { inscriptions: true } } }
     })
 

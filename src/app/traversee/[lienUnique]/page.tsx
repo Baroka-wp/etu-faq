@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 
 interface TraverseeData {
     id: string
+    type: string
     titre: string
     description: string
     date: string
@@ -210,7 +211,7 @@ export default function TraverseePage() {
                     {/* Card header */}
                     <div className="bg-gradient-to-r from-gray-900 to-gray-700 text-white p-8">
                         <div className="flex items-center gap-2 text-gray-400 text-sm mb-3">
-                            <span className="uppercase tracking-widest text-xs font-medium">Traversée</span>
+                            <span className="uppercase tracking-widest text-xs font-medium">{traversee.type}</span>
                         </div>
                         <h1 className="text-3xl font-bold leading-tight">{traversee.titre}</h1>
 
