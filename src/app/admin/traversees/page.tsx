@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
     Compass, Plus, Edit, Trash2, Eye, Copy, Download, FileText,
-    Calendar, MapPin, Users, Search, X
+    Calendar, MapPin, Users, Search, X, List, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import jsPDF from 'jspdf'
@@ -76,6 +76,12 @@ export default function TraverseesPage() {
     const [selectedTraversee, setSelectedTraversee] = useState<Traversee | null>(null)
     const [inscrits, setInscrits] = useState<InscritItem[]>([])
     const [loadingInscrits, setLoadingInscrits] = useState(false)
+    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+    const [calendarDate, setCalendarDate] = useState(() => {
+        const now = new Date()
+        return new Date(now.getFullYear(), now.getMonth(), 1)
+    })
+    const [filterPeriod, setFilterPeriod] = useState<'all' | 'upcoming' | 'thisMonth' | 'lastMonth' | 'past'>('all')
     const [submitting, setSubmitting] = useState(false)
     const [formData, setFormData] = useState({
         titre: '', description: '', date: '', lieu: '', lienUnique: ''
@@ -112,6 +118,14 @@ export default function TraverseesPage() {
 
     const handleAdd = () => {
         resetForm()
+        setShowAddModal(true)
+    }
+
+    const handleAddOnDate = (year: number, month: number, day: number) => {
+        resetForm()
+        // pré-remplir la date à midi pour ce jour
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T12:00`
+        setFormData(prev => ({ ...prev, date: dateStr }))
         setShowAddModal(true)
     }
 
@@ -305,6 +319,64 @@ export default function TraverseesPage() {
         pdf.save(`presence-${selectedTraversee.lienUnique}.pdf`)
     }
 
+    // ── Filtres période ──
+    const filteredTraversees = traversees.filter(t => {
+        const d = new Date(t.date)
+        const now = new Date()
+        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        const endOfThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
+        switch (filterPeriod) {
+            case 'upcoming': return d >= now
+            case 'thisMonth': return d >= startOfThisMonth && d <= endOfThisMonth
+            case 'lastMonth': return d >= startOfLastMonth && d <= endOfLastMonth
+            case 'past': return d < now
+            default: return true
+        }
+    })
+
+    // ── Export ICS ──
+    const toICSDate = (dateStr: string) =>
+        new Date(dateStr).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+
+    const exportICS = (list: typeof traversees) => {
+        if (list.length === 0) return
+        const lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//ETU//Traversees//FR',
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+        ]
+        list.forEach(t => {
+            const start = toICSDate(t.date)
+            const end = toICSDate(new Date(new Date(t.date).getTime() + 2 * 60 * 60 * 1000).toISOString())
+            const desc = t.description.replace(/\n/g, '\\n').replace(/,/g, '\\,')
+            lines.push(
+                'BEGIN:VEVENT',
+                `UID:${t.id}@etufaq`,
+                `DTSTAMP:${toICSDate(new Date().toISOString())}`,
+                `DTSTART:${start}`,
+                `DTEND:${end}`,
+                `SUMMARY:Traversée — ${t.titre}`,
+                `DESCRIPTION:${desc}`,
+                `LOCATION:${t.lieu}`,
+                'END:VEVENT',
+            )
+        })
+        lines.push('END:VCALENDAR')
+        const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar; charset=utf-8' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `traversees-etu.ics`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(url)
+    }
+
     const formDialogContent = (isEdit: boolean) => (
         <DialogContent className="max-w-lg">
             <DialogHeader>
@@ -389,10 +461,60 @@ export default function TraverseesPage() {
                             <p className="text-sm text-gray-500">{traversees.length} événement(s)</p>
                         </div>
                     </div>
-                    <Button onClick={handleAdd} className="bg-gray-900 hover:bg-gray-700 text-white gap-2">
-                        <Plus className="w-4 h-4" />
-                        Nouvelle traversée
-                    </Button>
+                    <div className="flex items-center gap-3">
+                        {/* Toggle vue */}
+                        <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                            <button
+                                onClick={() => setViewMode('list')}
+                                className={`px-3 py-1.5 flex items-center gap-1.5 text-sm transition-colors ${viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                            >
+                                <List className="w-4 h-4" /> Liste
+                            </button>
+                            <button
+                                onClick={() => setViewMode('calendar')}
+                                className={`px-3 py-1.5 flex items-center gap-1.5 text-sm transition-colors ${viewMode === 'calendar' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                            >
+                                <Calendar className="w-4 h-4" /> Calendrier
+                            </button>
+                        </div>
+                        <Button onClick={handleAdd} className="bg-gray-900 hover:bg-gray-700 text-white gap-2">
+                            <Plus className="w-4 h-4" />
+                            Nouvelle traversée
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Filtres */}
+                <div className="bg-white border-b border-gray-100 px-6 py-2 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-1">
+                        {([
+                            { key: 'all',       label: 'Tous' },
+                            { key: 'upcoming',  label: 'À venir' },
+                            { key: 'thisMonth', label: 'Ce mois' },
+                            { key: 'lastMonth', label: 'Mois dernier' },
+                            { key: 'past',      label: 'Passés' },
+                        ] as const).map(f => (
+                            <button
+                                key={f.key}
+                                onClick={() => setFilterPeriod(f.key)}
+                                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${filterPeriod === f.key ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+                            >
+                                {f.label}
+                                {f.key !== 'all' && filterPeriod === f.key && filteredTraversees.length > 0 &&
+                                    <span className="ml-1 opacity-70">({filteredTraversees.length})</span>
+                                }
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => exportICS(filteredTraversees)}
+                        disabled={filteredTraversees.length === 0}
+                        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 disabled:opacity-30 transition-colors"
+                        title="Exporter les événements filtrés vers votre calendrier"
+                    >
+                        <Calendar className="w-3.5 h-3.5" />
+                        Export .ics
+                    </button>
                 </div>
 
                 {/* Content */}
@@ -401,16 +523,22 @@ export default function TraverseesPage() {
                         <div className="flex justify-center items-center h-64">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
                         </div>
-                    ) : traversees.length === 0 ? (
+                    ) : filteredTraversees.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-64 text-gray-500">
                             <Compass className="w-16 h-16 text-gray-300 mb-4" />
-                            <p className="text-lg font-medium">Aucune traversée</p>
-                            <p className="text-sm">Créez votre première traversée pour commencer</p>
-                            <Button onClick={handleAdd} className="mt-4 bg-gray-900 hover:bg-gray-700 text-white">
-                                <Plus className="w-4 h-4 mr-2" /> Créer une traversée
-                            </Button>
+                            <p className="text-lg font-medium">
+                                {traversees.length === 0 ? 'Aucune traversée' : 'Aucun événement pour ce filtre'}
+                            </p>
+                            <p className="text-sm">
+                                {traversees.length === 0 ? 'Créez votre première traversée pour commencer' : 'Essayez un autre filtre de période'}
+                            </p>
+                            {traversees.length === 0 && (
+                                <Button onClick={handleAdd} className="mt-4 bg-gray-900 hover:bg-gray-700 text-white">
+                                    <Plus className="w-4 h-4 mr-2" /> Créer une traversée
+                                </Button>
+                            )}
                         </div>
-                    ) : (
+                    ) : viewMode === 'list' ? (
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <Table>
                                 <TableHeader>
@@ -424,7 +552,7 @@ export default function TraverseesPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {traversees.map(t => (
+                                    {filteredTraversees.map(t => (
                                         <TableRow key={t.id} className="hover:bg-gray-50">
                                             <TableCell className="font-medium max-w-[200px]">
                                                 <p className="truncate">{t.titre}</p>
@@ -491,6 +619,113 @@ export default function TraverseesPage() {
                                 </TableBody>
                             </Table>
                         </div>
+                    ) : (
+                        /* ── VUE CALENDRIER ── */
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            {/* Navigation mois */}
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                                <button
+                                    onClick={() => setCalendarDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))}
+                                    className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                                >
+                                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                                </button>
+                                <h2 className="text-base font-semibold text-gray-900 capitalize">
+                                    {calendarDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                                </h2>
+                                <button
+                                    onClick={() => setCalendarDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))}
+                                    className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                                >
+                                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                                </button>
+                            </div>
+
+                            {/* Grille */}
+                            {(() => {
+                                const year = calendarDate.getFullYear()
+                                const month = calendarDate.getMonth()
+                                const today = new Date()
+                                const firstDay = new Date(year, month, 1)
+                                const lastDay = new Date(year, month + 1, 0)
+                                // Lundi = 0, ..., Dimanche = 6
+                                const startOffset = (firstDay.getDay() + 6) % 7
+                                const totalCells = startOffset + lastDay.getDate()
+                                const rows = Math.ceil(totalCells / 7)
+
+                                const dayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+
+                                // Index traversées par jour du mois
+                                const byDay: Record<number, Traversee[]> = {}
+                                traversees.forEach(t => {
+                                    const d = new Date(t.date)
+                                    if (d.getFullYear() === year && d.getMonth() === month) {
+                                        const day = d.getDate()
+                                        if (!byDay[day]) byDay[day] = []
+                                        byDay[day].push(t)
+                                    }
+                                })
+
+                                return (
+                                    <div>
+                                        {/* En-têtes jours */}
+                                        <div className="grid grid-cols-7 border-b border-gray-100">
+                                            {dayLabels.map(d => (
+                                                <div key={d} className="py-2 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                                                    {d}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {/* Cellules */}
+                                        <div className="grid grid-cols-7">
+                                            {Array.from({ length: rows * 7 }).map((_, i) => {
+                                                const dayNum = i - startOffset + 1
+                                                const isValid = dayNum >= 1 && dayNum <= lastDay.getDate()
+                                                const isToday = isValid &&
+                                                    today.getDate() === dayNum &&
+                                                    today.getMonth() === month &&
+                                                    today.getFullYear() === year
+                                                const events = isValid ? (byDay[dayNum] || []) : []
+                                                const isLastRow = i >= (rows - 1) * 7
+
+                                                return (
+                                                    <div
+                                                        key={i}
+                                                        onClick={() => isValid && handleAddOnDate(year, month, dayNum)}
+                                                        className={`min-h-[100px] p-2 border-b border-r border-gray-100 transition-colors
+                                                            ${!isValid ? 'bg-gray-50' : 'cursor-pointer hover:bg-gray-50'}
+                                                            ${isLastRow ? 'border-b-0' : ''}
+                                                            ${(i + 1) % 7 === 0 ? 'border-r-0' : ''}
+                                                        `}
+                                                    >
+                                                        {isValid && (
+                                                            <>
+                                                                <span className={`inline-flex items-center justify-center w-7 h-7 text-sm font-medium rounded-full mb-1
+                                                                    ${isToday ? 'bg-gray-900 text-white' : 'text-gray-700'}`}>
+                                                                    {dayNum}
+                                                                </span>
+                                                                <div className="space-y-1">
+                                                                    {events.map(t => (
+                                                                        <button
+                                                                            key={t.id}
+                                                                            onClick={e => { e.stopPropagation(); handleViewInscrits(t) }}
+                                                                            className="w-full text-left px-2 py-1 rounded-md bg-gray-900 text-white text-xs hover:bg-gray-700 transition-colors truncate"
+                                                                            title={t.titre}
+                                                                        >
+                                                                            {t.titre}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                )
+                            })()}
+                        </div>
                     )}
                 </div>
             </div>
@@ -530,7 +765,7 @@ export default function TraverseesPage() {
 
             {/* Inscrits Modal */}
             <Dialog open={showInscritsModal} onOpenChange={setShowInscritsModal}>
-                <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col">
+                <DialogContent className="w-[95vw] max-w-6xl max-h-[92vh] flex flex-col">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Users className="w-5 h-5" />

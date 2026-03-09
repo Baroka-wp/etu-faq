@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import {
-    Calendar, MapPin, Users, CheckCircle, AlertCircle, Search, ArrowLeft, Loader2
+    Calendar, MapPin, Users, CheckCircle, AlertCircle, Search, ArrowLeft, Loader2, CalendarPlus
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -141,6 +141,35 @@ export default function TraverseePage() {
         }
     }
 
+    const downloadICS = () => {
+        if (!traversee) return
+        const toICS = (d: string) => new Date(d).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+        const end = new Date(new Date(traversee.date).getTime() + 2 * 60 * 60 * 1000).toISOString()
+        const desc = traversee.description.replace(/\n/g, '\\n').replace(/,/g, '\\,')
+        const lines = [
+            'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ETU//Traversee//FR',
+            'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+            'BEGIN:VEVENT',
+            `UID:${traversee.id}@etufaq`,
+            `DTSTAMP:${toICS(new Date().toISOString())}`,
+            `DTSTART:${toICS(traversee.date)}`,
+            `DTEND:${toICS(end)}`,
+            `SUMMARY:Traversée — ${traversee.titre}`,
+            `DESCRIPTION:${desc}`,
+            `LOCATION:${traversee.lieu}`,
+            'END:VEVENT', 'END:VCALENDAR',
+        ]
+        const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar; charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `traversee-${traversee.lienUnique}.ics`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -222,6 +251,13 @@ export default function TraverseePage() {
                         <p className="text-center text-xs text-gray-400 mt-3">
                             Réservé aux membres actifs de l'ordre
                         </p>
+                        <button
+                            onClick={downloadICS}
+                            className="mt-4 w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors py-2"
+                        >
+                            <CalendarPlus className="w-4 h-4" />
+                            Ajouter à mon calendrier
+                        </button>
                     </div>
                 </div>
             </main>
@@ -371,6 +407,14 @@ export default function TraverseePage() {
                                 <MapPin className="w-4 h-4 inline mr-1" />
                                 {traversee.lieu}
                             </div>
+                            <Button
+                                onClick={downloadICS}
+                                variant="outline"
+                                className="w-full gap-2"
+                            >
+                                <CalendarPlus className="w-4 h-4" />
+                                Ajouter à mon calendrier
+                            </Button>
                             <Button onClick={() => setShowModal(false)} className="w-full bg-gray-900 text-white hover:bg-gray-700">
                                 Fermer
                             </Button>
