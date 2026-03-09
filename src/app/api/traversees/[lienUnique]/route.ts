@@ -18,6 +18,7 @@ export async function GET(
         date: true,
         lieu: true,
         lienUnique: true,
+        gradesAutorises: true,
         _count: { select: { inscriptions: true } }
       }
     })

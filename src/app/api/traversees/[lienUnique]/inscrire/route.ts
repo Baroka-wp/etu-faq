@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
+function gradeAutorise(membreGrade: string, gradesAutorises: string[]): boolean {
+  if (membreGrade === 'Alchimiste') return true
+  if (gradesAutorises.length === 0) return true
+  return gradesAutorises.includes(membreGrade)
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ lienUnique: string }> }
@@ -13,7 +19,10 @@ export async function POST(
       return NextResponse.json({ error: 'Le nom sacré est requis' }, { status: 400 })
     }
 
-    const traversee = await db.traversee.findUnique({ where: { lienUnique } })
+    const traversee = await db.traversee.findUnique({
+      where: { lienUnique },
+      select: { id: true, gradesAutorises: true }
+    })
     if (!traversee) {
       return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 })
     }
@@ -28,6 +37,14 @@ export async function POST(
 
     if (!membre) {
       return NextResponse.json({ error: 'Aucun membre actif trouvé avec ce nom sacré' }, { status: 404 })
+    }
+
+    // Vérification du grade (double sécurité côté serveur)
+    if (!gradeAutorise(membre.grade, traversee.gradesAutorises)) {
+      return NextResponse.json(
+        { error: `Cet événement est réservé à certains grades. Votre grade (${membre.grade}) ne vous y autorise pas.` },
+        { status: 403 }
+      )
     }
 
     await db.inscriptionTraversee.create({

@@ -53,6 +53,8 @@ const TYPE_CALENDAR_COLORS: Record<string, string> = {
 }
 
 // ── Interfaces ───────────────────────────────────────────────────────────────
+const ALL_GRADES = ['Explorateur', 'Constructeur', 'Navigateur', 'Alchimiste'] as const
+
 interface Planification {
     id: string
     type: string
@@ -61,6 +63,7 @@ interface Planification {
     date: string
     lieu: string
     lienUnique: string
+    gradesAutorises: string[]
     createdAt: string
     _count: { inscriptions: number }
 }
@@ -79,10 +82,16 @@ interface InscritItem {
 }
 
 const GRADE_COLORS: Record<string, string> = {
-    Explorateur: 'bg-green-100 text-green-800',
+    Explorateur:  'bg-green-100 text-green-800',
     Constructeur: 'bg-blue-100 text-blue-800',
-    Navigateur: 'bg-purple-100 text-purple-800',
-    Alchimiste: 'bg-yellow-100 text-yellow-800',
+    Navigateur:   'bg-purple-100 text-purple-800',
+    Alchimiste:   'bg-yellow-100 text-yellow-800',
+}
+
+function gradesLabel(gradesAutorises: string[]): string {
+    if (gradesAutorises.length === 0 || gradesAutorises.length === 4) return 'Tous'
+    if (gradesAutorises.length === 1 && gradesAutorises[0] === 'Alchimiste') return 'Alchimiste uniquement'
+    return gradesAutorises.join(', ')
 }
 
 function formatDate(dateStr: string) {
@@ -110,7 +119,7 @@ export default function PlanificationsPage() {
     const [selected, setSelected] = useState<Planification | null>(null)
     const [inscrits, setInscrits] = useState<InscritItem[]>([])
     const [loadingInscrits, setLoadingInscrits] = useState(false)
-    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar')
     const [calendarDate, setCalendarDate] = useState(() => {
         const now = new Date()
         return new Date(now.getFullYear(), now.getMonth(), 1)
@@ -119,7 +128,8 @@ export default function PlanificationsPage() {
     const [submitting, setSubmitting] = useState(false)
     const [formData, setFormData] = useState({
         type: EVENT_TYPES[0] as string,
-        titre: '', description: '', date: '', lieu: '', lienUnique: ''
+        titre: '', description: '', date: '', lieu: '', lienUnique: '',
+        gradesAutorises: [...ALL_GRADES] as string[]
     })
     const router = useRouter()
     const { toasts, addToast, removeToast } = useToast()
@@ -145,7 +155,7 @@ export default function PlanificationsPage() {
         router.push('/admin-login')
     }
 
-    const resetForm = () => setFormData({ type: EVENT_TYPES[0], titre: '', description: '', date: '', lieu: '', lienUnique: '' })
+    const resetForm = () => setFormData({ type: EVENT_TYPES[0], titre: '', description: '', date: '', lieu: '', lienUnique: '', gradesAutorises: [...ALL_GRADES] })
 
     const handleTitreChange = (titre: string) => {
         setFormData(prev => ({ ...prev, titre, lienUnique: slugify(titre) }))
@@ -163,6 +173,15 @@ export default function PlanificationsPage() {
         setShowAddModal(true)
     }
 
+    const toggleGrade = (grade: string) => {
+        setFormData(prev => ({
+            ...prev,
+            gradesAutorises: prev.gradesAutorises.includes(grade)
+                ? prev.gradesAutorises.filter(g => g !== grade)
+                : [...prev.gradesAutorises, grade]
+        }))
+    }
+
     const handleEdit = (p: Planification) => {
         const dateLocal = new Date(p.date).toISOString().slice(0, 16)
         setFormData({
@@ -171,7 +190,8 @@ export default function PlanificationsPage() {
             description: p.description,
             date: dateLocal,
             lieu: p.lieu,
-            lienUnique: p.lienUnique
+            lienUnique: p.lienUnique,
+            gradesAutorises: p.gradesAutorises.length > 0 ? p.gradesAutorises : [...ALL_GRADES]
         })
         setSelected(p)
         setShowEditModal(true)
@@ -511,6 +531,31 @@ export default function PlanificationsPage() {
                     </div>
                 </div>
                 <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Accès par grade *</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                        {ALL_GRADES.map(grade => {
+                            const checked = formData.gradesAutorises.includes(grade)
+                            return (
+                                <button
+                                    key={grade}
+                                    type="button"
+                                    onClick={() => toggleGrade(grade)}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                                        checked
+                                            ? `${TYPE_BADGE_COLORS[grade] || 'bg-gray-200 text-gray-800'} border-transparent`
+                                            : 'bg-white text-gray-400 border-gray-200 hover:border-gray-400'
+                                    }`}
+                                >
+                                    {checked ? '✓ ' : ''}{grade}
+                                </button>
+                            )
+                        })}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                        Alchimistes ont toujours accès. Sélectionnez les grades autorisés à s'inscrire.
+                    </p>
+                </div>
+                <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Lien unique (slug) *</label>
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-500 whitespace-nowrap">/traversee/</span>
@@ -650,6 +695,7 @@ export default function PlanificationsPage() {
                                         <TableHead className="font-semibold">Titre</TableHead>
                                         <TableHead className="font-semibold">Date</TableHead>
                                         <TableHead className="font-semibold">Lieu</TableHead>
+                                        <TableHead className="font-semibold">Grades</TableHead>
                                         <TableHead className="font-semibold text-center">Inscrits</TableHead>
                                         <TableHead className="font-semibold">Lien</TableHead>
                                         <TableHead className="font-semibold text-right">Actions</TableHead>
@@ -677,6 +723,15 @@ export default function PlanificationsPage() {
                                                     <MapPin className="w-3 h-3" />
                                                     {p.lieu}
                                                 </div>
+                                            </TableCell>
+                                            <TableCell className="text-sm text-gray-600">
+                                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                                    p.gradesAutorises.length === 4 || p.gradesAutorises.length === 0
+                                                        ? 'bg-gray-100 text-gray-600'
+                                                        : 'bg-amber-100 text-amber-800'
+                                                }`}>
+                                                    {gradesLabel(p.gradesAutorises)}
+                                                </span>
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <Badge variant="secondary" className="gap-1">

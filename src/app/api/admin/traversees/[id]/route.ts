@@ -12,7 +12,7 @@ export async function PUT(
     }
 
     const { id } = await params
-    const { type, titre, description, date, lieu, lienUnique } = await request.json()
+    const { type, titre, description, date, lieu, lienUnique, gradesAutorises } = await request.json()
 
     if (!titre || !description || !date || !lieu || !lienUnique) {
       return NextResponse.json({ error: 'Tous les champs sont obligatoires' }, { status: 400 })
@@ -30,9 +30,13 @@ export async function PUT(
       return NextResponse.json({ error: 'Planification non trouvée' }, { status: 404 })
     }
 
+    const grades = Array.isArray(gradesAutorises) && gradesAutorises.length > 0
+      ? gradesAutorises
+      : ['Explorateur', 'Constructeur', 'Navigateur', 'Alchimiste']
+
     const traversee = await db.traversee.update({
       where: { id },
-      data: { type: type || 'Traversée Grand Navire', titre, description, date: new Date(date), lieu, lienUnique },
+      data: { type: type || 'Traversée Grand Navire', titre, description, date: new Date(date), lieu, lienUnique, gradesAutorises: grades },
       include: { _count: { select: { inscriptions: true } } }
     })
 

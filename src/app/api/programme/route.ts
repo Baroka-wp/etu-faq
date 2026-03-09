@@ -7,25 +7,12 @@ function gradeAutorise(membreGrade: string, gradesAutorises: string[]): boolean 
   return gradesAutorises.includes(membreGrade)
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ lienUnique: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
-    const { lienUnique } = await params
     const nomSacre = request.nextUrl.searchParams.get('nomSacre')
 
     if (!nomSacre || !nomSacre.trim()) {
       return NextResponse.json({ error: 'Le nom sacré est requis' }, { status: 400 })
-    }
-
-    const traversee = await db.traversee.findUnique({
-      where: { lienUnique },
-      select: { id: true, gradesAutorises: true }
-    })
-
-    if (!traversee) {
-      return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 })
     }
 
     const membre = await db.membre.findFirst({
@@ -46,24 +33,29 @@ export async function GET(
       return NextResponse.json({ error: 'Aucun membre actif trouvé avec ce nom sacré' }, { status: 404 })
     }
 
-    // Vérification du grade
-    if (!gradeAutorise(membre.grade, traversee.gradesAutorises)) {
-      return NextResponse.json(
-        { error: `Cet événement est réservé à certains grades. Votre grade (${membre.grade}) ne vous y autorise pas.` },
-        { status: 403 }
-      )
-    }
-
-    const alreadyRegistered = await db.inscriptionTraversee.findUnique({
-      where: {
-        traverseeId_membreId: {
-          traverseeId: traversee.id,
-          membreId: membre.id
-        }
+    // Récupérer tous les événements à venir
+    const traversees = await db.traversee.findMany({
+      where: { date: { gte: new Date() } },
+      orderBy: { date: 'asc' },
+      select: {
+        id: true,
+        type: true,
+        titre: true,
+        description: true,
+        date: true,
+        lieu: true,
+        lienUnique: true,
+        gradesAutorises: true,
+        _count: { select: { inscriptions: true } }
       }
     })
 
-    return NextResponse.json({ success: true, data: membre, dejaInscrit: !!alreadyRegistered })
+    // Filtrer selon le grade du membre
+    const evenements = traversees.filter(t =>
+      gradeAutorise(membre.grade, t.gradesAutorises)
+    )
+
+    return NextResponse.json({ success: true, membre, evenements })
   } catch {
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
