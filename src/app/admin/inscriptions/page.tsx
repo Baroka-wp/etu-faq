@@ -16,9 +16,7 @@ import {
     X,
     MessageCircle,
     FileText,
-    Send,
-    Link,
-    RefreshCw
+    Link
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
@@ -52,7 +50,6 @@ export default function AdminInscriptions() {
     const [showEditModal, setShowEditModal] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [editingInscription, setEditingInscription] = useState<Inscription | null>(null)
-    const [generatingLinks, setGeneratingLinks] = useState<Set<string>>(new Set())
     const router = useRouter()
     const { toasts, addToast, removeToast } = useToast()
 
@@ -229,106 +226,6 @@ export default function AdminInscriptions() {
         }
     }
 
-    const generateUniqueLink = async (inscription: Inscription) => {
-        try {
-            console.log('Tentative de génération de lien pour:', inscription.prenom, inscription.nom)
-            console.log('ID de l\'inscription:', inscription.id)
-
-            const response = await fetch(`/api/admin/inscriptions/${inscription.id}/generate-link`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ duration: 24 }) // 24 heures
-            })
-
-            console.log('Réponse de l\'API:', response.status, response.statusText)
-
-            if (response.ok) {
-                const data = await response.json()
-                console.log('Données reçues:', data)
-                return data.downloadUrl
-            } else {
-                const errorData = await response.json()
-                console.error('Erreur API:', errorData)
-
-                if (response.status === 401) {
-                    addToast({
-                        type: 'error',
-                        title: 'Non autorisé',
-                        message: 'Vous devez être connecté en tant qu\'administrateur'
-                    })
-                    return null
-                }
-
-                throw new Error(errorData.details || errorData.error || 'Erreur lors de la génération du lien')
-            }
-        } catch (err) {
-            console.error('Erreur lors de la génération du lien:', err)
-            const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue'
-            addToast({
-                type: 'error',
-                title: 'Erreur',
-                message: `Impossible de générer le lien unique: ${errorMessage}`
-            })
-            return null
-        }
-    }
-
-    const sendWhatsAppMessage = async (inscription: Inscription) => {
-        // Ajouter l'ID à la liste des liens en cours de génération
-        setGeneratingLinks(prev => new Set(prev).add(inscription.id))
-
-        try {
-            // Générer le lien unique
-            const downloadUrl = await generateUniqueLink(inscription)
-
-            if (!downloadUrl) {
-                return
-            }
-
-            const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin.\nVotre cours est prêt ! Cliquez sur le lien ci-dessous pour télécharger votre matériel de formation :\n\n${downloadUrl}\n\n⚠️ Ce lien est unique et expirera dans 24 heures.\n\nCordialement,\nL'équipe ETU-Bénin`
-
-            // Copier le message dans le presse-papiers
-            await navigator.clipboard.writeText(message)
-
-            addToast({
-                type: 'success',
-                title: 'Message copié !',
-                message: `Le message avec le lien unique a été copié dans le presse-papiers`
-            })
-        } catch (err) {
-            console.error('Erreur lors de la copie du message:', err)
-            addToast({
-                type: 'error',
-                title: 'Erreur',
-                message: 'Impossible de copier le message'
-            })
-        } finally {
-            // Retirer l'ID de la liste des liens en cours de génération
-            setGeneratingLinks(prev => {
-                const newSet = new Set(prev)
-                newSet.delete(inscription.id)
-                return newSet
-            })
-        }
-    }
-
-    const sendCustomWhatsApp = (inscription: Inscription) => {
-        // Ouvrir WhatsApp avec un message personnalisé
-        const message = `Bonjour ${inscription.prenom} ${inscription.nom},\n\nNous vous remercions pour votre inscription à l'ETU-Bénin. Votre compte a été créé avec succès.\n\n📚 Votre cours est prêt ! Vous pouvez accéder à votre profil : /profil\n\nCordialement,\nL'équipe ETU-Bénin`
-
-        const encodedMessage = encodeURIComponent(message)
-        const whatsappUrl = `https://wa.me/${inscription.telephone}?text=${encodedMessage}`
-        window.open(whatsappUrl, '_blank')
-
-        addToast({
-            type: 'success',
-            title: 'Message envoyé',
-            message: `Message WhatsApp personnalisé envoyé à ${inscription.prenom} ${inscription.nom}`
-        })
-    }
-
     // Calculer les statistiques
     const stats = {
         total: inscriptions.length,
@@ -337,13 +234,15 @@ export default function AdminInscriptions() {
         suspendus: inscriptions.filter(i => i.statut === 'Suspendu').length,
     }
 
-    const filteredInscriptions = inscriptions.filter(inscription => {
-        const matchesSearch = inscription.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            inscription.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            inscription.telephone.includes(searchTerm)
-        const matchesStatut = !filterStatut || inscription.statut === filterStatut
-        return matchesSearch && matchesStatut
-    })
+    const filteredInscriptions = inscriptions
+        .filter(inscription => {
+            const matchesSearch = inscription.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                inscription.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                inscription.telephone.includes(searchTerm)
+            const matchesStatut = !filterStatut || inscription.statut === filterStatut
+            return matchesSearch && matchesStatut
+        })
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
     // Pagination
     const totalPages = Math.ceil(filteredInscriptions.length / itemsPerPage)
@@ -500,10 +399,23 @@ export default function AdminInscriptions() {
 
                     {/* Inscriptions Table */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-200">
+                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                             <h2 className="text-lg font-semibold text-gray-900">
                                 Inscriptions ({filteredInscriptions.length})
                             </h2>
+                            <button
+                                onClick={async () => {
+                                    addToast({
+                                        type: 'info',
+                                        title: 'Génération des liens',
+                                        message: 'La génération des liens uniques est disponible dans le menu actions de chaque membre'
+                                    })
+                                }}
+                                className="flex items-center space-x-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors text-sm"
+                            >
+                                <Link className="w-4 h-4" />
+                                <span>Générer les liens uniques</span>
+                            </button>
                         </div>
 
                         {filteredInscriptions.length === 0 ? (
@@ -518,6 +430,9 @@ export default function AdminInscriptions() {
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Date d'inscription
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Membre
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -530,9 +445,6 @@ export default function AdminInscriptions() {
                                                 Statut
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Mot de passe
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Actions
                                             </th>
                                         </tr>
@@ -540,6 +452,14 @@ export default function AdminInscriptions() {
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {paginatedInscriptions.map((inscription) => (
                                             <tr key={inscription.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-900">
+                                                        {new Date(inscription.createdAt).toLocaleDateString('fr-FR')}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {new Date(inscription.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">
                                                         <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center">
@@ -577,20 +497,6 @@ export default function AdminInscriptions() {
                                                         <option value="Suspendu">Suspendu</option>
                                                     </select>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center space-x-2">
-                                                        <span className="text-sm font-mono text-gray-600">
-                                                            {inscription.motDePasse.substring(0, 4)}...
-                                                        </span>
-                                                        <button
-                                                            onClick={() => copyPassword(inscription.motDePasse)}
-                                                            className="p-1 text-gray-400 hover:text-gray-600"
-                                                            title="Copier le mot de passe"
-                                                        >
-                                                            <Copy className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                     <div className="flex space-x-2">
                                                         <button
@@ -609,28 +515,6 @@ export default function AdminInscriptions() {
                                                             title="Voir le mot de passe"
                                                         >
                                                             <Key className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => sendWhatsAppMessage(inscription)}
-                                                            disabled={generatingLinks.has(inscription.id)}
-                                                            className={`p-1 ${generatingLinks.has(inscription.id)
-                                                                ? 'text-gray-400 cursor-not-allowed'
-                                                                : 'text-green-600 hover:text-green-900'
-                                                                }`}
-                                                            title="Générer et envoyer un lien unique"
-                                                        >
-                                                            {generatingLinks.has(inscription.id) ? (
-                                                                <RefreshCw className="w-4 h-4 animate-spin" />
-                                                            ) : (
-                                                                <Link className="w-4 h-4" />
-                                                            )}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => sendCustomWhatsApp(inscription)}
-                                                            className="text-blue-600 hover:text-blue-900 p-1"
-                                                            title="Envoyer un message WhatsApp personnalisé"
-                                                        >
-                                                            <Send className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => {

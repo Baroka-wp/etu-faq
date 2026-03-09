@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, Search, Filter, Eye, Edit, Trash2, Shield, MapPin, Phone, Calendar, Briefcase, UserCheck, AlertCircle, Download, FileText, User } from 'lucide-react'
+import { Users, Search, Filter, Eye, Edit, Trash2, Shield, MapPin, Phone, Calendar, Briefcase, UserCheck, AlertCircle, Download, FileText, User, X } from 'lucide-react'
 import jsPDF from 'jspdf'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
@@ -66,11 +66,26 @@ export default function MembersPage() {
     const [submitting, setSubmitting] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage] = useState(10)
+    const [showDuplicates, setShowDuplicates] = useState(false)
+    const [duplicates, setDuplicates] = useState<Record<string, Membre[]>>({})
     const router = useRouter()
 
     useEffect(() => {
         fetchMembers()
+        fetchDuplicates()
     }, [])
+
+    const fetchDuplicates = async () => {
+        try {
+            const response = await fetch('/api/members/duplicates')
+            if (response.ok) {
+                const result = await response.json()
+                setDuplicates(result.data)
+            }
+        } catch (err) {
+            console.error('Erreur lors de la détection des doublons:', err)
+        }
+    }
 
     const fetchMembers = async () => {
         try {
@@ -390,6 +405,13 @@ export default function MembersPage() {
                             </div>
                             <div className="flex items-center space-x-3">
                                 <Button
+                                    onClick={() => setShowDuplicates(!showDuplicates)}
+                                    variant={showDuplicates || Object.keys(duplicates).length > 0 ? 'destructive' : 'outline'}
+                                >
+                                    <AlertCircle className="w-4 h-4 mr-2" />
+                                    Doublons ({Object.keys(duplicates).length})
+                                </Button>
+                                <Button
                                     onClick={exportToPDF}
                                     variant="outline"
                                 >
@@ -468,6 +490,86 @@ export default function MembersPage() {
                                 )
                             })}
                         </div>
+
+                        {/* Doublons Section */}
+                        {showDuplicates && Object.keys(duplicates).length > 0 && (
+                            <div className="bg-white rounded-lg shadow-sm border border-red-200 mb-6">
+                                <div className="px-6 py-4 border-b border-red-200 bg-red-50">
+                                    <div className="flex items-center justify-between">
+                                        <h2 className="text-lg font-semibold text-red-900 flex items-center">
+                                            <AlertCircle className="w-5 h-5 mr-2" />
+                                            Doublons détectés ({Object.keys(duplicates).length})
+                                        </h2>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setShowDuplicates(false)}
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    {Object.entries(duplicates).map(([nomSacre, membres]) => (
+                                        <div key={nomSacre} className="border border-red-200 rounded-lg p-4 bg-red-50/50">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <h3 className="font-semibold text-red-900">
+                                                    Nom Sacré: {nomSacre}
+                                                </h3>
+                                                <Badge variant="destructive">
+                                                    {membres.length} doublons
+                                                </Badge>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {membres.map(membre => (
+                                                    <div key={membre.id} className="flex items-center justify-between bg-white p-3 rounded border border-red-100">
+                                                        <div className="flex items-center space-x-3">
+                                                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                                                                {membre.imageUrl ? (
+                                                                    <img src={membre.imageUrl} alt={membre.nom} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <User className="w-4 h-4 text-gray-400" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-medium text-gray-900">{membre.nom} {membre.prenoms}</p>
+                                                                <p className="text-sm text-gray-500">{membre.telephoneWhatsapp} - {membre.grade}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <Badge variant={getStatutBadgeVariant(membre.statut)}>
+                                                                {membre.statut}
+                                                            </Badge>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleViewMembre(membre)}
+                                                            >
+                                                                <Eye className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleEditMembre(membre)}
+                                                            >
+                                                                <Edit className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleDeleteMembre(membre)}
+                                                            >
+                                                                <Trash2 className="w-4 h-4 text-red-600" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Filters */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
