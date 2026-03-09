@@ -135,6 +135,37 @@ model Membre {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
+  traversees            InscriptionTraversee[]
+
   @@index([statut])
   @@index([grade])
+}
+
+model Traversee {
+  id           String   @id @default(cuid())
+  titre        String
+  description  String
+  date         DateTime
+  lieu         String
+  lienUnique   String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  inscriptions InscriptionTraversee[]
+
+  @@index([lienUnique])
+}
+
+model InscriptionTraversee {
+  id          String    @id @default(cuid())
+  traverseeId String
+  membreId    String
+  createdAt   DateTime  @default(now())
+
+  traversee   Traversee @relation(fields: [traverseeId], references: [id], onDelete: Cascade)
+  membre      Membre    @relation(fields: [membreId], references: [id], onDelete: Cascade)
+
+  @@unique([traverseeId, membreId])
+  @@index([traverseeId])
+  @@index([membreId])
 }

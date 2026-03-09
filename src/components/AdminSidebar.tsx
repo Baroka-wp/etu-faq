@@ -13,7 +13,8 @@ import {
     Shield,
     BookOpen,
     Sparkles,
-    Video
+    Video,
+    Compass
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -39,6 +40,12 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             label: 'Membres OMP',
             icon: UserPlus,
             href: '/admin/members'
+        },
+        {
+            id: 'traversees',
+            label: 'Traversées',
+            icon: Compass,
+            href: '/admin/traversees'
         },
         {
             id: 'prospects',
