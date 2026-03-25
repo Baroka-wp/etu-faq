@@ -7,19 +7,20 @@ import ClientOnly from '@/components/ClientOnly'
 import { useRouter } from 'next/navigation'
 
 interface MemberFormData {
-    nom: string
-    prenoms: string
-    nomSacre: string
-    profession: string
-    dateNaissance: string
-    heureNaissance: string
-    lieuNaissance: string
-    lieuResidence: string
-    religionPratique: string
-    appartientAutreOrdre: 'oui' | 'non'
-    precisionOrdre: string
-    grade: string
-    telephoneWhatsapp: string
+  nom: string
+  prenoms: string
+  nomSacre: string
+  profession: string
+  dateNaissance: string
+  heureNaissance: string
+  lieuNaissance: string
+  lieuResidence: string
+  religionPratique: string
+  appartientAutreOrdre: 'oui' | 'non'
+  precisionOrdre: string
+  grade: string
+  equipage: string
+  telephoneWhatsapp: string
 }
 
 export default function MemberInscriptionPage() {
@@ -48,6 +49,7 @@ export default function MemberInscriptionPage() {
         appartientAutreOrdre: 'non',
         precisionOrdre: '',
         grade: 'Explorateur',
+        equipage: 'ALEPH',
         telephoneWhatsapp: ''
     })
 
@@ -500,6 +502,26 @@ export default function MemberInscriptionPage() {
                                     <option value="Constructeur">Constructeur</option>
                                     <option value="Navigateur">Navigateur</option>
                                     <option value="Alchimiste">Alchimiste</option>
+                                </select>
+                            </div>
+
+                            {/* Équipage */}
+                            <div>
+                                <label htmlFor="equipage" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                    <Shield className="w-4 h-4 inline mr-2" />
+                                    Équipage *
+                                </label>
+                                <select
+                                    id="equipage"
+                                    name="equipage"
+                                    value={formData.equipage}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                >
+                                    <option value="ALEPH">ALEPH</option>
+                                    <option value="BETH">BETH</option>
+                                    <option value="GUIMEL">GUIMEL</option>
                                 </select>
                             </div>
 

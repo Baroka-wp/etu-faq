@@ -43,6 +43,7 @@ interface Membre {
     appartientAutreOrdre: boolean
     precisionOrdre: string | null
     grade: string
+    equipage: string
     telephoneWhatsapp: string
     lieuResidence: string
     statut: string
@@ -58,6 +59,7 @@ export default function MembersPage() {
     const [searchTerm, setSearchTerm] = useState('')
     const [statutFilter, setStatutFilter] = useState<string>('all')
     const [gradeFilter, setGradeFilter] = useState<string>('all')
+    const [equipageFilter, setEquipageFilter] = useState<string>('all')
     const [selectedMembre, setSelectedMembre] = useState<Membre | null>(null)
     const [viewDialogOpen, setViewDialogOpen] = useState(false)
     const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -110,8 +112,9 @@ export default function MembersPage() {
 
         const matchesStatut = statutFilter === 'all' || membre.statut === statutFilter
         const matchesGrade = gradeFilter === 'all' || membre.grade === gradeFilter
+        const matchesEquipage = equipageFilter === 'all' || membre.equipage === equipageFilter
 
-        return matchesSearch && matchesStatut && matchesGrade
+        return matchesSearch && matchesStatut && matchesGrade && matchesEquipage
     })
 
     // Pagination
@@ -131,7 +134,7 @@ export default function MembersPage() {
 
     useEffect(() => {
         setCurrentPage(1)
-    }, [searchTerm, statutFilter, gradeFilter])
+    }, [searchTerm, statutFilter, gradeFilter, equipageFilter])
 
     const handleEditMembre = (membre: Membre) => {
         setSelectedMembre(membre)
@@ -623,6 +626,24 @@ export default function MembersPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <Shield className="w-4 h-4 inline mr-1" />
+                                            Équipage
+                                        </label>
+                                        <Select value={equipageFilter} onValueChange={setEquipageFilter}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Tous les équipages" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Tous les équipages</SelectItem>
+                                                <SelectItem value="ALEPH">ALEPH</SelectItem>
+                                                <SelectItem value="BETH">BETH</SelectItem>
+                                                <SelectItem value="GUIMEL">GUIMEL</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -636,7 +657,9 @@ export default function MembersPage() {
                                             <TableHead>Photo</TableHead>
                                             <TableHead>Nom</TableHead>
                                             <TableHead>Prénoms</TableHead>
+                                            <TableHead>Nom Sacré</TableHead>
                                             <TableHead>Grade</TableHead>
+                                            <TableHead>Équipage</TableHead>
                                             <TableHead>Téléphone</TableHead>
                                             <TableHead>Résidence</TableHead>
                                             <TableHead>Statut</TableHead>
@@ -646,7 +669,7 @@ export default function MembersPage() {
                                     <TableBody>
                                         {paginatedMembers.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={8} className="text-center py-8">
+                                                <TableCell colSpan={10} className="text-center py-8">
                                                     <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                                                     <p className="text-gray-500">Aucun membre trouvé</p>
                                                 </TableCell>
@@ -673,9 +696,15 @@ export default function MembersPage() {
                                                     </TableCell>
                                                     <TableCell className="font-medium">{membre.nom}</TableCell>
                                                     <TableCell>{membre.prenoms}</TableCell>
+                                                    <TableCell>{membre.nomSacre || '-'}</TableCell>
                                                     <TableCell>
                                                         <Badge variant={getGradeBadgeVariant(membre.grade)}>
                                                             {membre.grade}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge variant="outline">
+                                                            {membre.equipage}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>{membre.telephoneWhatsapp}</TableCell>
@@ -998,6 +1027,23 @@ export default function MembersPage() {
                                         <SelectItem value="Constructeur">Constructeur</SelectItem>
                                         <SelectItem value="Navigateur">Navigateur</SelectItem>
                                         <SelectItem value="Alchimiste">Alchimiste</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Équipage</label>
+                                <Select
+                                    value={editFormData.equipage || ''}
+                                    onValueChange={(value) => setEditFormData({ ...editFormData, equipage: value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALEPH">ALEPH</SelectItem>
+                                        <SelectItem value="BETH">BETH</SelectItem>
+                                        <SelectItem value="GUIMEL">GUIMEL</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

@@ -19,6 +19,7 @@ export async function PUT(
       telephoneWhatsapp,
       lieuResidence,
       grade,
+      equipage,
       statut
     } = body
 
@@ -33,6 +34,7 @@ export async function PUT(
         telephoneWhatsapp,
         lieuResidence,
         grade,
+        equipage,
         statut
       }
     })
