@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { ArrowLeft, User, Calendar, MapPin, Phone, BookOpen, Briefcase, Shield, Hash, Upload, X, CheckCircle, MessageCircle } from 'lucide-react'
+import { ArrowLeft, User, Calendar, MapPin, Phone, BookOpen, Briefcase, Shield, Hash, Upload, X, CheckCircle, MessageCircle, Mail } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 import { useRouter } from 'next/navigation'
@@ -11,6 +11,7 @@ interface MemberFormData {
   prenoms: string
   nomSacre: string
   profession: string
+  email: string
   dateNaissance: string
   heureNaissance: string
   lieuNaissance: string
@@ -41,6 +42,7 @@ export default function MemberInscriptionPage() {
         prenoms: '',
         nomSacre: '',
         profession: '',
+        email: '',
         dateNaissance: '',
         heureNaissance: '',
         lieuNaissance: '',
@@ -328,6 +330,24 @@ export default function MemberInscriptionPage() {
                                     onChange={handleInputChange}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
                                     placeholder="Votre profession"
+                                />
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <label htmlFor="email" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                    <Mail className="w-4 h-4 inline mr-2" />
+                                    Adresse email *
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    placeholder="votre.email@exemple.com"
                                 />
                             </div>
 

@@ -121,6 +121,7 @@ model Membre {
   prenoms               String
   nomSacre              String?
   profession            String?
+  email                 String
   dateNaissance         String
   heureNaissance        String?
   lieuNaissance         String

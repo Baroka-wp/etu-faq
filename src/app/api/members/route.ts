@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
       prenoms,
       nomSacre,
       profession,
+      email,
       dateNaissance,
       heureNaissance,
       lieuNaissance,
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validation des champs requis
-    if (!nom || !prenoms || !dateNaissance || !lieuNaissance || !religionPratique || !telephoneWhatsapp || !lieuResidence) {
+    if (!nom || !prenoms || !email || !dateNaissance || !lieuNaissance || !religionPratique || !telephoneWhatsapp || !lieuResidence) {
       return NextResponse.json(
         { error: 'Tous les champs marqués d\'un astérisque sont obligatoires' },
         { status: 400 }
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
         prenoms,
         nomSacre: nomSacre || null,
         profession: profession || null,
+        email,
         dateNaissance,
         heureNaissance: heureNaissance || null,
         lieuNaissance,
