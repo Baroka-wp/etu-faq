@@ -11,6 +11,7 @@ export default function CarteDuCielPage() {
   const [membre, setMembre] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
+  const [initialFormData, setInitialFormData] = useState<any>(null)
 
   useEffect(() => {
     fetchMembre()
@@ -22,6 +23,72 @@ export default function CarteDuCielPage() {
       if (response.ok) {
         const data = await response.json()
         setMembre(data.membre)
+
+        // Préparer les données initiales du formulaire
+        const membreData = data.membre
+        const initialData: any = {
+          name: membreData.nomSacre || `${membreData.prenoms} ${membreData.nom}`
+        }
+
+        // Parser la date de naissance (format: DD/MM/YYYY ou YYYY-MM-DD)
+        if (membreData.dateNaissance) {
+          const dateStr = membreData.dateNaissance
+          let day, month, year
+
+          if (dateStr.includes('/')) {
+            // Format DD/MM/YYYY
+            const parts = dateStr.split('/')
+            day = parseInt(parts[0])
+            month = parseInt(parts[1])
+            year = parseInt(parts[2])
+          } else if (dateStr.includes('-')) {
+            // Format YYYY-MM-DD
+            const parts = dateStr.split('-')
+            year = parseInt(parts[0])
+            month = parseInt(parts[1])
+            day = parseInt(parts[2])
+          }
+
+          if (year && month && day) {
+            initialData.year = year
+            initialData.month = month
+            initialData.day = day
+          }
+        }
+
+        // Parser l'heure de naissance (format: HH:MM)
+        if (membreData.heureNaissance) {
+          const timeParts = membreData.heureNaissance.split(':')
+          if (timeParts.length >= 2) {
+            initialData.hour = parseInt(timeParts[0])
+            initialData.minute = parseInt(timeParts[1])
+          }
+        }
+
+        // Parser le lieu de naissance pour extraire la ville
+        if (membreData.lieuNaissance) {
+          // Prendre la première partie (ville) avant la virgule ou le pays
+          const city = membreData.lieuNaissance.split(',')[0].trim()
+          initialData.city = city
+        }
+
+        // Déterminer le code pays depuis le lieu de naissance
+        const lieu = membreData.lieuNaissance?.toLowerCase() || ''
+        if (lieu.includes('benin') || lieu.includes('bénin')) {
+          initialData.nation = 'BJ'
+        } else if (lieu.includes('france')) {
+          initialData.nation = 'FR'
+        } else if (lieu.includes('togo')) {
+          initialData.nation = 'TG'
+        } else if (lieu.includes('niger')) {
+          initialData.nation = 'NE'
+        } else if (lieu.includes('côte d\'ivoire') || lieu.includes('cote d\'ivoire')) {
+          initialData.nation = 'CI'
+        } else {
+          initialData.nation = 'BJ' // Par défaut Bénin
+        }
+
+        setInitialFormData(initialData)
       }
     } catch (error) {
       console.error('Erreur:', error)
@@ -97,12 +164,24 @@ export default function CarteDuCielPage() {
       )}
 
       {/* Formulaire de génération */}
-      <AstrologyForm
-        onSubmit={generateNatalChart}
-        loading={generating}
-        title="Générer votre carte du ciel"
-        description="Remplissez les informations pour générer votre carte astrologique personnalisée"
-      />
+      {initialFormData && (
+        <AstrologyForm
+          onSubmit={generateNatalChart}
+          loading={generating}
+          title="Générer votre carte du ciel"
+          description="Vos informations sont pré-remplies. Vérifiez et ajustez si nécessaire."
+          initialData={initialFormData}
+        />
+      )}
+
+      {!initialFormData && !isLoading && (
+        <AstrologyForm
+          onSubmit={generateNatalChart}
+          loading={generating}
+          title="Générer votre carte du ciel"
+          description="Remplissez les informations pour générer votre carte astrologique personnalisée"
+        />
+      )}
 
       {/* Aperçu des données disponibles */}
       {membre?.heureNaissance && (

@@ -14,23 +14,34 @@ interface AstrologyFormProps {
     loading: boolean
     title?: string
     description?: string
+    initialData?: {
+        name?: string
+        year?: number
+        month?: number
+        day?: number
+        hour?: number
+        minute?: number
+        city?: string
+        nation?: string
+    }
 }
 
 export default function AstrologyForm({
     onSubmit,
     loading,
     title = "Informations de naissance",
-    description = "Remplissez les informations pour générer une carte astrologique"
+    description = "Remplissez les informations pour générer une carte astrologique",
+    initialData
 }: AstrologyFormProps) {
     const [formData, setFormData] = useState({
-        name: '',
-        year: new Date().getFullYear(),
-        month: 1,
-        day: 1,
-        hour: 12,
-        minute: 0,
-        city: '',
-        nation: 'FR',
+        name: initialData?.name || '',
+        year: initialData?.year || new Date().getFullYear(),
+        month: initialData?.month || 1,
+        day: initialData?.day || 1,
+        hour: initialData?.hour || 12,
+        minute: initialData?.minute || 0,
+        city: initialData?.city || '',
+        nation: initialData?.nation || 'FR',
         theme: 'classic',
         language: 'FR',
         zodiac_type: 'Tropic',
