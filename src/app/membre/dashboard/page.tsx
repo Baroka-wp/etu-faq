@@ -33,12 +33,12 @@ export default function DashboardPage() {
           setMembre(membreData.membre)
         }
 
-        // TODO: Récupérer les vraies statistiques
-        setStats({
-          prochainEvents: 5,
-          totalInscriptions: 12,
-          totalLivres: 24
-        })
+        // Récupérer les statistiques réelles
+        const statsResponse = await fetch('/api/membre/stats')
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json()
+          setStats(statsData.stats)
+        }
       } catch (error) {
         console.error('Erreur lors du chargement:', error)
       } finally {
@@ -85,10 +85,10 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-gray-700" />
             </div>
-            <span className="text-sm font-semibold text-blue-600 font-serif">Prochainement</span>
+            <span className="text-sm font-semibold text-gray-600 font-serif">Prochainement</span>
           </div>
           <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.prochainEvents}</h3>
           <p className="text-sm text-gray-600 font-serif">Événements à venir</p>
@@ -96,10 +96,10 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Users className="w-6 h-6 text-gray-700" />
             </div>
-            <span className="text-sm font-semibold text-green-600 font-serif">Total</span>
+            <span className="text-sm font-semibold text-gray-600 font-serif">Total</span>
           </div>
           <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.totalInscriptions}</h3>
           <p className="text-sm text-gray-600 font-serif">Traversées suivies</p>
@@ -107,10 +107,10 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-gray-700" />
             </div>
-            <span className="text-sm font-semibold text-purple-600 font-serif">Disponibles</span>
+            <span className="text-sm font-semibold text-gray-600 font-serif">Disponibles</span>
           </div>
           <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.totalLivres}</h3>
           <p className="text-sm text-gray-600 font-serif">Livres dans la bibliothèque</p>
@@ -121,56 +121,64 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link
           href="/membre/planning"
-          className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-8 text-white hover:shadow-xl transition-all transform hover:-translate-y-1"
+          className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md hover:border-gray-300 transition-all group"
         >
           <div className="flex items-center justify-between mb-4">
-            <Calendar className="w-12 h-12" />
-            <TrendingUp className="w-6 h-6 opacity-50" />
+            <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-800 transition-colors">
+              <Calendar className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
+            </div>
+            <TrendingUp className="w-5 h-5 text-gray-400" />
           </div>
-          <h3 className="text-2xl font-bold font-serif mb-2">Consulter le planning</h3>
-          <p className="text-blue-100 font-serif">
+          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Consulter le planning</h3>
+          <p className="text-gray-600 font-serif text-sm">
             Voir les traversées et événements autorisés pour votre grade
           </p>
         </Link>
 
         <Link
           href="/membre/carte-du-ciel"
-          className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-8 text-white hover:shadow-xl transition-all transform hover:-translate-y-1"
+          className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md hover:border-gray-300 transition-all group"
         >
           <div className="flex items-center justify-between mb-4">
-            <Star className="w-12 h-12" />
-            <TrendingUp className="w-6 h-6 opacity-50" />
+            <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-800 transition-colors">
+              <Star className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
+            </div>
+            <TrendingUp className="w-5 h-5 text-gray-400" />
           </div>
-          <h3 className="text-2xl font-bold font-serif mb-2">Carte du ciel</h3>
-          <p className="text-purple-100 font-serif">
+          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Carte du ciel</h3>
+          <p className="text-gray-600 font-serif text-sm">
             Découvrez votre thème astral et positions planétaires
           </p>
         </Link>
 
         <Link
           href="/membre/bibliotheque"
-          className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-8 text-white hover:shadow-xl transition-all transform hover:-translate-y-1"
+          className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md hover:border-gray-300 transition-all group"
         >
           <div className="flex items-center justify-between mb-4">
-            <BookOpen className="w-12 h-12" />
-            <TrendingUp className="w-6 h-6 opacity-50" />
+            <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-800 transition-colors">
+              <BookOpen className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
+            </div>
+            <TrendingUp className="w-5 h-5 text-gray-400" />
           </div>
-          <h3 className="text-2xl font-bold font-serif mb-2">Bibliothèque</h3>
-          <p className="text-green-100 font-serif">
+          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Bibliothèque</h3>
+          <p className="text-gray-600 font-serif text-sm">
             Accéder aux livres et ressources de l'ETU
           </p>
         </Link>
 
         <Link
           href="/membre/profil"
-          className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-8 text-white hover:shadow-xl transition-all transform hover:-translate-y-1"
+          className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md hover:border-gray-300 transition-all group"
         >
           <div className="flex items-center justify-between mb-4">
-            <Users className="w-12 h-12" />
-            <TrendingUp className="w-6 h-6 opacity-50" />
+            <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-800 transition-colors">
+              <Users className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
+            </div>
+            <TrendingUp className="w-5 h-5 text-gray-400" />
           </div>
-          <h3 className="text-2xl font-bold font-serif mb-2">Mon profil</h3>
-          <p className="text-orange-100 font-serif">
+          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Mon profil</h3>
+          <p className="text-gray-600 font-serif text-sm">
             Gérer vos informations et paramètres personnels
           </p>
         </Link>

@@ -77,12 +77,12 @@ export default function PlanningPage() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-bold font-serif text-gray-900">{traversee.titre}</h3>
-                  <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-semibold mt-2">
+                  <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full font-semibold mt-2">
                     {traversee.type}
                   </span>
                 </div>
                 {traversee.isInscrit && (
-                  <span className="flex items-center text-green-600 font-semibold text-sm">
+                  <span className="flex items-center text-gray-700 font-semibold text-sm">
                     <CheckCircle className="w-5 h-5 mr-1" />
                     Inscrit
                   </span>

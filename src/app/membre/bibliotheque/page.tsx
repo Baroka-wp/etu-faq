@@ -116,10 +116,10 @@ export default function BibliothePageMembre() {
                 <div className="flex items-center justify-between">
                   {book.isFree ? (
                     <>
-                      <span className="text-green-600 font-bold">Gratuit</span>
+                      <span className="text-gray-700 font-bold">Gratuit</span>
                       <button
                         onClick={() => handleDownload(book)}
-                        className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-serif"
+                        className="flex items-center space-x-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 font-serif"
                       >
                         <Download className="w-4 h-4" />
                         <span>Télécharger</span>

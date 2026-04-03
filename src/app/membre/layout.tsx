@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import MembreSidebar from '@/components/MembreSidebar'
+import UpdateInfoBanner from '@/components/UpdateInfoBanner'
 
 interface Membre {
   id: string
@@ -12,6 +13,8 @@ interface Membre {
   grade: string
   equipage: string
   imageUrl: string | null
+  email: string
+  telephoneWhatsapp: string
 }
 
 export default function MembreLayout({
@@ -80,9 +83,12 @@ export default function MembreLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <MembreSidebar membre={membre} />
-      <main className="lg:ml-72 min-h-screen">
-        {children}
-      </main>
+      <div className="lg:ml-72 min-h-screen flex flex-col">
+        <UpdateInfoBanner membre={membre} />
+        <main className="flex-1">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
