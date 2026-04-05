@@ -73,7 +73,13 @@ export default function PlanningMembrePage() {
   const [evenements, setEvenements] = useState<Evenement[]>([])
   const [loading, setLoading] = useState(true)
   const [inscribing, setInscribing] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar') // Vue calendrier par défaut
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>(() => {
+    // Liste par défaut sur mobile, calendrier sur desktop
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      return 'calendar'
+    }
+    return 'list'
+  })
   const [calendarDate, setCalendarDate] = useState(() => {
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth(), 1)
@@ -550,7 +556,7 @@ export default function PlanningMembrePage() {
               <div>
                 <div className="grid grid-cols-7 border-b border-gray-100">
                   {dayLabels.map(d => (
-                    <div key={d} className="py-2 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                    <div key={d} className="py-2 text-center text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wide">
                       {d}
                     </div>
                   ))}
@@ -569,7 +575,7 @@ export default function PlanningMembrePage() {
                     return (
                       <div
                         key={i}
-                        className={`min-h-[100px] p-2 border-b border-r border-gray-100 transition-colors
+                        className={`p-1 sm:p-2 border-b border-r border-gray-100 transition-colors
                           ${!isValid ? 'bg-gray-50' : ''}
                           ${isLastRow ? 'border-b-0' : ''}
                           ${(i + 1) % 7 === 0 ? 'border-r-0' : ''}
@@ -577,13 +583,13 @@ export default function PlanningMembrePage() {
                       >
                         {isValid && (
                           <>
-                            <span className={`inline-flex items-center justify-center w-7 h-7 text-sm font-medium rounded-full mb-1 ${
+                            <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7 text-[10px] sm:text-sm font-medium rounded-full mb-0.5 sm:mb-1 ${
                               isToday ? 'bg-gray-900 text-white' : 'text-gray-700'
                             }`}>
                               {dayNum}
                             </span>
-                            <div className="space-y-1">
-                              {events.map(e => (
+                            <div className="space-y-0.5 sm:space-y-1">
+                              {events.slice(0, 2).map(e => (
                                 <button
                                   key={e.id}
                                   onClick={() => setSelectedEvent(e)}
@@ -593,13 +599,18 @@ export default function PlanningMembrePage() {
                                     setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top })
                                   }}
                                   onMouseLeave={() => setHoveredEvent(null)}
-                                  className={`w-full text-left px-2 py-1 rounded-md text-white text-xs transition-all truncate cursor-pointer hover:scale-105 hover:shadow-lg ${
+                                  className={`w-full text-left px-1 sm:px-2 py-0.5 sm:py-1 rounded-md text-white text-[9px] sm:text-xs transition-all truncate cursor-pointer hover:scale-105 hover:shadow-lg ${
                                     TYPE_CALENDAR_COLORS[e.type] || 'bg-gray-900'
-                                  } ${e.isInscrit ? 'ring-2 ring-green-400 ring-offset-1' : ''}`}
+                                  } ${e.isInscrit ? 'ring-1 sm:ring-2 ring-green-400 ring-offset-0 sm:ring-offset-1' : ''}`}
                                 >
                                   {e.isInscrit && '✓ '}{e.titre}
                                 </button>
                               ))}
+                              {events.length > 2 && (
+                                <div className="text-[9px] sm:text-xs text-gray-400 pl-1">
+                                  +{events.length - 2}
+                                </div>
+                              )}
                             </div>
                           </>
                         )}
