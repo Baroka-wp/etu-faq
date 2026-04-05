@@ -126,90 +126,58 @@ export default function CarteDuCielPage() {
   }
 
   if (isLoading) {
-    return <div className="p-8">Chargement...</div>
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-serif">Chargement...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
-      <h1 className="text-3xl font-serif font-bold text-gray-900 mb-8">Theme astral</h1>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Thème Astral</h1>
+        <p className="text-sm text-gray-600 font-serif">Générez votre carte astrologique personnalisée</p>
+      </div>
 
-      {/* Informations de naissance enregistrées */}
-      {membre && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-bold font-serif text-gray-900 mb-4">Vos informations de naissance</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center space-x-3">
-              <Calendar className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="text-sm text-gray-500 font-serif">Date de naissance</p>
-                <p className="font-semibold font-serif">{membre.dateNaissance}</p>
-              </div>
+      {/* Message d'information si heure manquante */}
+      {!membre?.heureNaissance && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
             </div>
-            <div className="flex items-center space-x-3">
-              <Clock className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="text-sm text-gray-500 font-serif">Heure de naissance</p>
-                <p className="font-semibold font-serif">{membre.heureNaissance || 'Non renseignée'}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <MapPin className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="text-sm text-gray-500 font-serif">Lieu de naissance</p>
-                <p className="font-semibold font-serif">{membre.lieuNaissance}</p>
-              </div>
+            <div className="flex-1">
+              <p className="text-sm font-serif text-amber-800">
+                L'heure de naissance n'est pas renseignée. Pour une carte plus précise, pensez à la renseigner dans votre profil.
+              </p>
             </div>
           </div>
         </div>
       )}
 
       {/* Formulaire de génération */}
-      {initialFormData && (
+      {initialFormData ? (
         <AstrologyForm
           onSubmit={generateNatalChart}
           loading={generating}
-          title="Générer votre Theme astral"
+          title="Générer votre Thème Astral"
           description="Vos informations sont pré-remplies. Vérifiez et ajustez si nécessaire."
           initialData={initialFormData}
         />
-      )}
-
-      {!initialFormData && !isLoading && (
+      ) : !isLoading && (
         <AstrologyForm
           onSubmit={generateNatalChart}
           loading={generating}
-          title="Générer votre Theme astral"
+          title="Générer votre Thème Astral"
           description="Remplissez les informations pour générer votre carte astrologique personnalisée"
         />
-      )}
-
-      {/* Aperçu des données disponibles */}
-      {membre?.heureNaissance && (
-        <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-bold font-serif text-gray-900 mb-4">
-            Informations complètes disponibles
-          </h3>
-          <div className="flex items-center space-x-2 text-gray-700">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span className="font-serif">
-              Vos informations sont complètes pour générer une Theme astral précise
-            </span>
-          </div>
-        </div>
-      )}
-
-      {!membre?.heureNaissance && (
-        <div className="mt-6 bg-gray-50 border border-gray-300 rounded-xl p-6">
-          <h3 className="text-lg font-bold font-serif text-gray-900 mb-2">
-            Information manquante
-          </h3>
-          <p className="text-gray-700 font-serif">
-            L'heure de naissance n'est pas renseignée. Pour une Theme astral précise,
-            veuillez mettre à jour votre profil avec cette information.
-          </p>
-        </div>
       )}
     </div>
   )

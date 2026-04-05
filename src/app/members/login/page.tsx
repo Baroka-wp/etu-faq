@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Lock, ArrowLeft } from 'lucide-react'
+import { Lock, ArrowLeft, LogIn, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ClientOnly from '@/components/ClientOnly'
@@ -30,64 +30,80 @@ export default function MemberLoginPage() {
 
     return (
         <ClientOnly fallback={
-            <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Chargement...</p>
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900 mx-auto"></div>
+                    <p className="mt-4 text-gray-600 font-serif">Chargement...</p>
                 </div>
             </div>
         }>
-            <div className="min-h-screen bg-white flex flex-col">
-                {/* Header */}
-                <header className="border-b-2 border-black px-6 py-3">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+                {/* Header léger */}
+                <header className="px-6 py-4">
                     <Link
                         href="/"
-                        className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-serif"
+                        className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-serif group"
                     >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>Accueil</span>
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        <span>Retour à l'accueil</span>
                     </Link>
                 </header>
 
-                {/* Contenu */}
+                {/* Contenu central */}
                 <main className="flex-1 flex items-center justify-center px-4 py-8">
-                    <div className="w-full max-w-sm">
-                        {/* Titre */}
-                        <div className="text-center mb-6">
-                            <h1 className="text-2xl font-serif font-bold text-gray-900">Accès Formulaire</h1>
-                            <p className="text-sm text-gray-500 font-serif mt-0.5">Inscription membre ETU</p>
+                    <div className="w-full max-w-md">
+                        {/* Logo et titre */}
+                        <div className="text-center mb-8">
+                            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-900 rounded-2xl shadow-lg mb-4">
+                                <Shield className="w-8 h-8 text-white" />
+                            </div>
+                            <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Accès Formulaire</h1>
+                            <p className="text-sm text-gray-600 font-serif">Inscription membre ETU Bénin</p>
                         </div>
 
-                        {/* Bloc formulaire */}
-                        <div className="border-2 border-black">
-                            {/* Erreur */}
+                        {/* Carte principale */}
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+                            {/* Message d'erreur */}
                             {error && (
-                                <div className="bg-red-50 border-b-2 border-red-200 text-red-800 px-4 py-2.5 text-sm font-serif">
-                                    {error}
+                                <div className="bg-red-50 border-b border-red-200 px-6 py-4">
+                                    <div className="flex items-center gap-2 text-red-800">
+                                        <Lock className="w-4 h-4" />
+                                        <p className="text-sm font-serif font-medium">{error}</p>
+                                    </div>
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit}>
-                                <div className="px-4 py-4 border-b-1 border-black">
-                                    <label htmlFor="password" className="block text-xs font-serif text-gray-600 mb-1.5 uppercase tracking-wide">
-                                        Mot de passe
+                            {/* Formulaire */}
+                            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                                <div>
+                                    <label htmlFor="password" className="block text-sm font-serif font-medium text-gray-700 mb-2">
+                                        Mot de passe TIGM
                                     </label>
-                                    <input
-                                        type="password"
-                                        id="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        className="w-full px-3 py-2.5 border-2 border-black text-sm font-serif focus:outline-none focus:bg-gray-50"
-                                        placeholder="Mot de passe TIGM"
-                                        autoComplete="current-password"
-                                        autoFocus
-                                    />
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <Lock className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="password"
+                                            id="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-sm font-serif focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
+                                            placeholder="Entrez le mot de passe"
+                                            autoComplete="current-password"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <p className="mt-2 text-xs text-gray-500 font-serif">
+                                        Ce mot de passe est fourni par le TIGM de l'ETU Bénin
+                                    </p>
                                 </div>
+
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full bg-gray-900 hover:bg-black disabled:bg-gray-400 text-white px-4 py-3 text-sm font-serif font-semibold transition-colors disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                                    className="w-full bg-gray-900 hover:bg-black disabled:bg-gray-400 text-white px-6 py-3.5 rounded-xl text-sm font-serif font-semibold transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center space-x-2 group"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -95,38 +111,47 @@ export default function MemberLoginPage() {
                                             <span>Vérification...</span>
                                         </>
                                     ) : (
-                                        <span>Accéder au formulaire</span>
+                                        <>
+                                            <span>Accéder au formulaire</span>
+                                            <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        </>
                                     )}
                                 </button>
                             </form>
                         </div>
 
-                        {/* Déjà un espace ? */}
-                        <div className="mt-4 border-1 border-black bg-red-50 px-4 py-3">
-                            <p className="text-xs text-gray-700 font-serif mb-2">
-                                Vous avez déjà rempli le formulaire ?
-                            </p>
-                            <Link
-                                href="/membre/dashboard"
-                                className="inline-block bg-gray-900 hover:bg-black text-white px-4 py-2 text-xs font-semibold transition-colors"
-                            >
-                                Aller à mon espace
-                            </Link>
-                        </div>
-
-                        {/* Info TIGM */}
-                        <div className="mt-3 text-center">
-                            <p className="text-xs text-gray-500 font-serif">
-                                Mot de passe disponible auprès du <strong>TIGM</strong> de l'ETU Bénin
-                            </p>
+                        {/* Carte alternative - Déjà membre */}
+                        <div className="mt-6 bg-white rounded-2xl shadow-md border border-gray-200 p-6">
+                            <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0">
+                                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                                        <LogIn className="w-5 h-5 text-gray-600" />
+                                    </div>
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-sm font-serif font-semibold text-gray-900 mb-1">
+                                        Vous avez déjà remplis le formulaire ?
+                                    </h3>
+                                    <p className="text-xs text-gray-600 font-serif mb-3">
+                                        Accédez directement à votre espace membre
+                                    </p>
+                                    <Link
+                                        href="/membre/login"
+                                        className="inline-flex items-center gap-2 text-sm font-serif font-medium text-gray-900 hover:text-gray-700 transition-colors group"
+                                    >
+                                        <span>Connexion membre</span>
+                                        <ArrowLeft className="w-4 h-4 rotate-180 group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </main>
 
-                {/* Footer */}
-                <footer className="border-t-2 border-black px-6 py-3 text-center">
+                {/* Footer épuré */}
+                <footer className="px-6 py-6 text-center">
                     <p className="text-xs text-gray-500 font-serif">
-                        ETU Bénin — École Transcendantaliste Universelle
+                        ETU Bénin — École Transcendantaliste Universelle — Depuis 1977
                     </p>
                 </footer>
             </div>

@@ -71,30 +71,28 @@ export default function InscriptionPage() {
     if (isSuccess) {
         return (
             <ClientOnly fallback={
-                <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Chargement...</p>
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900 mx-auto"></div>
+                        <p className="mt-4 text-gray-600 font-serif">Chargement...</p>
                     </div>
                 </div>
             }>
-                <div className="min-h-screen bg-white">
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
                     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16">
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
+                            <div className="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle className="w-12 h-12 text-gray-900" />
                             </div>
-                            <h1 className="text-3xl sm:text-4xl font-serif text-gray-900 mb-4">
+                            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-4">
                                 Inscription réussie !
                             </h1>
-                            <p className="text-lg sm:text-xl text-gray-600 mb-8 font-serif">
+                            <p className="text-lg text-gray-600 mb-8 font-serif">
                                 Votre inscription a été enregistrée avec succès. Nous vous contacterons bientôt.
                             </p>
                             <Link
                                 href="/"
-                                className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors text-lg font-semibold"
+                                className="inline-flex items-center space-x-2 bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl transition-all text-base font-semibold font-serif shadow-lg hover:shadow-xl"
                             >
                                 <ArrowLeft className="w-5 h-5" />
                                 <span>Retour à l'accueil</span>
@@ -108,72 +106,100 @@ export default function InscriptionPage() {
 
     return (
         <ClientOnly fallback={
-            <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Chargement...</p>
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900 mx-auto"></div>
+                    <p className="mt-4 text-gray-600 font-serif">Chargement...</p>
                 </div>
             </div>
         }>
-            <div className="min-h-screen bg-white">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
                 {/* Header */}
-                <header className="bg-white border-b border-gray-200 py-4">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6">
-                        <div className="flex items-center justify-between">
-                            <Link
-                                href="/"
-                                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                                <span className="text-base sm:text-lg font-serif">Retour à l'accueil</span>
-                            </Link>
-                            <div className="text-center">
-                                <h1 className="text-xl sm:text-2xl font-serif text-gray-900">
-                                    Inscription ETU
-                                </h1>
-                            </div>
-                            <div className="w-20"></div> {/* Spacer pour centrer le titre */}
-                        </div>
-                    </div>
+                <header className="px-6 py-4">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-serif group"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        <span>Retour à l'accueil</span>
+                    </Link>
                 </header>
 
                 {/* Hero Section */}
-                <section className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-                    <div className="text-center mb-8 sm:mb-12">
-                        <div className="flex items-center justify-center space-x-4 sm:space-x-6 mb-6">
+                <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-lg mb-6">
                             <img
                                 src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
-                                alt="Logo ETU - École Transcendantaliste Universelle"
-                                className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24"
+                                alt="Logo ETU"
+                                className="w-16 h-16"
                             />
-                            <div className="text-center sm:text-left">
-                                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-gray-900 leading-tight">
-                                    École Transcendantaliste Universelle
-                                </h2>
-                                <p className="text-sm sm:text-base lg:text-lg font-serif text-gray-600 uppercase tracking-wider">
-                                    Ordre des Marins Pêcheurs
-                                </p>
+                        </div>
+                        <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Fiche d'inscription</h1>
+                        <p className="text-sm text-gray-600 font-serif">École Transcendantaliste Universelle - OMP Bénin</p>
+                    </div>
+
+                    {/* Résumé commercial en haut — horizontal */}
+                    <div className="grid grid-cols-2 gap-3 lg:gap-4 mb-8">
+                        {/* Formation */}
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h3 className="text-sm font-serif font-bold text-gray-900 mb-2">Degré Explorateur</h3>
+                            <div className="space-y-1 text-xs font-serif">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Durée</span>
+                                    <span className="font-semibold text-gray-900">6 mois</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Format</span>
+                                    <span className="font-semibold text-gray-900">En ligne / En présentiel</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="border-t-2 border-blue-200 pt-6">
-                            <h4 className="text-xl sm:text-2xl font-serif text-gray-900 mb-4">
-                                Fiche d'inscription
-                            </h4>
-                            <p className="text-base sm:text-lg text-gray-600 font-serif max-w-2xl mx-auto">
-                                Remplissez ce formulaire pour commencer votre parcours d'élévation spirituelle avec l'ETU.
+                        {/* Investissement */}
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h3 className="text-sm font-serif font-bold text-gray-900 mb-2">Investissement</h3>
+                            <div className="space-y-1 text-xs font-serif">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Inscription</span>
+                                    <span className="font-semibold text-gray-900">12 000 F</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Mensualité</span>
+                                    <span className="font-semibold text-gray-900">10 000 F/mois</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Discipline 154 jours */}
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h3 className="text-sm font-serif font-bold text-gray-900 mb-2">154 jours de prière</h3>
+                            <p className="text-xs text-gray-600 font-serif leading-relaxed">
+                                Prière constante et régulière chaque jour avec le livre de prière de l'ETU.
                             </p>
+                        </div>
+
+                        {/* Paiement */}
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h3 className="text-sm font-serif font-bold text-gray-900 mb-2">Paiement</h3>
+                            <div className="space-y-1 text-xs font-serif text-gray-600">
+                                <p><strong className="text-gray-900">Bénin :</strong> MoMo</p>
+                                <p><strong className="text-gray-900">Étranger :</strong> MoneyGram, WU, virement</p>
+                                <p className="pt-1">
+                                    <a href="https://wa.me/22967153974" className="text-gray-900 font-semibold hover:underline">+229 67 15 39 74</a>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Formulaire */}
+                    {/* Formulaire en bas */}
                     <div className="max-w-2xl mx-auto">
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                    <p className="text-red-600 text-sm font-serif">{error}</p>
-                                </div>
-                            )}
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                                {error && (
+                                    <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                                        <p className="text-red-600 text-sm font-serif">{error}</p>
+                                    </div>
+                                )}
 
                             {/* Nom, Prénom et Sexe */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -189,7 +215,7 @@ export default function InscriptionPage() {
                                         value={formData.nom}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
                                         placeholder="Votre nom de famille"
                                     />
                                 </div>
@@ -205,7 +231,7 @@ export default function InscriptionPage() {
                                         value={formData.prenom}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
                                         placeholder="Votre prénom"
                                     />
                                 </div>
@@ -368,7 +394,7 @@ export default function InscriptionPage() {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white px-8 py-4 rounded-lg transition-colors text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:transform-none"
+                                    className="w-full bg-gray-900 hover:bg-black disabled:bg-gray-400 text-white px-6 py-3.5 rounded-xl text-sm font-serif font-semibold transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:shadow-none"
                                 >
                                     {isSubmitting ? 'Enregistrement...' : 'Soumettre l\'inscription'}
                                 </button>
@@ -378,21 +404,16 @@ export default function InscriptionPage() {
                 </section>
 
                 {/* Footer */}
-                <footer className="bg-white border-t border-gray-200 py-8 sm:py-12">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-                        <p className="text-gray-600 text-base sm:text-lg mb-2 sm:mb-3 font-serif">
-                            École Transcendantaliste Universelle - Depuis 1977
-                        </p>
-                        <p className="text-gray-500 text-sm sm:text-base font-serif">
-                            © 2024 ETU Bénin. Tous droits réservés.
-                        </p>
-                    </div>
+                <footer className="px-6 py-6 text-center">
+                    <p className="text-xs text-gray-500 font-serif">
+                        ETU Bénin — École Transcendantaliste Universelle — Depuis 1977
+                    </p>
                 </footer>
 
                 {/* Modal WhatsApp */}
                 {showWhatsAppModal && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
-                        <div className="bg-white rounded-lg shadow-2xl max-w-md w-full max-h-[95vh] overflow-y-auto relative">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] overflow-y-auto relative">
                             {/* Bouton de fermeture fixe */}
                             <button
                                 onClick={() => setShowWhatsAppModal(false)}
@@ -420,13 +441,13 @@ export default function InscriptionPage() {
                                     </p>
                                 </div>
 
-                                <div className="bg-gray-50 rounded-lg p-3 mb-4 border border-gray-200">
+                                <div className="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-200">
                                     <h5 className="text-sm font-serif text-gray-900 mb-3 text-center">
                                         Il reste encore une étape importante !
                                     </h5>
 
                                     <div className="space-y-3">
-                                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                                        <div className="bg-white rounded-xl p-3 border border-gray-200">
                                             <h6 className="text-xs font-serif text-gray-900 mb-2">
                                                 Étape 1 : Effectuer le paiement
                                             </h6>
@@ -443,7 +464,7 @@ export default function InscriptionPage() {
                                             </div>
                                         </div>
 
-                                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                                        <div className="bg-white rounded-xl p-3 border border-gray-200">
                                             <h6 className="text-xs font-serif text-gray-900 mb-2">
                                                 Étape 2 : Envoyer la capture d'écran
                                             </h6>
@@ -460,7 +481,7 @@ export default function InscriptionPage() {
                                         href={`https://wa.me/22967153974?text=Bonjour, je viens de m'inscrire à l'ETU. Voici mes informations: ${formData.nom} ${formData.prenom}, ${formData.telephone}. J'ai effectué le paiement des frais d'inscription de 12 000 FCFA au numéro +229 01 67 15 39 74. Voici la capture d'écran du paiement.`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 px-3 rounded-lg transition-colors font-semibold flex items-center justify-center space-x-2 text-sm"
+                                        className="w-full bg-gray-900 hover:bg-black text-white py-2.5 px-4 rounded-xl transition-all font-semibold flex items-center justify-center space-x-2 text-sm font-serif shadow-lg hover:shadow-xl"
                                     >
                                         <Phone className="w-4 h-4" />
                                         <span>Envoyer la capture d'écran</span>

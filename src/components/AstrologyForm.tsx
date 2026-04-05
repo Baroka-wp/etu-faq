@@ -1,13 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
+import CitySearch from './CitySearch'
 
 interface AstrologyFormProps {
     onSubmit: (data: any) => Promise<void>
@@ -81,196 +77,140 @@ export default function AstrologyForm({
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-            </CardHeader>
-            <CardContent>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-serif font-bold text-gray-900">{title}</h2>
+                <p className="text-sm text-gray-600 font-serif mt-1">{description}</p>
+            </div>
+            <div className="p-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <Label htmlFor="name">Nom *</Label>
-                            <Input
+                            <label htmlFor="name" className="block text-sm font-serif font-medium text-gray-700 mb-2">Nom *</label>
+                            <input
                                 id="name"
                                 value={formData.name}
                                 onChange={(e) => handleInputChange('name', e.target.value)}
                                 placeholder="Nom de la personne"
                                 required
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
                             />
                         </div>
                         <div>
-                            <Label htmlFor="city">Ville *</Label>
-                            <Input
-                                id="city"
+                            <label className="block text-sm font-serif font-medium text-gray-700 mb-2">Ville de naissance *</label>
+                            <CitySearch
                                 value={formData.city}
-                                onChange={(e) => handleInputChange('city', e.target.value)}
-                                placeholder="Ville de naissance"
-                                required
+                                onChange={(city, countryCode) => {
+                                    handleInputChange('city', city)
+                                    handleInputChange('nation', countryCode)
+                                }}
+                                placeholder="Ex: Cotonou, Paris..."
                             />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
-                        <div>
-                            <Label htmlFor="year">Année</Label>
-                            <Input
-                                id="year"
-                                type="number"
-                                value={formData.year || ''}
-                                onChange={(e) => handleInputChange('year', e.target.value)}
-                                min="1900"
-                                max="2100"
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="month">Mois</Label>
-                            <Select value={(formData.month || 1).toString()} onValueChange={(value) => handleInputChange('month', value)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {[
-                                        { value: 1, label: 'Janvier' },
-                                        { value: 2, label: 'Février' },
-                                        { value: 3, label: 'Mars' },
-                                        { value: 4, label: 'Avril' },
-                                        { value: 5, label: 'Mai' },
-                                        { value: 6, label: 'Juin' },
-                                        { value: 7, label: 'Juillet' },
-                                        { value: 8, label: 'Août' },
-                                        { value: 9, label: 'Septembre' },
-                                        { value: 10, label: 'Octobre' },
-                                        { value: 11, label: 'Novembre' },
-                                        { value: 12, label: 'Décembre' }
-                                    ].map((month) => (
-                                        <SelectItem key={month.value} value={month.value.toString()}>
-                                            {month.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div>
-                            <Label htmlFor="day">Jour</Label>
-                            <Input
-                                id="day"
-                                type="number"
-                                min="1"
-                                max="31"
-                                value={formData.day || ''}
-                                onChange={(e) => handleInputChange('day', e.target.value)}
-                            />
+                    <div>
+                        <label className="block text-sm font-serif font-medium text-gray-700 mb-2">Date de naissance</label>
+                        <div className="grid grid-cols-3 gap-3">
+                            <div>
+                                <input
+                                    id="day"
+                                    type="number"
+                                    min="1"
+                                    max="31"
+                                    value={formData.day || ''}
+                                    onChange={(e) => handleInputChange('day', e.target.value)}
+                                    placeholder="Jour"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
+                                />
+                            </div>
+                            <div>
+                                <select
+                                    value={(formData.month || 1).toString()}
+                                    onChange={(e) => handleInputChange('month', e.target.value)}
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
+                                >
+                                    <option value="1">Janvier</option>
+                                    <option value="2">Février</option>
+                                    <option value="3">Mars</option>
+                                    <option value="4">Avril</option>
+                                    <option value="5">Mai</option>
+                                    <option value="6">Juin</option>
+                                    <option value="7">Juillet</option>
+                                    <option value="8">Août</option>
+                                    <option value="9">Septembre</option>
+                                    <option value="10">Octobre</option>
+                                    <option value="11">Novembre</option>
+                                    <option value="12">Décembre</option>
+                                </select>
+                            </div>
+                            <div>
+                                <input
+                                    id="year"
+                                    type="number"
+                                    value={formData.year || ''}
+                                    onChange={(e) => handleInputChange('year', e.target.value)}
+                                    min="1900"
+                                    max="2100"
+                                    placeholder="Année"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="hour">Heure</Label>
-                            <Input
-                                id="hour"
-                                type="number"
-                                min="0"
-                                max="23"
-                                value={formData.hour || ''}
-                                onChange={(e) => handleInputChange('hour', e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="minute">Minute</Label>
-                            <Input
-                                id="minute"
-                                type="number"
-                                min="0"
-                                max="59"
-                                value={formData.minute || ''}
-                                onChange={(e) => handleInputChange('minute', e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="nation">Pays (code ISO 2 lettres)</Label>
-                            <Input
-                                id="nation"
-                                value={formData.nation}
-                                onChange={(e) => handleInputChange('nation', e.target.value.toUpperCase())}
-                                placeholder="FR, US, GB, DE, ES, IT..."
-                                maxLength={2}
-                                pattern="[A-Z]{2}"
-                                title="Code pays à 2 lettres (ex: FR, US, GB)"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                                Codes courants: FR (France), US (États-Unis), GB (Royaume-Uni), DE (Allemagne), ES (Espagne), IT (Italie), CA (Canada), AU (Australie)
-                            </p>
-                        </div>
-                        <div>
-                            <Label htmlFor="theme">Thème</Label>
-                            <Select value={formData.theme} onValueChange={(value) => handleInputChange('theme', value)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="classic">Classic</SelectItem>
-                                    <SelectItem value="dark">Dark</SelectItem>
-                                    <SelectItem value="light">Light</SelectItem>
-                                </SelectContent>
-                            </Select>
+                    <div>
+                        <label className="block text-sm font-serif font-medium text-gray-700 mb-2">Heure de naissance (optionnel)</label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <input
+                                    id="hour"
+                                    type="number"
+                                    min="0"
+                                    max="23"
+                                    value={formData.hour || ''}
+                                    onChange={(e) => handleInputChange('hour', e.target.value)}
+                                    placeholder="Heure (0-23)"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    id="minute"
+                                    type="number"
+                                    min="0"
+                                    max="59"
+                                    value={formData.minute || ''}
+                                    onChange={(e) => handleInputChange('minute', e.target.value)}
+                                    placeholder="Minutes (0-59)"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="language">Langue</Label>
-                            <Select value={formData.language} onValueChange={(value) => handleInputChange('language', value)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="FR">Français</SelectItem>
-                                    <SelectItem value="EN">English</SelectItem>
-                                    <SelectItem value="ES">Español</SelectItem>
-                                    <SelectItem value="IT">Italiano</SelectItem>
-                                    <SelectItem value="DE">Deutsch</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div>
-                            <Label htmlFor="houses_system">Système de maisons</Label>
-                            <Select value={formData.houses_system} onValueChange={(value) => handleInputChange('houses_system', value)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="P">Placidus</SelectItem>
-                                    <SelectItem value="K">Koch</SelectItem>
-                                    <SelectItem value="O">Porphyry</SelectItem>
-                                    <SelectItem value="R">Regiomontanus</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
+                    {/* Le code pays est automatiquement rempli via la recherche de ville */}
+                    <input type="hidden" value={formData.nation} />
 
-                    <Button
+                    <button
                         type="submit"
                         disabled={loading}
-                        className="w-full"
+                        className="w-full bg-gray-900 hover:bg-black disabled:bg-gray-400 text-white px-6 py-3.5 rounded-xl text-sm font-serif font-semibold transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center space-x-2"
                     >
                         {loading ? (
                             <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Génération en cours...
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span>Génération en cours...</span>
                             </>
                         ) : (
                             <>
-                                <Sparkles className="w-4 h-4 mr-2" />
-                                Générer la carte
+                                <Sparkles className="w-4 h-4" />
+                                <span>Générer ma carte astrologique</span>
                             </>
                         )}
-                    </Button>
+                    </button>
                 </form>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     )
 }
