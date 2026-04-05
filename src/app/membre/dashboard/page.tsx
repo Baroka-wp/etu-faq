@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Calendar, Users, BookOpen, Star, TrendingUp } from 'lucide-react'
+import { Calendar, BookOpen, Star, Users } from 'lucide-react'
 import Link from 'next/link'
 
 interface Membre {
@@ -13,15 +13,8 @@ interface Membre {
   createdAt: string
 }
 
-interface Stats {
-  prochainEvents: number
-  totalInscriptions: number
-  totalLivres: number
-}
-
 export default function DashboardPage() {
   const [membre, setMembre] = useState<Membre | null>(null)
-  const [stats, setStats] = useState<Stats>({ prochainEvents: 0, totalInscriptions: 0, totalLivres: 0 })
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -31,13 +24,6 @@ export default function DashboardPage() {
         if (membreResponse.ok) {
           const membreData = await membreResponse.json()
           setMembre(membreData.membre)
-        }
-
-        // Récupérer les statistiques réelles
-        const statsResponse = await fetch('/api/membre/stats')
-        if (statsResponse.ok) {
-          const statsData = await statsResponse.json()
-          setStats(statsData.stats)
         }
       } catch (error) {
         console.error('Erreur lors du chargement:', error)
@@ -53,8 +39,8 @@ export default function DashboardPage() {
     return (
       <div className="p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-24 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-gray-200 w-1/3"></div>
+          <div className="h-24 bg-gray-200"></div>
         </div>
       </div>
     )
@@ -66,13 +52,13 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      {/* En-tête de bienvenue */}
-      <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-2">
+      {/* En-tête */}
+      <div className="mb-10 pb-6 border-b-2 border-black">
+        <h1 className="text-4xl sm:text-5xl font-serif font-bold text-gray-900 mb-2">
           Bienvenue, {membre?.nomSacre || membre?.prenoms}
         </h1>
         <p className="text-lg text-gray-600 font-serif">
-          {membre?.grade} - Équipage {membre?.equipage}
+          {membre?.grade} — Équipage {membre?.equipage}
         </p>
         {memberSince && (
           <p className="text-sm text-gray-500 font-serif mt-1">
@@ -81,125 +67,75 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Cartes de statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-gray-700" />
-            </div>
-            <span className="text-sm font-semibold text-gray-600 font-serif">Prochainement</span>
-          </div>
-          <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.prochainEvents}</h3>
-          <p className="text-sm text-gray-600 font-serif">Événements à venir</p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-gray-700" />
-            </div>
-            <span className="text-sm font-semibold text-gray-600 font-serif">Total</span>
-          </div>
-          <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.totalInscriptions}</h3>
-          <p className="text-sm text-gray-600 font-serif">Traversées suivies</p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-gray-700" />
-            </div>
-            <span className="text-sm font-semibold text-gray-600 font-serif">Disponibles</span>
-          </div>
-          <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.totalLivres}</h3>
-          <p className="text-sm text-gray-600 font-serif">Livres dans la bibliothèque</p>
-        </div>
-      </div>
-
-      {/* Raccourcis rapides */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Grille asymétrique de raccourcis */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-0 border-2 border-black">
+        {/* Planning - grand bloc en haut à gauche */}
         <Link
           href="/membre/planning"
-          className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md hover:border-gray-300 transition-all group"
+          className="md:col-span-7 bg-white border-b-2 md:border-b-0 md:border-r-2 border-black p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-800 transition-colors">
-              <Calendar className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
-            </div>
-            <TrendingUp className="w-5 h-5 text-gray-400" />
+          <div className="flex items-start justify-between mb-6">
+            <Calendar className="w-10 h-10 text-gray-900 group-hover:text-white transition-colors" strokeWidth={1.5} />
+            <span className="text-5xl lg:text-6xl font-serif font-bold text-gray-200 group-hover:text-gray-700 transition-colors">01</span>
           </div>
-          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Consulter le planning</h3>
-          <p className="text-gray-600 font-serif text-sm">
-            Voir les traversées et événements autorisés pour votre grade
+          <h3 className="text-2xl lg:text-3xl font-bold font-serif mb-2 text-gray-900 group-hover:text-white transition-colors">
+            Consulter le planning
+          </h3>
+          <p className="text-gray-600 font-serif group-hover:text-gray-300 transition-colors">
+            Traversées et événements autorisés pour votre grade
           </p>
         </Link>
 
+        {/* Thème astral - bloc à droite */}
         <Link
           href="/membre/carte-du-ciel"
-          className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md hover:border-gray-300 transition-all group"
+          className="md:col-span-5 bg-gray-50 border-b-2 border-black p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-800 transition-colors">
-              <Star className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
-            </div>
-            <TrendingUp className="w-5 h-5 text-gray-400" />
+          <div className="flex items-start justify-between mb-6">
+            <Star className="w-10 h-10 text-gray-900 group-hover:text-white transition-colors" strokeWidth={1.5} />
+            <span className="text-5xl lg:text-6xl font-serif font-bold text-gray-200 group-hover:text-gray-700 transition-colors">02</span>
           </div>
-          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Theme astral</h3>
-          <p className="text-gray-600 font-serif text-sm">
-            Découvrez votre thème astral et positions planétaires
+          <h3 className="text-2xl lg:text-3xl font-bold font-serif mb-2 text-gray-900 group-hover:text-white transition-colors">
+            Thème astral
+          </h3>
+          <p className="text-gray-600 font-serif group-hover:text-gray-300 transition-colors">
+            Thème astral et positions planétaires
           </p>
         </Link>
 
+        {/* Bibliothèque - bloc en bas à gauche */}
         <Link
           href="/membre/bibliotheque"
-          className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md hover:border-gray-300 transition-all group"
+          className="md:col-span-5 bg-white border-b-2 md:border-b-0 md:border-r-2 border-black p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-800 transition-colors">
-              <BookOpen className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
-            </div>
-            <TrendingUp className="w-5 h-5 text-gray-400" />
+          <div className="flex items-start justify-between mb-6">
+            <BookOpen className="w-10 h-10 text-gray-900 group-hover:text-white transition-colors" strokeWidth={1.5} />
+            <span className="text-5xl lg:text-6xl font-serif font-bold text-gray-200 group-hover:text-gray-700 transition-colors">03</span>
           </div>
-          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Bibliothèque</h3>
-          <p className="text-gray-600 font-serif text-sm">
-            Accéder aux livres et ressources de l'ETU
+          <h3 className="text-2xl lg:text-3xl font-bold font-serif mb-2 text-gray-900 group-hover:text-white transition-colors">
+            Bibliothèque
+          </h3>
+          <p className="text-gray-600 font-serif group-hover:text-gray-300 transition-colors">
+            Livres et ressources de l'ETU
           </p>
         </Link>
 
+        {/* Profil - bloc en bas à droite */}
         <Link
           href="/membre/profil"
-          className="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md hover:border-gray-300 transition-all group"
+          className="md:col-span-7 bg-gray-50 p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-800 transition-colors">
-              <Users className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
-            </div>
-            <TrendingUp className="w-5 h-5 text-gray-400" />
+          <div className="flex items-start justify-between mb-6">
+            <Users className="w-10 h-10 text-gray-900 group-hover:text-white transition-colors" strokeWidth={1.5} />
+            <span className="text-5xl lg:text-6xl font-serif font-bold text-gray-200 group-hover:text-gray-700 transition-colors">04</span>
           </div>
-          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Mon profil</h3>
-          <p className="text-gray-600 font-serif text-sm">
-            Gérer vos informations et paramètres personnels
+          <h3 className="text-2xl lg:text-3xl font-bold font-serif mb-2 text-gray-900 group-hover:text-white transition-colors">
+            Mon profil
+          </h3>
+          <p className="text-gray-600 font-serif group-hover:text-gray-300 transition-colors">
+            Informations et paramètres personnels
           </p>
         </Link>
-      </div>
-
-      {/* Message de bienvenue */}
-      <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-xl font-bold font-serif text-gray-900 mb-3">
-          À propos de votre espace membre
-        </h3>
-        <div className="space-y-2 text-gray-600 font-serif">
-          <p>Bienvenue dans votre espace personnel OMP-ETU Bénin.</p>
-          <p>
-            Depuis ce tableau de bord, vous pouvez consulter votre planning personnalisé,
-            vous inscrire aux traversées, accéder à votre Theme astral, consulter la bibliothèque
-            et gérer vos informations personnelles.
-          </p>
-          <p className="text-sm text-gray-500 mt-4">
-            Pour toute question ou assistance, contactez l'administrateur au +229 67 15 39 74.
-          </p>
-        </div>
       </div>
     </div>
   )
