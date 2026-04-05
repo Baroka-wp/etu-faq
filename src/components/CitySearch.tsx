@@ -30,7 +30,7 @@ export default function CitySearch({
   const [isSearching, setIsSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [isGeolocating, setIsGeolocating] = useState(false)
-  const searchTimeoutRef = useRef<NodeJS.Timeout>()
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Fermer les résultats quand on clique à l'extérieur
@@ -53,7 +53,7 @@ export default function CitySearch({
     }
 
     // Nettoyer le timeout précédent
-    if (searchTimeoutRef.current) {
+    if (searchTimeoutRef.current !== null) {
       clearTimeout(searchTimeoutRef.current)
     }
 
@@ -97,7 +97,7 @@ export default function CitySearch({
     }, 300) // Délai de 300ms
 
     return () => {
-      if (searchTimeoutRef.current) {
+      if (searchTimeoutRef.current !== null) {
         clearTimeout(searchTimeoutRef.current)
       }
     }

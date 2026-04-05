@@ -4,6 +4,17 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import {
+  planetSymbols,
+  planetNamesFR,
+  signSymbols,
+  signNamesFR,
+  planetColors,
+  signColors,
+  planetOrder,
+  formatPosition,
+  toRoman
+} from '@/data/astrology-symbols'
 
 export default function ResultatsMembre() {
   const router = useRouter()
@@ -15,6 +26,8 @@ export default function ResultatsMembre() {
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData)
+        console.log('📊 Données du thème astral:', parsedData)
+        console.log('🪐 Planètes:', parsedData.planets)
         setChartData(parsedData)
       } catch (error) {
         console.error('Erreur parsing:', error)
@@ -99,29 +112,92 @@ export default function ResultatsMembre() {
 
       {/* Positions planétaires */}
       {chartData.planets && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold font-serif text-gray-900 mb-4">
-            Positions Planétaires
-          </h2>
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+            <h2 className="text-2xl font-bold font-serif text-gray-900">
+              Planètes du ciel de naissance
+            </h2>
+            <p className="text-sm text-gray-600 font-serif mt-1">
+              Voici le tableau détaillé de vos planètes de naissance, incluant positions et maisons.
+            </p>
+          </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full text-sm font-serif">
-              <thead className="border-b border-gray-200">
-                <tr>
-                  <th className="text-left py-2 px-3">Planète</th>
-                  <th className="text-left py-2 px-3">Signe</th>
-                  <th className="text-left py-2 px-3">Position</th>
-                  <th className="text-left py-2 px-3">Maison</th>
+            <table className="w-full">
+              <thead>
+                <tr className="bg-blue-100 border-b-2 border-blue-200">
+                  <th className="text-left py-3 px-4 font-bold font-serif text-blue-900">Planète</th>
+                  <th className="text-left py-3 px-4 font-bold font-serif text-blue-900">Position en signe</th>
+                  <th className="text-center py-3 px-4 font-bold font-serif text-blue-900">Maison</th>
                 </tr>
               </thead>
-              <tbody>
-                {Object.entries(chartData.planets).map(([key, planet]: [string, any]) => (
-                  <tr key={key} className="border-b border-gray-100">
-                    <td className="py-2 px-3 font-semibold">{planet.planet_name}</td>
-                    <td className="py-2 px-3">{planet.sign}</td>
-                    <td className="py-2 px-3">{planet.position?.toFixed(2)}°</td>
-                    <td className="py-2 px-3">Maison {planet.house}</td>
-                  </tr>
-                ))}
+              <tbody className="bg-blue-50">
+                {planetOrder
+                  .map(planetKey => {
+                    // Chercher directement par la clé de l'objet
+                    const planetData = chartData.planets[planetKey]
+                    if (!planetData) return null
+                    return { key: planetKey, ...planetData }
+                  })
+                  .filter((planet): planet is NonNullable<typeof planet> => planet !== null)
+                  .map((planet, index) => {
+                    const planetKey = planet.key
+                    const planetSymbol = planetSymbols[planetKey] || '●'
+                    const planetNameFR = planetNamesFR[planetKey] || planetKey
+                    const planetColor = planetColors[planetKey] || 'text-gray-700'
+
+                    const signSymbol = signSymbols[planet.sign] || ''
+                    const signNameFR = signNamesFR[planet.sign] || planet.sign
+                    const signColor = signColors[planet.sign] || 'text-gray-700'
+
+                    const position = formatPosition(planet.position || 0)
+                    const house = toRoman(planet.house || 0)
+
+                    return (
+                      <tr
+                        key={planet.key}
+                        className={`border-b border-blue-100 hover:bg-blue-100 transition-colors ${
+                          index % 2 === 0 ? 'bg-white' : 'bg-blue-50'
+                        }`}
+                      >
+                        {/* Planète */}
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-3">
+                            <span className={`text-2xl ${planetColor}`}>
+                              {planetSymbol}
+                            </span>
+                            <span className="font-semibold font-serif text-gray-900">
+                              {planetNameFR}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Position en signe */}
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-3">
+                            <span className={`text-2xl ${signColor}`}>
+                              {signSymbol}
+                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className="font-semibold font-serif text-gray-900">
+                                {signNameFR}
+                              </span>
+                              <span className="text-sm text-gray-600 font-mono">
+                                {position}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Maison */}
+                        <td className="py-3 px-4 text-center">
+                          <span className="font-bold font-serif text-gray-900 text-lg">
+                            {house}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
               </tbody>
             </table>
           </div>
