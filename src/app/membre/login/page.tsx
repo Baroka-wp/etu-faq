@@ -5,33 +5,80 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Lock, User, Loader2 } from 'lucide-react'
 
+type LoginStep = 'nomSacre' | 'premiereConnexion' | 'motDePasse'
+
 export default function MembreLoginPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    nomSacre: '',
-    motDePasse: ''
-  })
+  const [step, setStep] = useState<LoginStep>('nomSacre')
+  const [nomSacre, setNomSacre] = useState('')
+  const [motDePasse, setMotDePasse] = useState('')
+  const [confirmMotDePasse, setConfirmMotDePasse] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Étape 1 : Vérifier le nom sacré
+  const handleNomSacreSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/membre/login', {
+      const response = await fetch('/api/membre/check-nom-sacre', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ nomSacre }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        // Rediriger vers le dashboard
+        if (data.premiereConnexion) {
+          setStep('premiereConnexion')
+        } else {
+          setStep('motDePasse')
+        }
+      } else {
+        setError(data.error || 'Une erreur est survenue')
+      }
+    } catch (err) {
+      setError('Erreur de connexion au serveur')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Étape 2a : Création du mot de passe (première connexion)
+  const handlePremiereConnexion = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+
+    if (motDePasse !== confirmMotDePasse) {
+      setError('Les mots de passe ne correspondent pas')
+      return
+    }
+
+    if (motDePasse.length < 6) {
+      setError('Le mot de passe doit contenir au moins 6 caractères')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/membre/set-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nomSacre, motDePasse }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Connexion automatique après création du mot de passe
         router.push('/membre/dashboard')
       } else {
         setError(data.error || 'Une erreur est survenue')
@@ -43,11 +90,40 @@ export default function MembreLoginPage() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
+  // Étape 2b : Connexion avec mot de passe existant
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/membre/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nomSacre, motDePasse }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        router.push('/membre/dashboard')
+      } else {
+        setError(data.error || 'Une erreur est survenue')
+      }
+    } catch (err) {
+      setError('Erreur de connexion au serveur')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleRetour = () => {
+    setStep('nomSacre')
+    setMotDePasse('')
+    setConfirmMotDePasse('')
+    setError('')
   }
 
   return (
@@ -87,83 +163,194 @@ export default function MembreLoginPage() {
 
           {/* Formulaire de connexion */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Message d'erreur */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm font-serif">
-                  {error}
+            {/* Message d'erreur */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm font-serif mb-6">
+                {error}
+              </div>
+            )}
+
+            {/* Étape 1 : Demander le nom sacré */}
+            {step === 'nomSacre' && (
+              <form onSubmit={handleNomSacreSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="nomSacre" className="block text-sm font-serif text-gray-700 mb-2">
+                    <User className="w-4 h-4 inline mr-2" />
+                    Nom Sacré
+                  </label>
+                  <input
+                    type="text"
+                    id="nomSacre"
+                    value={nomSacre}
+                    onChange={(e) => setNomSacre(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    placeholder="Entrez votre nom sacré"
+                    autoComplete="username"
+                    autoFocus
+                  />
                 </div>
-              )}
 
-              {/* Nom Sacré */}
-              <div>
-                <label htmlFor="nomSacre" className="block text-sm font-serif text-gray-700 mb-2">
-                  <User className="w-4 h-4 inline mr-2" />
-                  Nom Sacré
-                </label>
-                <input
-                  type="text"
-                  id="nomSacre"
-                  name="nomSacre"
-                  value={formData.nomSacre}
-                  onChange={handleChange}
-                  required
+                <button
+                  type="submit"
                   disabled={isLoading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  placeholder="Votre nom sacré"
-                  autoComplete="username"
-                />
-              </div>
+                  className="w-full bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white px-6 py-4 rounded-lg transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Vérification...</span>
+                    </>
+                  ) : (
+                    <span>Continuer</span>
+                  )}
+                </button>
+              </form>
+            )}
 
-              {/* Mot de passe */}
-              <div>
-                <label htmlFor="motDePasse" className="block text-sm font-serif text-gray-700 mb-2">
-                  <Lock className="w-4 h-4 inline mr-2" />
-                  Mot de passe
-                </label>
-                <input
-                  type="password"
-                  id="motDePasse"
-                  name="motDePasse"
-                  value={formData.motDePasse}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  placeholder="Votre mot de passe"
-                  autoComplete="current-password"
-                />
-              </div>
+            {/* Étape 2a : Première connexion - Créer le mot de passe */}
+            {step === 'premiereConnexion' && (
+              <div className="space-y-6">
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-sm font-serif">
+                  Bienvenue <strong>{nomSacre}</strong> ! C'est votre première connexion. Veuillez créer votre mot de passe.
+                </div>
 
-              {/* Bouton de connexion */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white px-6 py-4 rounded-lg transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Connexion en cours...</span>
-                  </>
-                ) : (
-                  <span>Se connecter</span>
-                )}
-              </button>
-            </form>
+                <form onSubmit={handlePremiereConnexion} className="space-y-6">
+                  <div>
+                    <label htmlFor="motDePasse" className="block text-sm font-serif text-gray-700 mb-2">
+                      <Lock className="w-4 h-4 inline mr-2" />
+                      Nouveau mot de passe
+                    </label>
+                    <input
+                      type="password"
+                      id="motDePasse"
+                      value={motDePasse}
+                      onChange={(e) => setMotDePasse(e.target.value)}
+                      required
+                      disabled={isLoading}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      placeholder="Minimum 6 caractères"
+                      autoComplete="new-password"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="confirmMotDePasse" className="block text-sm font-serif text-gray-700 mb-2">
+                      <Lock className="w-4 h-4 inline mr-2" />
+                      Confirmer le mot de passe
+                    </label>
+                    <input
+                      type="password"
+                      id="confirmMotDePasse"
+                      value={confirmMotDePasse}
+                      onChange={(e) => setConfirmMotDePasse(e.target.value)}
+                      required
+                      disabled={isLoading}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      placeholder="Confirmez votre mot de passe"
+                      autoComplete="new-password"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleRetour}
+                      disabled={isLoading}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-800 px-6 py-4 rounded-lg transition-colors text-base font-semibold disabled:cursor-not-allowed"
+                    >
+                      Retour
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="flex-1 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white px-6 py-4 rounded-lg transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>Création...</span>
+                        </>
+                      ) : (
+                        <span>Créer et se connecter</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Étape 2b : Connexion standard - Demander le mot de passe */}
+            {step === 'motDePasse' && (
+              <div className="space-y-6">
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-sm font-serif">
+                  Bonjour <strong>{nomSacre}</strong> ! Veuillez entrer votre mot de passe.
+                </div>
+
+                <form onSubmit={handleLoginSubmit} className="space-y-6">
+                  <div>
+                    <label htmlFor="motDePasseLogin" className="block text-sm font-serif text-gray-700 mb-2">
+                      <Lock className="w-4 h-4 inline mr-2" />
+                      Mot de passe
+                    </label>
+                    <input
+                      type="password"
+                      id="motDePasseLogin"
+                      value={motDePasse}
+                      onChange={(e) => setMotDePasse(e.target.value)}
+                      required
+                      disabled={isLoading}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      placeholder="Entrez votre mot de passe"
+                      autoComplete="current-password"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleRetour}
+                      disabled={isLoading}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-800 px-6 py-4 rounded-lg transition-colors text-base font-semibold disabled:cursor-not-allowed"
+                    >
+                      Retour
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="flex-1 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white px-6 py-4 rounded-lg transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>Connexion...</span>
+                        </>
+                      ) : (
+                        <span>Se connecter</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
             {/* Aide */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600 font-serif">
-                Première connexion ou mot de passe oublié ?
-              </p>
-              <p className="text-sm text-gray-500 font-serif mt-1">
-                Contactez l'administrateur au{' '}
-                <a href="tel:+22967153974" className="text-blue-600 hover:text-blue-700 font-semibold">
-                  +229 67 15 39 74
-                </a>
-              </p>
-            </div>
+            {step === 'motDePasse' && (
+              <div className="mt-6 text-center">
+                <p className="text-sm text-gray-600 font-serif">
+                  Mot de passe oublié ?
+                </p>
+                <p className="text-sm text-gray-500 font-serif mt-1">
+                  Contactez l'administrateur au{' '}
+                  <a href="tel:+22967153974" className="text-blue-600 hover:text-blue-700 font-semibold">
+                    +229 67 15 39 74
+                  </a>
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Informations supplémentaires */}

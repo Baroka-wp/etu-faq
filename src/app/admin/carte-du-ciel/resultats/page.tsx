@@ -166,7 +166,7 @@ export default function ResultatsPage() {
             pdf.setFontSize(22)
             pdf.setTextColor(30, 30, 30)
             pdf.setFont('helvetica', 'bold')
-            pdf.text('Votre Carte du Ciel', pageWidth / 2, yPosition + 8, { align: 'center' })
+            pdf.text('Votre Theme astral', pageWidth / 2, yPosition + 8, { align: 'center' })
             yPosition += 12
             
             pdf.setFontSize(14)
@@ -829,7 +829,7 @@ export default function ResultatsPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Header */}
                     <header className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">Votre Carte du Ciel</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-4">Votre Theme astral</h1>
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <h2 className="text-2xl font-semibold text-gray-900 mb-2">{chartData.basic_info.name}</h2>
                             <p className="text-gray-600 mb-1">Né(e) le {chartData.basic_info.birth_date} à {chartData.basic_info.birth_time}</p>
@@ -849,7 +849,7 @@ export default function ResultatsPage() {
                                         <img
                                             id="carte-du-ciel-svg"
                                             src={`data:image/svg+xml;base64,${chartData.svg.base64}`}
-                                            alt={`Carte du Ciel de ${chartData.basic_info.name}`}
+                                            alt={`Theme astral de ${chartData.basic_info.name}`}
                                             className="max-w-full h-auto max-h-[600px] object-contain"
                                         />
                                     </div>

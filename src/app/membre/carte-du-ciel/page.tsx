@@ -131,7 +131,7 @@ export default function CarteDuCielPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
-      <h1 className="text-3xl font-serif font-bold text-gray-900 mb-8">Carte du Ciel</h1>
+      <h1 className="text-3xl font-serif font-bold text-gray-900 mb-8">Theme astral</h1>
 
       {/* Informations de naissance enregistrées */}
       {membre && (
@@ -168,7 +168,7 @@ export default function CarteDuCielPage() {
         <AstrologyForm
           onSubmit={generateNatalChart}
           loading={generating}
-          title="Générer votre carte du ciel"
+          title="Générer votre Theme astral"
           description="Vos informations sont pré-remplies. Vérifiez et ajustez si nécessaire."
           initialData={initialFormData}
         />
@@ -178,7 +178,7 @@ export default function CarteDuCielPage() {
         <AstrologyForm
           onSubmit={generateNatalChart}
           loading={generating}
-          title="Générer votre carte du ciel"
+          title="Générer votre Theme astral"
           description="Remplissez les informations pour générer votre carte astrologique personnalisée"
         />
       )}
@@ -194,7 +194,7 @@ export default function CarteDuCielPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <span className="font-serif">
-              Vos informations sont complètes pour générer une carte du ciel précise
+              Vos informations sont complètes pour générer une Theme astral précise
             </span>
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function CarteDuCielPage() {
             Information manquante
           </h3>
           <p className="text-gray-700 font-serif">
-            L'heure de naissance n'est pas renseignée. Pour une carte du ciel précise,
+            L'heure de naissance n'est pas renseignée. Pour une Theme astral précise,
             veuillez mettre à jour votre profil avec cette information.
           </p>
         </div>

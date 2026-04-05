@@ -59,9 +59,9 @@ async function initMemberPasswords() {
     }
 
     console.log('✅ Mots de passe initialisés avec succès!\n')
-    console.log('=' .repeat(80))
+    console.log('='.repeat(80))
     console.log('LISTE DES MOTS DE PASSE TEMPORAIRES À COMMUNIQUER AUX MEMBRES')
-    console.log('=' .repeat(80))
+    console.log('='.repeat(80))
     console.log('\n⚠️  IMPORTANT : Les membres devront changer leur mot de passe lors de leur première connexion\n')
 
     passwordsList.forEach((membre, index) => {
@@ -93,7 +93,7 @@ Bienvenue sur votre dashboard personnel OMP-ETU Bénin !
 Dans votre dashboard, vous pourrez:
 ✓ Consulter votre planning personnel
 ✓ Vous inscrire aux traversées
-✓ Voir votre carte du ciel
+✓ Voir votre Theme astral
 ✓ Accéder à la bibliothèque
 ✓ Modifier vos informations
 

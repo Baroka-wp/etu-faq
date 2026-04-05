@@ -40,7 +40,7 @@ export default function MembreSidebar({ membre }: MembreSidebarProps) {
   const menuItems = [
     { href: '/membre/dashboard', icon: Home, label: 'Tableau de bord' },
     { href: '/membre/planning', icon: Calendar, label: 'Planning' },
-    { href: '/membre/carte-du-ciel', icon: Star, label: 'Carte du ciel' },
+    { href: '/membre/carte-du-ciel', icon: Star, label: 'Theme astral' },
     { href: '/membre/bibliotheque', icon: BookOpen, label: 'Bibliothèque' },
     { href: '/membre/profil', icon: User, label: 'Mon profil' },
   ]

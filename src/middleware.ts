@@ -39,9 +39,11 @@ export function middleware(request: NextRequest) {
 
   // Si c'est une route membre OMP protégée et que le membre n'est pas authentifié
   if (isCurrentRouteMembreProtected && !isMembreAuthenticated) {
-    // Exclure les routes de login et logout
+    // Exclure les routes de login, logout, check-nom-sacre et set-password
     if (!request.nextUrl.pathname.startsWith('/api/membre/login') &&
-        !request.nextUrl.pathname.startsWith('/api/membre/logout')) {
+        !request.nextUrl.pathname.startsWith('/api/membre/logout') &&
+        !request.nextUrl.pathname.startsWith('/api/membre/check-nom-sacre') &&
+        !request.nextUrl.pathname.startsWith('/api/membre/set-password')) {
       return NextResponse.redirect(new URL('/membre/login', request.url))
     }
   }

@@ -56,6 +56,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Mettre à jour la date de dernière connexion
+    await (prisma as any).membre.update({
+      where: { id: membre.id },
+      data: { derniereConnexion: new Date() }
+    })
+
     // Créer la session
     const response = NextResponse.json({
       success: true,

@@ -67,7 +67,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
         },
         {
             id: 'carte-du-ciel',
-            label: 'Carte du ciel',
+            label: 'Theme astral',
             icon: Sparkles,
             href: '/admin/carte-du-ciel'
         }

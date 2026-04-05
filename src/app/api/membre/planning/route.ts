@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+// Singleton Prisma - réutilisé entre les requêtes
+const globalForPrisma = global as unknown as { prisma: PrismaClient }
+const prisma = globalForPrisma.prisma || new PrismaClient()
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 function gradeAutorise(membreGrade: string, gradesAutorises: string[]): boolean {
   // Alchimistes peuvent accéder à tous les événements
@@ -20,44 +23,46 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    // Récupérer le membre
-    const membre = await (prisma as any).membre.findUnique({
-      where: { id: membreId },
-      select: { id: true, grade: true }
-    })
+    // Requête parallèle pour optimiser
+    const [membre, traversees] = await Promise.all([
+      (prisma as any).membre.findUnique({
+        where: { id: membreId },
+        select: { id: true, grade: true }
+      }),
+      (prisma as any).traversee.findMany({
+        where: {
+          date: {
+            gte: new Date()
+          }
+        },
+        include: {
+          inscriptions: {
+            where: { membreId },
+            select: { id: true }
+          }
+        },
+        orderBy: {
+          date: 'asc'
+        }
+      })
+    ])
 
     if (!membre) {
       return NextResponse.json({ error: 'Membre non trouvé' }, { status: 404 })
     }
 
-    // Récupérer toutes les traversées à venir
-    const traversees = await (prisma as any).traversee.findMany({
-      where: {
-        date: {
-          gte: new Date()
-        }
-      },
-      include: {
-        _count: {
-          select: { inscriptions: true }
-        },
-        inscriptions: {
-          where: { membreId: membre.id },
-          select: { id: true }
-        }
-      },
-      orderBy: {
-        date: 'asc'
-      }
-    })
-
     // Filtrer selon le grade et marquer les inscriptions
     const traverseesAutorisees = traversees
       .filter((t: any) => gradeAutorise(membre.grade, t.gradesAutorises))
       .map((t: any) => ({
-        ...t,
-        isInscrit: t.inscriptions.length > 0,
-        inscriptions: undefined // Retirer les inscriptions détaillées
+        id: t.id,
+        type: t.type,
+        titre: t.titre,
+        description: t.description,
+        date: t.date,
+        lieu: t.lieu,
+        gradesAutorises: t.gradesAutorises,
+        isInscrit: t.inscriptions.length > 0
       }))
 
     return NextResponse.json({
@@ -68,7 +73,5 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Erreur:', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }

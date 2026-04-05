@@ -145,7 +145,7 @@ export default function DashboardPage() {
             </div>
             <TrendingUp className="w-5 h-5 text-gray-400" />
           </div>
-          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Carte du ciel</h3>
+          <h3 className="text-xl font-bold font-serif mb-2 text-gray-900">Theme astral</h3>
           <p className="text-gray-600 font-serif text-sm">
             Découvrez votre thème astral et positions planétaires
           </p>
@@ -193,7 +193,7 @@ export default function DashboardPage() {
           <p>Bienvenue dans votre espace personnel OMP-ETU Bénin.</p>
           <p>
             Depuis ce tableau de bord, vous pouvez consulter votre planning personnalisé,
-            vous inscrire aux traversées, accéder à votre carte du ciel, consulter la bibliothèque
+            vous inscrire aux traversées, accéder à votre Theme astral, consulter la bibliothèque
             et gérer vos informations personnelles.
           </p>
           <p className="text-sm text-gray-500 mt-4">

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+// Singleton Prisma - réutilisé entre les requêtes
+const globalForPrisma = global as unknown as { prisma: PrismaClient }
+const prisma = globalForPrisma.prisma || new PrismaClient()
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,7 +81,5 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Erreur:', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }

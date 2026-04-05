@@ -30,7 +30,7 @@ export default function ResultatsMembre() {
   if (!chartData) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-600 mb-4">Aucune donnée de carte du ciel trouvée</p>
+        <p className="text-gray-600 mb-4">Aucune donnée de Theme astral trouvée</p>
         <Link href="/membre/carte-du-ciel" className="text-gray-900 hover:underline">
           Retour
         </Link>
@@ -51,7 +51,7 @@ export default function ResultatsMembre() {
       </div>
 
       <h1 className="text-3xl font-serif font-bold text-gray-900 mb-8">
-        Votre Carte du Ciel
+        Votre Theme astral
       </h1>
 
       {/* Informations de base */}
@@ -90,7 +90,7 @@ export default function ResultatsMembre() {
           <div className="flex justify-center">
             <img
               src={`data:image/svg+xml;base64,${chartData.svg.base64}`}
-              alt="Carte du ciel"
+              alt="Theme astral"
               className="max-w-full h-auto"
             />
           </div>

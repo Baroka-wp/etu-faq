@@ -91,7 +91,7 @@ export default function CarteDuCielPage() {
                     <div className="px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Carte du ciel</h1>
+                                <h1 className="text-2xl font-bold text-gray-900">Theme astral</h1>
                                 <p className="text-sm text-gray-600 mt-1">
                                     Générez des cartes astrologiques avec l'API Kerykeion
                                 </p>

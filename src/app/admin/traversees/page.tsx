@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
     Compass, Plus, Edit, Trash2, Eye, Copy, Download, FileText,
-    Calendar, MapPin, Users, List, ChevronLeft, ChevronRight
+    Calendar, MapPin, Users, List, ChevronLeft, ChevronRight, Clock
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import jsPDF from 'jspdf'
@@ -107,6 +107,12 @@ function formatDateTime(dateStr: string) {
     })
 }
 
+function formatTime(dateStr: string) {
+    return new Date(dateStr).toLocaleTimeString('fr-FR', {
+        hour: '2-digit', minute: '2-digit'
+    })
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function PlanificationsPage() {
     const [activeTab, setActiveTab] = useState('traversees')
@@ -125,6 +131,8 @@ export default function PlanificationsPage() {
         return new Date(now.getFullYear(), now.getMonth(), 1)
     })
     const [filterPeriod, setFilterPeriod] = useState<'all' | 'upcoming' | 'thisMonth' | 'lastMonth' | 'past'>('all')
+    const [hoveredEvent, setHoveredEvent] = useState<Planification | null>(null)
+    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
     const [submitting, setSubmitting] = useState(false)
     const [formData, setFormData] = useState({
         type: EVENT_TYPES[0] as string,
@@ -877,8 +885,13 @@ export default function PlanificationsPage() {
                                                                         <button
                                                                             key={p.id}
                                                                             onClick={e => { e.stopPropagation(); handleViewInscrits(p) }}
-                                                                            className={`w-full text-left px-2 py-1 rounded-md text-white text-xs transition-colors truncate ${TYPE_CALENDAR_COLORS[p.type] || 'bg-gray-900 hover:bg-gray-700'}`}
-                                                                            title={`${p.type} — ${p.titre}`}
+                                                                            onMouseEnter={(ev) => {
+                                                                                setHoveredEvent(p)
+                                                                                const rect = ev.currentTarget.getBoundingClientRect()
+                                                                                setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top })
+                                                                            }}
+                                                                            onMouseLeave={() => setHoveredEvent(null)}
+                                                                            className={`w-full text-left px-2 py-1 rounded-md text-white text-xs transition-all truncate cursor-pointer hover:scale-105 hover:shadow-lg ${TYPE_CALENDAR_COLORS[p.type] || 'bg-gray-900 hover:bg-gray-700'}`}
                                                                         >
                                                                             {p.titre}
                                                                         </button>
@@ -1012,6 +1025,32 @@ export default function PlanificationsPage() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Tooltip au survol (calendrier) */}
+            {hoveredEvent && (
+                <div
+                    className="fixed z-50 bg-gray-900 text-white p-3 rounded-lg shadow-xl max-w-sm pointer-events-none transform -translate-x-1/2 -translate-y-full -mt-2"
+                    style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
+                >
+                    <div className="text-xs font-semibold text-gray-300 mb-1">{hoveredEvent.type}</div>
+                    <div className="font-bold mb-2">{hoveredEvent.titre}</div>
+                    <div className="text-xs space-y-1">
+                        <div className="flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" />
+                            {formatDate(hoveredEvent.date)} à {formatTime(hoveredEvent.date)}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <MapPin className="w-3 h-3" />
+                            {hoveredEvent.lieu}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Users className="w-3 h-3" />
+                            {hoveredEvent._count.inscriptions} inscrit{hoveredEvent._count.inscriptions > 1 ? 's' : ''}
+                        </div>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-2">Cliquez pour voir les inscrits</div>
+                </div>
+            )}
 
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </div>

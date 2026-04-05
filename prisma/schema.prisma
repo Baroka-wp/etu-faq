@@ -135,6 +135,7 @@ model Membre {
   lieuResidence         String
   statut                String   @default("actif") // actif | suspendu
   imageUrl              String?
+  derniereConnexion     DateTime? // Première connexion si null
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
