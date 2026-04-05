@@ -68,7 +68,7 @@ export default function MemberLoginPage() {
                             )}
 
                             <form onSubmit={handleSubmit}>
-                                <div className="px-4 py-4 border-b-2 border-black">
+                                <div className="px-4 py-4 border-b-1 border-black">
                                     <label htmlFor="password" className="block text-xs font-serif text-gray-600 mb-1.5 uppercase tracking-wide">
                                         Mot de passe
                                     </label>
@@ -102,9 +102,9 @@ export default function MemberLoginPage() {
                         </div>
 
                         {/* Déjà un espace ? */}
-                        <div className="mt-4 border-2 border-black bg-gray-50 px-4 py-3">
+                        <div className="mt-4 border-1 border-black bg-red-50 px-4 py-3">
                             <p className="text-xs text-gray-700 font-serif mb-2">
-                                Vous avez déjà un espace personnel ?
+                                Vous avez déjà rempli le formulaire ?
                             </p>
                             <Link
                                 href="/membre/dashboard"
