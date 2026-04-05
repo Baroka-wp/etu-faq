@@ -83,7 +83,7 @@ export default function MemberLoginPage() {
                                 Espace Membre
                             </h4>
                             <p className="text-base sm:text-lg text-gray-600 font-serif max-w-2xl mx-auto">
-                                Accédez au formulaire d'inscription des membres. Cette page est réservée aux personnes invitées.
+                                Rapprochez vous du <b>TIGM</b> pour avoir le mot de passe
                             </p>
                         </div>
                     </div>
@@ -98,9 +98,6 @@ export default function MemberLoginPage() {
                                 <h3 className="text-xl font-serif text-gray-900 mb-2">
                                     Authentification requise
                                 </h3>
-                                <p className="text-sm text-gray-600 font-serif">
-                                    Veuillez entrer le mot de passe pour accéder au formulaire d'inscription des membres.
-                                </p>
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-6">

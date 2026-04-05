@@ -172,8 +172,17 @@ export default function MembreLoginPage() {
 
             {/* Info inscription TIGM — affiché quand le nom sacré n'est pas trouvé */}
             {error && (error.includes('incorrect') || error.includes('inactif')) && (
-              <div className="bg-gray-50 border border-gray-200 text-gray-700 px-4 py-3 rounded-lg text-sm font-serif mb-6">
-                Si vous êtes membre de l'ETU Bénin, vous pouvez vous inscrire auprès du <strong>TIGM actuel</strong> pour figurer dans la base de données et accéder à votre espace.
+              <div className="bg-gray-50 border border-gray-200 text-gray-700 px-4 py-4 rounded-lg text-sm font-serif mb-6">
+                <p className="mb-3">
+                  Si vous êtes membre de l'ETU Bénin, vous pouvez remplir le formulaire d'inscription en ligne pour créer votre espace membre.
+
+                </p>
+                <Link
+                  href="/members/inscription"
+                  className="inline-block bg-gray-900 hover:bg-black text-white px-5 py-2.5 text-sm font-semibold transition-colors"
+                >
+                  M'inscrire en ligne
+                </Link>
               </div>
             )}
 
