@@ -178,7 +178,7 @@ export default function MembreLoginPage() {
 
                 </p>
                 <Link
-                  href="/members/inscription"
+                  href="/members/login"
                   className="inline-block bg-gray-900 hover:bg-black text-white px-5 py-2.5 text-sm font-semibold transition-colors"
                 >
                   M'inscrire en ligne

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Lock, ArrowLeft, Shield } from 'lucide-react'
+import { Lock, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ClientOnly from '@/components/ClientOnly'
@@ -37,80 +37,40 @@ export default function MemberLoginPage() {
                 </div>
             </div>
         }>
-            <div className="min-h-screen bg-white">
+            <div className="min-h-screen bg-white flex flex-col">
                 {/* Header */}
-                <header className="bg-white border-b border-gray-200 py-4">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6">
-                        <div className="flex items-center justify-between">
-                            <Link
-                                href="/"
-                                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                                <span className="text-base sm:text-lg font-serif">Retour à l'accueil</span>
-                            </Link>
-                            <div className="text-center">
-                                <h1 className="text-xl sm:text-2xl font-serif text-gray-900">
-                                    Accès Membres - ETU
-                                </h1>
-                            </div>
-                            <div className="w-20"></div>
-                        </div>
-                    </div>
+                <header className="border-b-2 border-black px-6 py-3">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-serif"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Accueil</span>
+                    </Link>
                 </header>
 
-                {/* Main Content */}
-                <section className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-                    <div className="text-center mb-8 sm:mb-12">
-                        <div className="flex items-center justify-center space-x-4 sm:space-x-6 mb-6">
-                            <img
-                                src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
-                                alt="Logo ETU - École Transcendantaliste Universelle"
-                                className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24"
-                            />
-                            <div className="text-center sm:text-left">
-                                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-gray-900 leading-tight">
-                                    École Transcendantaliste Universelle
-                                </h2>
-                                <p className="text-sm sm:text-base lg:text-lg font-serif text-gray-600 uppercase tracking-wider">
-                                    Ordre des Marins Pêcheurs
-                                </p>
-                            </div>
+                {/* Contenu */}
+                <main className="flex-1 flex items-center justify-center px-4 py-8">
+                    <div className="w-full max-w-sm">
+                        {/* Titre */}
+                        <div className="text-center mb-6">
+                            <h1 className="text-2xl font-serif font-bold text-gray-900">Accès Formulaire</h1>
+                            <p className="text-sm text-gray-500 font-serif mt-0.5">Inscription membre ETU</p>
                         </div>
 
-                        <div className="border-t-2 border-blue-200 pt-6">
-                            <h4 className="text-xl sm:text-2xl font-serif text-gray-900 mb-4">
-                                Espace Membre
-                            </h4>
-                            <p className="text-base sm:text-lg text-gray-600 font-serif max-w-2xl mx-auto">
-                                Rapprochez vous du <b>TIGM</b> pour avoir le mot de passe
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Login Form */}
-                    <div className="max-w-md mx-auto">
-                        <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 sm:p-8">
-                            <div className="text-center mb-6">
-                                <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Lock className="w-8 h-8 text-white" />
+                        {/* Bloc formulaire */}
+                        <div className="border-2 border-black">
+                            {/* Erreur */}
+                            {error && (
+                                <div className="bg-red-50 border-b-2 border-red-200 text-red-800 px-4 py-2.5 text-sm font-serif">
+                                    {error}
                                 </div>
-                                <h3 className="text-xl font-serif text-gray-900 mb-2">
-                                    Authentification requise
-                                </h3>
-                            </div>
+                            )}
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                {error && (
-                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                        <p className="text-red-600 text-sm font-serif">{error}</p>
-                                    </div>
-                                )}
-
-                                <div>
-                                    <label htmlFor="password" className="block text-sm font-serif text-gray-700 mb-2">
-                                        <Shield className="w-4 h-4 inline mr-2" />
-                                        Mot de passe *
+                            <form onSubmit={handleSubmit}>
+                                <div className="px-4 py-4 border-b-2 border-black">
+                                    <label htmlFor="password" className="block text-xs font-serif text-gray-600 mb-1.5 uppercase tracking-wide">
+                                        Mot de passe
                                     </label>
                                     <input
                                         type="password"
@@ -118,39 +78,56 @@ export default function MemberLoginPage() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
-                                        placeholder="Entrez le mot de passe"
+                                        className="w-full px-3 py-2.5 border-2 border-black text-sm font-serif focus:outline-none focus:bg-gray-50"
+                                        placeholder="Mot de passe TIGM"
+                                        autoComplete="current-password"
+                                        autoFocus
                                     />
                                 </div>
-
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white px-8 py-4 rounded-lg transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:transform-none"
+                                    className="w-full bg-gray-900 hover:bg-black disabled:bg-gray-400 text-white px-4 py-3 text-sm font-serif font-semibold transition-colors disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                                 >
-                                    {isSubmitting ? 'Vérification...' : 'Accéder au formulaire'}
+                                    {isSubmitting ? (
+                                        <>
+                                            <Lock className="w-4 h-4 animate-pulse" />
+                                            <span>Vérification...</span>
+                                        </>
+                                    ) : (
+                                        <span>Accéder au formulaire</span>
+                                    )}
                                 </button>
                             </form>
+                        </div>
 
-                            <div className="mt-6 pt-6 border-t border-gray-200">
-                                <p className="text-xs text-gray-500 text-center font-serif">
-                                    Cette page est protégée. Seul le personnel autorisé peut y accéder.
-                                </p>
-                            </div>
+                        {/* Déjà un espace ? */}
+                        <div className="mt-4 border-2 border-black bg-gray-50 px-4 py-3">
+                            <p className="text-xs text-gray-700 font-serif mb-2">
+                                Vous avez déjà un espace personnel ?
+                            </p>
+                            <Link
+                                href="/membre/dashboard"
+                                className="inline-block bg-gray-900 hover:bg-black text-white px-4 py-2 text-xs font-semibold transition-colors"
+                            >
+                                Aller à mon espace
+                            </Link>
+                        </div>
+
+                        {/* Info TIGM */}
+                        <div className="mt-3 text-center">
+                            <p className="text-xs text-gray-500 font-serif">
+                                Mot de passe disponible auprès du <strong>TIGM</strong> de l'ETU Bénin
+                            </p>
                         </div>
                     </div>
-                </section>
+                </main>
 
                 {/* Footer */}
-                <footer className="bg-white border-t border-gray-200 py-8 sm:py-12">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-                        <p className="text-gray-600 text-base sm:text-lg mb-2 sm:mb-3 font-serif">
-                            École Transcendantaliste Universelle - Depuis 1977
-                        </p>
-                        <p className="text-gray-500 text-sm sm:text-base font-serif">
-                            © 2024 ETU Bénin. Tous droits réservés.
-                        </p>
-                    </div>
+                <footer className="border-t-2 border-black px-6 py-3 text-center">
+                    <p className="text-xs text-gray-500 font-serif">
+                        ETU Bénin — École Transcendantaliste Universelle
+                    </p>
                 </footer>
             </div>
         </ClientOnly>

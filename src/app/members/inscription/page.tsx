@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { ArrowLeft, User, Calendar, MapPin, Phone, BookOpen, Briefcase, Shield, Hash, Upload, X, CheckCircle, MessageCircle, Mail } from 'lucide-react'
+import { ArrowLeft, Upload, X, CheckCircle, MessageCircle, Mail } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 import { useRouter } from 'next/navigation'
@@ -213,61 +213,27 @@ export default function MemberInscriptionPage() {
         }>
             <div className="min-h-screen bg-white">
                 {/* Header */}
-                <header className="bg-white border-b border-gray-200 py-4">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6">
-                        <div className="flex items-center justify-between">
-                            <Link
-                                href="/"
-                                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                                <span className="text-base sm:text-lg font-serif">Retour à l'accueil</span>
-                            </Link>
-                            <div className="text-center">
-                                <h1 className="text-xl sm:text-2xl font-serif text-gray-900">
-                                    Fiche d'inscription Membre OMP-ETU Bénin
-                                </h1>
-                            </div>
-                            <div className="w-20"></div>
-                        </div>
-                    </div>
+                <header className="border-b-2 border-black px-4 sm:px-6 py-3">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-serif"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Accueil</span>
+                    </Link>
                 </header>
 
-                {/* Hero Section */}
-                <section className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-                    <div className="text-center mb-8 sm:mb-12">
-                        <div className="flex items-center justify-center space-x-4 sm:space-x-6 mb-6">
-                            <img
-                                src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
-                                alt="Logo ETU - École Transcendantaliste Universelle"
-                                className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24"
-                            />
-                            <div className="text-center sm:text-left">
-                                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-gray-900 leading-tight">
-                                    École Transcendantaliste Universelle
-                                </h2>
-                                <p className="text-sm sm:text-base lg:text-lg font-serif text-gray-600 uppercase tracking-wider">
-                                    Ordre des Marins Pêcheurs
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="border-t-2 border-blue-200 pt-6">
-                            <p className="text-base sm:text-lg text-gray-600 font-serif max-w-2xl mx-auto">
-                                Remplissez ce formulaire pour mettre à jour la Base de Données de l'OMP-ETU Bénin.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Formulaire */}
-                    <div className="max-w-2xl mx-auto">
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Formulaire */}
+                <section className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+                    <h1 className="text-2xl font-serif font-bold text-gray-900 mb-6 text-center">
+                        Formulaire d'inscription
+                    </h1>
+                    <form onSubmit={handleSubmit} className="space-y-4">
 
                             {/* Nom, Prénoms */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div>
-                                    <label htmlFor="nom" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                        <User className="w-4 h-4 inline mr-2" />
+                                    <label htmlFor="nom" className="block text-sm font-serif text-gray-700 mb-1.5">
                                         Nom *
                                     </label>
                                     <input
@@ -277,13 +243,12 @@ export default function MemberInscriptionPage() {
                                         value={formData.nom}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
-                                        placeholder="Votre nom de famille"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
+                                        placeholder="Votre nom"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="prenoms" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                        <User className="w-4 h-4 inline mr-2" />
+                                    <label htmlFor="prenoms" className="block text-sm font-serif text-gray-700 mb-1.5">
                                         Prénoms *
                                     </label>
                                     <input
@@ -293,7 +258,7 @@ export default function MemberInscriptionPage() {
                                         value={formData.prenoms}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                         placeholder="Vos prénoms"
                                     />
                                 </div>
@@ -301,9 +266,8 @@ export default function MemberInscriptionPage() {
 
                             {/* Nom Sacré */}
                             <div>
-                                <label htmlFor="nomSacre" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <Hash className="w-4 h-4 inline mr-2" />
-                                    Nom Sacré (optionnel)
+                                <label htmlFor="nomSacre" className="block text-sm font-serif text-gray-700 mb-1.5">
+                                    Nom Sacré
                                 </label>
                                 <input
                                     type="text"
@@ -311,16 +275,15 @@ export default function MemberInscriptionPage() {
                                     name="nomSacre"
                                     value={formData.nomSacre}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                     placeholder="Votre nom sacré"
                                 />
                             </div>
 
                             {/* Profession */}
                             <div>
-                                <label htmlFor="profession" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <Briefcase className="w-4 h-4 inline mr-2" />
-                                    Profession (optionnel)
+                                <label htmlFor="profession" className="block text-sm font-serif text-gray-700 mb-1.5">
+                                    Profession
                                 </label>
                                 <input
                                     type="text"
@@ -328,16 +291,15 @@ export default function MemberInscriptionPage() {
                                     name="profession"
                                     value={formData.profession}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                     placeholder="Votre profession"
                                 />
                             </div>
 
                             {/* Email */}
                             <div>
-                                <label htmlFor="email" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <Mail className="w-4 h-4 inline mr-2" />
-                                    Adresse email *
+                                <label htmlFor="email" className="block text-sm font-serif text-gray-700 mb-1.5">
+                                    Email *
                                 </label>
                                 <input
                                     type="email"
@@ -346,15 +308,14 @@ export default function MemberInscriptionPage() {
                                     value={formData.email}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                     placeholder="votre.email@exemple.com"
                                 />
                             </div>
 
                             {/* Date de naissance */}
                             <div>
-                                <label htmlFor="dateNaissance" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <Calendar className="w-4 h-4 inline mr-2" />
+                                <label htmlFor="dateNaissance" className="block text-sm font-serif text-gray-700 mb-1.5">
                                     Date de naissance *
                                 </label>
                                 <input
@@ -374,15 +335,14 @@ export default function MemberInscriptionPage() {
                                     }}
                                     placeholder="jj/mm/aaaa"
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                 />
                             </div>
 
                             {/* Heure de naissance */}
                             <div>
-                                <label htmlFor="heureNaissance" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <Calendar className="w-4 h-4 inline mr-2" />
-                                    Heure de naissance (optionnel)
+                                <label htmlFor="heureNaissance" className="block text-sm font-serif text-gray-700 mb-1.5">
+                                    Heure de naissance
                                 </label>
                                 <input
                                     type="text"
@@ -400,14 +360,13 @@ export default function MemberInscriptionPage() {
                                         setFormData(prev => ({ ...prev, heureNaissance: value }))
                                     }}
                                     placeholder="hh:mm"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                 />
                             </div>
 
                             {/* Lieu de naissance */}
                             <div>
-                                <label htmlFor="lieuNaissance" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <MapPin className="w-4 h-4 inline mr-2" />
+                                <label htmlFor="lieuNaissance" className="block text-sm font-serif text-gray-700 mb-1.5">
                                     Lieu de naissance *
                                 </label>
                                 <input
@@ -417,16 +376,15 @@ export default function MemberInscriptionPage() {
                                     value={formData.lieuNaissance}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
-                                    placeholder="Ville, pays de naissance"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
+                                    placeholder="Ville, pays"
                                 />
                             </div>
 
                             {/* Lieu de résidence */}
                             <div>
-                                <label htmlFor="lieuResidence" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <MapPin className="w-4 h-4 inline mr-2" />
-                                    Lieu de résidence actuel *
+                                <label htmlFor="lieuResidence" className="block text-sm font-serif text-gray-700 mb-1.5">
+                                    Lieu de résidence *
                                 </label>
                                 <input
                                     type="text"
@@ -435,15 +393,14 @@ export default function MemberInscriptionPage() {
                                     value={formData.lieuResidence}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
-                                    placeholder="Ville, pays de résidence actuel"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
+                                    placeholder="Ville, pays"
                                 />
                             </div>
 
                             {/* Religion pratiquée */}
                             <div>
-                                <label htmlFor="religionPratique" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <BookOpen className="w-4 h-4 inline mr-2" />
+                                <label htmlFor="religionPratique" className="block text-sm font-serif text-gray-700 mb-1.5">
                                     Religion pratiquée *
                                 </label>
                                 <select
@@ -452,9 +409,9 @@ export default function MemberInscriptionPage() {
                                     value={formData.religionPratique}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                 >
-                                    <option value="">Sélectionnez votre religion</option>
+                                    <option value="">Sélectionnez</option>
                                     <option value="Christianisme">Christianisme</option>
                                     <option value="Islam">Islam</option>
                                     <option value="Judaïsme">Judaïsme</option>
@@ -467,9 +424,8 @@ export default function MemberInscriptionPage() {
 
                             {/* Appartenez-vous à un autre Ordre */}
                             <div>
-                                <label htmlFor="appartientAutreOrdre" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <Shield className="w-4 h-4 inline mr-2" />
-                                    Appartenez-vous à un autre Ordre ? *
+                                <label htmlFor="appartientAutreOrdre" className="block text-sm font-serif text-gray-700 mb-1.5">
+                                    Autre Ordre ? *
                                 </label>
                                 <select
                                     id="appartientAutreOrdre"
@@ -477,7 +433,7 @@ export default function MemberInscriptionPage() {
                                     value={formData.appartientAutreOrdre}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                 >
                                     <option value="non">Non</option>
                                     <option value="oui">Oui</option>
@@ -487,9 +443,8 @@ export default function MemberInscriptionPage() {
                             {/* Précision Ordre (conditionnel) */}
                             {formData.appartientAutreOrdre === 'oui' && (
                                 <div>
-                                    <label htmlFor="precisionOrdre" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                        <Shield className="w-4 h-4 inline mr-2" />
-                                        Si OUI, précisez l'Ordre *
+                                    <label htmlFor="precisionOrdre" className="block text-sm font-serif text-gray-700 mb-1.5">
+                                        Précisez l'Ordre *
                                     </label>
                                     <input
                                         type="text"
@@ -498,16 +453,15 @@ export default function MemberInscriptionPage() {
                                         value={formData.precisionOrdre}
                                         onChange={handleInputChange}
                                         required={formData.appartientAutreOrdre === 'oui'}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
-                                        placeholder="Précisez le nom de l'Ordre"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
+                                        placeholder="Nom de l'Ordre"
                                     />
                                 </div>
                             )}
 
                             {/* Grade */}
                             <div>
-                                <label htmlFor="grade" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <Shield className="w-4 h-4 inline mr-2" />
+                                <label htmlFor="grade" className="block text-sm font-serif text-gray-700 mb-1.5">
                                     Grade *
                                 </label>
                                 <select
@@ -516,7 +470,7 @@ export default function MemberInscriptionPage() {
                                     value={formData.grade}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                 >
                                     <option value="Explorateur">Explorateur</option>
                                     <option value="Constructeur">Constructeur</option>
@@ -527,8 +481,7 @@ export default function MemberInscriptionPage() {
 
                             {/* Équipage */}
                             <div>
-                                <label htmlFor="equipage" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <Shield className="w-4 h-4 inline mr-2" />
+                                <label htmlFor="equipage" className="block text-sm font-serif text-gray-700 mb-1.5">
                                     Équipage *
                                 </label>
                                 <select
@@ -537,7 +490,7 @@ export default function MemberInscriptionPage() {
                                     value={formData.equipage}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                 >
                                     <option value="ALEPH">ALEPH</option>
                                     <option value="BETH">BETH</option>
@@ -547,9 +500,8 @@ export default function MemberInscriptionPage() {
 
                             {/* Téléphone WhatsApp */}
                             <div>
-                                <label htmlFor="telephoneWhatsapp" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
-                                    <Phone className="w-4 h-4 inline mr-2" />
-                                    Numéro de téléphone WhatsApp *
+                                <label htmlFor="telephoneWhatsapp" className="block text-sm font-serif text-gray-700 mb-1.5">
+                                    WhatsApp *
                                 </label>
                                 <input
                                     type="tel"
@@ -558,7 +510,7 @@ export default function MemberInscriptionPage() {
                                     value={formData.telephoneWhatsapp}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-serif"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-serif"
                                     placeholder="+229 67 15 39 74"
                                 />
                             </div>
@@ -574,7 +526,6 @@ export default function MemberInscriptionPage() {
                                 </button>
                             </div>
                         </form>
-                    </div>
                 </section>
 
                 {/* Footer */}
