@@ -34,6 +34,7 @@ export default function InscriptionPage() {
     const [isSuccess, setIsSuccess] = useState(false)
     const [error, setError] = useState('')
     const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
+    const [showConditionsModal, setShowConditionsModal] = useState(true)
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
@@ -128,71 +129,11 @@ export default function InscriptionPage() {
                 {/* Hero Section */}
                 <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-lg mb-6">
-                            <img
-                                src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
-                                alt="Logo ETU"
-                                className="w-16 h-16"
-                            />
-                        </div>
                         <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Fiche d'inscription</h1>
                         <p className="text-sm text-gray-600 font-serif">École Transcendantaliste Universelle - OMP Bénin</p>
                     </div>
 
-                    {/* Résumé commercial en haut — horizontal */}
-                    <div className="grid grid-cols-2 gap-3 lg:gap-4 mb-8">
-                        {/* Formation */}
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <h3 className="text-sm font-serif font-bold text-gray-900 mb-2">Degré Explorateur</h3>
-                            <div className="space-y-1 text-xs font-serif">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Durée</span>
-                                    <span className="font-semibold text-gray-900">6 mois</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Format</span>
-                                    <span className="font-semibold text-gray-900">En ligne / En présentiel</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Investissement */}
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <h3 className="text-sm font-serif font-bold text-gray-900 mb-2">Investissement</h3>
-                            <div className="space-y-1 text-xs font-serif">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Inscription</span>
-                                    <span className="font-semibold text-gray-900">12 000 F</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Mensualité</span>
-                                    <span className="font-semibold text-gray-900">10 000 F/mois</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Discipline 154 jours */}
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <h3 className="text-sm font-serif font-bold text-gray-900 mb-2">154 jours de prière</h3>
-                            <p className="text-xs text-gray-600 font-serif leading-relaxed">
-                                Prière constante et régulière chaque jour avec le livre de prière de l'ETU.
-                            </p>
-                        </div>
-
-                        {/* Paiement */}
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <h3 className="text-sm font-serif font-bold text-gray-900 mb-2">Paiement</h3>
-                            <div className="space-y-1 text-xs font-serif text-gray-600">
-                                <p><strong className="text-gray-900">Bénin :</strong> MoMo</p>
-                                <p><strong className="text-gray-900">Étranger :</strong> MoneyGram, WU, virement</p>
-                                <p className="pt-1">
-                                    <a href="https://wa.me/22967153974" className="text-gray-900 font-semibold hover:underline">+229 67 15 39 74</a>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Formulaire en bas */}
+                    {/* Formulaire */}
                     <div className="max-w-2xl mx-auto">
                         <form onSubmit={handleSubmit} className="space-y-4">
                                 {error && (
@@ -409,6 +350,68 @@ export default function InscriptionPage() {
                         ETU Bénin — École Transcendantaliste Universelle — Depuis 1977
                     </p>
                 </footer>
+
+                {/* Modal Conditions d'inscription */}
+                {showConditionsModal && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+                            {/* Header */}
+                            <div className="px-6 pt-6 pb-4 border-b border-gray-200">
+                                <h3 className="text-xl font-serif font-bold text-gray-900">
+                                    Conditions d'inscription
+                                </h3>
+                                <p className="text-xs text-gray-500 font-serif mt-1">
+                                    Degré Explorateur - ETU Bénin
+                                </p>
+                            </div>
+
+                            {/* Content */}
+                            <div className="px-6 py-5 overflow-y-auto flex-1">
+                                <div className="space-y-4 text-sm font-serif text-gray-700 leading-relaxed">
+                                    <p>
+                                        En soumettant ce formulaire d'inscription au programme Degré Explorateur de l'École Transcendantaliste Universelle (ETU) - OMP Bénin, vous acceptez les conditions suivantes :
+                                    </p>
+
+                                    <div className="space-y-3">
+                                        <p>
+                                            <strong className="text-gray-900">1. Durée et format :</strong> La formation dure 6 mois et peut être suivie en ligne ou en présentiel selon votre convenance.
+                                        </p>
+
+                                        <p>
+                                            <strong className="text-gray-900">2. Frais d'inscription :</strong> Les frais d'inscription s'élèvent à 12 000 FCFA, payables une seule fois lors de votre inscription.
+                                        </p>
+
+                                        <p>
+                                            <strong className="text-gray-900">3. Mensualité :</strong> Une contribution mensuelle de 10 000 FCFA est requise pendant toute la durée de la formation.
+                                        </p>
+
+                                        <p>
+                                            <strong className="text-gray-900">4. Discipline spirituelle :</strong> Vous vous engagez à maintenir une pratique de prière constante et régulière pendant 154 jours consécutifs, en utilisant le livre de prière officiel de l'ETU.
+                                        </p>
+
+                                        <p>
+                                            <strong className="text-gray-900">5. Modalités de paiement :</strong> Les paiements peuvent être effectués par Mobile Money (MoMo) au Bénin, ou par MoneyGram, Western Union ou virement bancaire pour les étudiants à l'étranger. Pour toute assistance, contactez le +229 67 15 39 74.
+                                        </p>
+
+                                        <p className="text-xs text-gray-600 pt-2 italic">
+                                            En cliquant sur le bouton ci-dessous, vous confirmez avoir lu et accepté ces conditions.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="px-6 pb-6 pt-4 border-t border-gray-200">
+                                <button
+                                    onClick={() => setShowConditionsModal(false)}
+                                    className="w-full bg-gray-900 hover:bg-black text-white py-3 px-6 rounded-xl transition-all font-semibold text-sm font-serif shadow-lg hover:shadow-xl"
+                                >
+                                    J'ai compris et j'accepte les conditions
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Modal WhatsApp */}
                 {showWhatsAppModal && (
