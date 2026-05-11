@@ -260,22 +260,36 @@ export default function PlanificationsPage() {
         }
     }
 
-    const handleViewInscrits = async (p: Planification) => {
-        setSelected(p)
-        setInscrits([])
-        setLoadingInscrits(true)
-        setShowDangerZone(false)
-        setShowInscritsModal(true)
+    const fetchInscritsForTraversee = useCallback(async (traverseeId: string, withLoader = false) => {
+        if (withLoader) setLoadingInscrits(true)
         try {
-            const res = await fetch(`/api/admin/traversees/${p.id}/inscrits`)
+            const res = await fetch(`/api/admin/traversees/${traverseeId}/inscrits`)
             const data = await res.json()
             if (data.success) setInscrits(data.data)
         } catch {
             addToast({ type: 'error', title: 'Erreur', message: 'Impossible de charger les inscrits' })
         } finally {
-            setLoadingInscrits(false)
+            if (withLoader) setLoadingInscrits(false)
         }
+    }, [addToast])
+
+    const handleViewInscrits = async (p: Planification) => {
+        setSelected(p)
+        setInscrits([])
+        setShowDangerZone(false)
+        setShowInscritsModal(true)
+        await fetchInscritsForTraversee(p.id, true)
     }
+
+    useEffect(() => {
+        if (!showInscritsModal || !selected?.id) return
+
+        const intervalId = setInterval(() => {
+            fetchInscritsForTraversee(selected.id)
+        }, 8000)
+
+        return () => clearInterval(intervalId)
+    }, [showInscritsModal, selected?.id, fetchInscritsForTraversee])
 
     // ── Filtres ──────────────────────────────────────────────────────────────
     const filteredList = planifications.filter(p => {
