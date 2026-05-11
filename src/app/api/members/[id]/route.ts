@@ -3,6 +3,12 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+function sanitizeNomSacre(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -23,13 +29,15 @@ export async function PUT(
       statut
     } = body
 
+    const cleanNomSacre = sanitizeNomSacre(nomSacre)
+
     // Mise à jour du membre
     const membre = await (prisma as any).membre.update({
       where: { id },
       data: {
         nom,
         prenoms,
-        nomSacre: nomSacre || null,
+        nomSacre: cleanNomSacre,
         profession: profession || null,
         telephoneWhatsapp,
         lieuResidence,

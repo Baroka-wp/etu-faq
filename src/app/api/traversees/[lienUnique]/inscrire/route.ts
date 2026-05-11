@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
+function normalizeNomSacre(value: string): string {
+  return value
+    .trim()
+    .replace(/\s+/g, ' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
 function gradeAutorise(membreGrade: string, gradesAutorises: string[]): boolean {
   if (membreGrade === 'Alchimiste') return true
   if (gradesAutorises.length === 0) return true
@@ -27,13 +36,17 @@ export async function POST(
       return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 })
     }
 
-    const membre = await db.membre.findFirst({
+    const nomSacreNormalized = normalizeNomSacre(nomSacre)
+    const candidats = await db.membre.findMany({
       where: {
-        nomSacre: { equals: nomSacre.trim(), mode: 'insensitive' },
+        nomSacre: { contains: nomSacre.trim(), mode: 'insensitive' },
         statut: 'actif'
       },
       select: { id: true, nom: true, prenoms: true, nomSacre: true, grade: true }
     })
+    const membre = candidats.find((item) =>
+      item.nomSacre && normalizeNomSacre(item.nomSacre) === nomSacreNormalized
+    )
 
     if (!membre) {
       return NextResponse.json({ error: 'Aucun membre actif trouvé avec ce nom sacré' }, { status: 404 })

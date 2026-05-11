@@ -125,7 +125,7 @@ export default function PlanificationsPage() {
     const [selected, setSelected] = useState<Planification | null>(null)
     const [inscrits, setInscrits] = useState<InscritItem[]>([])
     const [loadingInscrits, setLoadingInscrits] = useState(false)
-    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar')
+    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
     const [calendarDate, setCalendarDate] = useState(() => {
         const now = new Date()
         return new Date(now.getFullYear(), now.getMonth(), 1)

@@ -3,6 +3,12 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+function sanitizeNomSacre(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -35,12 +41,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const cleanNomSacre = sanitizeNomSacre(nomSacre)
+
     // Enregistrement dans la base de données
     const membre = await (prisma as any).membre.create({
       data: {
         nom,
         prenoms,
-        nomSacre: nomSacre || null,
+        nomSacre: cleanNomSacre,
         profession: profession || null,
         email,
         dateNaissance,
