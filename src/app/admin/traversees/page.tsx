@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-    Compass, Plus, Trash2, Download, FileText, Edit,
+    Compass, Plus, Trash2, Download, FileText, Edit, Copy,
     Calendar, MapPin, Users, List, ChevronLeft, ChevronRight, Clock
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -279,6 +279,17 @@ export default function PlanificationsPage() {
         setShowDangerZone(false)
         setShowInscritsModal(true)
         await fetchInscritsForTraversee(p.id, true)
+    }
+
+    const handleCopyPublicLink = async () => {
+        if (!selected?.lienUnique) return
+        const url = `${window.location.origin}/traversee/${selected.lienUnique}`
+        try {
+            await navigator.clipboard.writeText(url)
+            addToast({ type: 'success', title: 'Lien copié', message: url })
+        } catch {
+            addToast({ type: 'error', title: 'Erreur', message: 'Impossible de copier le lien' })
+        }
     }
 
     useEffect(() => {
@@ -927,9 +938,19 @@ export default function PlanificationsPage() {
             <Dialog open={showInscritsModal} onOpenChange={setShowInscritsModal}>
                 <DialogContent className="w-[98vw] sm:w-[98vw] max-w-[98vw] sm:max-w-[98vw] h-[94vh] flex flex-col p-5 sm:p-6">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
+                        <DialogTitle className="flex items-center justify-between gap-3">
+                            <span className="flex items-center gap-2">
                             <Users className="w-5 h-5" />
                             Inscrits — {selected?.titre}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={handleCopyPublicLink}
+                                className="p-1.5 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                                title="Copier le lien d'inscription"
+                            >
+                                <Copy className="w-4 h-4" />
+                            </button>
                         </DialogTitle>
                         {selected && (
                             <div className="space-y-2">

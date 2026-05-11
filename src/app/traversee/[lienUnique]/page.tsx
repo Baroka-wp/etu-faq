@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import {
     Calendar, MapPin, Users, CheckCircle, AlertCircle, Search,
-    ArrowLeft, Loader2, CalendarPlus, BookOpen
+    ArrowLeft, Loader2, CalendarPlus, BookOpen, List
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,7 +35,42 @@ interface MembreFound {
     grade: string
 }
 
-type ModalStep = 'search' | 'confirm' | 'success' | 'error'
+type ModalStep = 'confirm-saved' | 'search' | 'confirm' | 'success' | 'error'
+
+const LS_NOM_SACRE_KEY = 'etu-traversee-nom-sacre'
+
+function getStoredNomSacre(): string | null {
+    if (typeof window === 'undefined') return null
+    try {
+        const v = localStorage.getItem(LS_NOM_SACRE_KEY)
+        return v && v.trim() ? v.trim() : null
+    } catch {
+        return null
+    }
+}
+
+function setStoredNomSacre(value: string) {
+    try {
+        localStorage.setItem(LS_NOM_SACRE_KEY, value.trim())
+    } catch {
+        /* ignore */
+    }
+}
+
+function clearStoredNomSacre() {
+    try {
+        localStorage.removeItem(LS_NOM_SACRE_KEY)
+    } catch {
+        /* ignore */
+    }
+}
+
+type ListePhase = 'confirm-storage' | 'input' | 'loading' | 'result' | 'error'
+
+interface InscritListeItem {
+    nom: string
+    prenoms: string
+}
 
 // ── Couleurs ──────────────────────────────────────────────────────────────────
 const TYPE_BADGE: Record<string, string> = {
@@ -85,6 +120,14 @@ export default function TraverseePage() {
     const [registering, setRegistering] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
 
+    const [showListeModal, setShowListeModal] = useState(false)
+    const [listePhase, setListePhase] = useState<ListePhase>('input')
+    const [listeNomInput, setListeNomInput] = useState('')
+    const [listeInscrits, setListeInscrits] = useState<InscritListeItem[]>([])
+    const [listeError, setListeError] = useState('')
+    const [verifiedListeNomSacre, setVerifiedListeNomSacre] = useState('')
+    const [listeStoredNomPreview, setListeStoredNomPreview] = useState<string | null>(null)
+
     const fetchTraversee = useCallback(async () => {
         try {
             const res = await fetch(`/api/traversees/${lienUnique}`)
@@ -101,21 +144,14 @@ export default function TraverseePage() {
 
     useEffect(() => { fetchTraversee() }, [fetchTraversee])
 
-    const openModal = () => {
-        setStep('search')
-        setNomSacreInput('')
-        setMembreFound(null)
-        setDejaInscrit(false)
-        setErrorMessage('')
-        setShowModal(true)
-    }
-
-    const handleSearch = async () => {
-        if (!nomSacreInput.trim()) return
+    const runSearchInscription = useCallback(async (nomSacre: string) => {
+        const trimmed = nomSacre.trim()
+        if (!trimmed) return
         setSearching(true)
+        setErrorMessage('')
         try {
             const res = await fetch(
-                `/api/traversees/${lienUnique}/rechercher?nomSacre=${encodeURIComponent(nomSacreInput.trim())}`
+                `/api/traversees/${lienUnique}/rechercher?nomSacre=${encodeURIComponent(trimmed)}`
             )
             const data = await res.json()
             if (!res.ok) {
@@ -132,6 +168,83 @@ export default function TraverseePage() {
         } finally {
             setSearching(false)
         }
+    }, [lienUnique])
+
+    const openModal = () => {
+        setMembreFound(null)
+        setDejaInscrit(false)
+        setErrorMessage('')
+        const stored = getStoredNomSacre()
+        if (stored) {
+            setNomSacreInput(stored)
+            setStep('confirm-saved')
+        } else {
+            setNomSacreInput('')
+            setStep('search')
+        }
+        setShowModal(true)
+    }
+
+    const handleSearch = () => {
+        void runSearchInscription(nomSacreInput)
+    }
+
+    const openListeModal = () => {
+        setListeInscrits([])
+        setListeError('')
+        setVerifiedListeNomSacre('')
+        setListeNomInput('')
+        const stored = getStoredNomSacre()
+        if (stored) {
+            setListeStoredNomPreview(stored)
+            setListePhase('confirm-storage')
+        } else {
+            setListeStoredNomPreview(null)
+            setListePhase('input')
+        }
+        setShowListeModal(true)
+    }
+
+    const fetchListeInscrits = async (nomSacre: string) => {
+        const trimmed = nomSacre.trim()
+        if (!trimmed) return
+        setListePhase('loading')
+        setListeError('')
+        try {
+            const res = await fetch(`/api/traversees/${lienUnique}/liste-inscrits`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nomSacre: trimmed })
+            })
+            const data = await res.json()
+            if (!res.ok) {
+                setListeError(data.error || 'Impossible d’afficher la liste')
+                setListePhase('error')
+                return
+            }
+            setListeInscrits(data.data || [])
+            setVerifiedListeNomSacre(trimmed)
+            setStoredNomSacre(trimmed)
+            setListePhase('result')
+        } catch {
+            setListeError('Une erreur est survenue. Veuillez réessayer.')
+            setListePhase('error')
+        }
+    }
+
+    const handleListeValiderInput = () => {
+        void fetchListeInscrits(listeNomInput)
+    }
+
+    const openInscriptionFromListe = () => {
+        setShowListeModal(false)
+        setNomSacreInput(verifiedListeNomSacre)
+        setMembreFound(null)
+        setDejaInscrit(false)
+        setErrorMessage('')
+        setStep('search')
+        setShowModal(true)
+        void runSearchInscription(verifiedListeNomSacre)
     }
 
     const handleConfirm = async () => {
@@ -144,6 +257,7 @@ export default function TraverseePage() {
             })
             const data = await res.json()
             if (res.ok) {
+                setStoredNomSacre(nomSacreInput.trim())
                 setStep('success')
                 fetchTraversee()
             } else {
@@ -264,6 +378,17 @@ export default function TraverseePage() {
                             ))}
                         </div>
                     )}
+
+                    <div className="mt-6 flex justify-center">
+                        <Button
+                            type="button"
+                            onClick={openListeModal}
+                            className="bg-gray-800 text-white px-8 py-4 rounded-lg hover:bg-gray-900 transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-serif"
+                        >
+                            <List className="w-5 h-5 mr-2" />
+                            Voir la liste des inscrits
+                        </Button>
+                    </div>
                 </div>
             </section>
 
@@ -311,7 +436,7 @@ export default function TraverseePage() {
             <Dialog
                 open={showModal}
                 onOpenChange={(open) => {
-                    if (!open && (step === 'search' || step === 'error')) setShowModal(false)
+                    if (!open && (step === 'search' || step === 'error' || step === 'confirm-saved')) setShowModal(false)
                     else if (open) setShowModal(true)
                 }}
             >
@@ -327,6 +452,39 @@ export default function TraverseePage() {
                             )}
                         </DialogTitle>
                     </DialogHeader>
+
+                    {/* Étape : nom sacré mémorisé sur l’appareil */}
+                    {step === 'confirm-saved' && (
+                        <div className="space-y-4 py-2">
+                            <p className="text-sm text-gray-600 font-serif">
+                                Un nom sacré est mémorisé sur cet appareil pour les inscriptions aux traversées.
+                                Est-ce toujours vous ?
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 font-serif text-center bg-gray-50 rounded-lg py-2 px-3 border border-gray-100">
+                                « {nomSacreInput} »
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <Button
+                                    className="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-serif"
+                                    onClick={() => void runSearchInscription(nomSacreInput)}
+                                    disabled={searching}
+                                >
+                                    {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Oui, c’est moi'}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="flex-1 font-serif"
+                                    onClick={() => {
+                                        clearStoredNomSacre()
+                                        setNomSacreInput('')
+                                        setStep('search')
+                                    }}
+                                >
+                                    Non, autre nom
+                                </Button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Étape : recherche */}
                     {step === 'search' && (
@@ -474,6 +632,146 @@ export default function TraverseePage() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            {/* Modal : liste des inscrits (après vérification nom sacré) */}
+            <Dialog
+                open={showListeModal}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setShowListeModal(false)
+                        setListePhase('input')
+                        setListeNomInput('')
+                        setListeInscrits([])
+                        setListeError('')
+                        setListeStoredNomPreview(null)
+                    } else {
+                        setShowListeModal(true)
+                    }
+                }}
+            >
+                <DialogContent className="w-[98vw] h-[94vh] max-w-[98vw] sm:max-w-[98vw] font-serif p-6">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 font-serif">
+                            <List className="w-5 h-5" />
+                            Liste des inscrits
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {listePhase === 'confirm-storage' && (
+                        <div className="space-y-4 py-2">
+                            <p className="text-sm text-gray-600">
+                                Un nom sacré est mémorisé sur cet appareil. Souhaitez-vous l’utiliser pour consulter la liste des inscrits à cet événement ?
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 text-center bg-gray-50 rounded-lg py-2 px-3 border border-gray-100">
+                                « {listeStoredNomPreview} »
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <Button
+                                    className="flex-1 bg-gray-800 hover:bg-gray-900 text-white"
+                                    onClick={() => {
+                                        if (listeStoredNomPreview) void fetchListeInscrits(listeStoredNomPreview)
+                                    }}
+                                >
+                                    Oui, afficher la liste
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => {
+                                        clearStoredNomSacre()
+                                        setListeNomInput('')
+                                        setListePhase('input')
+                                    }}
+                                >
+                                    Non, saisir un nom
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {listePhase === 'input' && (
+                        <div className="py-2">
+                            <div className="max-w-3xl mx-auto rounded-2xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50/40 p-6 shadow-sm">
+                                <div className="mb-5">
+                                    <p className="text-base text-gray-700 leading-relaxed">
+                                        Saisissez votre nom sacré pour afficher la liste des inscrits.
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Votre nom est mémorisé sur cet appareil pour accélérer les prochaines vérifications.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-gray-800 tracking-wide">Nom sacré</label>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <Input
+                                            value={listeNomInput}
+                                            onChange={e => setListeNomInput(e.target.value)}
+                                            onKeyDown={e => e.key === 'Enter' && handleListeValiderInput()}
+                                            placeholder="Ex: ALBIMAËL"
+                                            autoFocus
+                                            className="h-12 text-base bg-white border-gray-200 focus-visible:ring-indigo-300"
+                                        />
+                                        <Button
+                                            onClick={handleListeValiderInput}
+                                            disabled={!listeNomInput.trim() || listePhase === 'loading'}
+                                            className="h-12 px-6 bg-gray-800 hover:bg-gray-900 text-white gap-2 whitespace-nowrap text-base"
+                                        >
+                                            <Search className="w-4 h-4" />
+                                            Valider
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {listePhase === 'loading' && (
+                        <div className="flex flex-col items-center justify-center py-10 gap-3">
+                            <Loader2 className="w-8 h-8 animate-spin text-gray-700" />
+                            <p className="text-sm text-gray-600">Vérification…</p>
+                        </div>
+                    )}
+
+                    {listePhase === 'error' && (
+                        <div className="space-y-4 py-2 text-center">
+                            <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
+                            <p className="text-sm text-gray-600">{listeError}</p>
+                            <Button variant="outline" className="w-full" onClick={() => setListePhase('input')}>
+                                Réessayer
+                            </Button>
+                        </div>
+                    )}
+
+                    {listePhase === 'result' && (
+                        <div className="space-y-4 py-2">
+                            <p className="text-sm text-gray-600">
+                                {listeInscrits.length} personne{listeInscrits.length > 1 ? 's' : ''} inscrite{listeInscrits.length > 1 ? 's' : ''}.
+                            </p>
+                            <ul className="max-h-56 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-100 bg-gray-50/50">
+                                {listeInscrits.map((row, i) => (
+                                    <li key={`${row.nom}-${row.prenoms}-${i}`} className="px-3 py-2 text-sm text-gray-800">
+                                        <span className="font-medium">{row.nom}</span>
+                                        {' '}
+                                        <span className="text-gray-600">{row.prenoms}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="flex flex-col gap-2">
+                                <Button
+                                    className="w-full bg-gray-800 hover:bg-gray-900 text-white"
+                                    onClick={openInscriptionFromListe}
+                                >
+                                    S’inscrire à cet événement
+                                </Button>
+                                <Button variant="outline" className="w-full" onClick={() => setShowListeModal(false)}>
+                                    Fermer
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
@@ -492,17 +790,6 @@ function SiteNav() {
                         />
                         <span className="text-xl font-serif font-bold text-gray-900">ETU Bénin</span>
                     </Link>
-                    <div className="hidden md:flex items-center space-x-6">
-                        <Link href="/faq" className="text-gray-700 hover:text-gray-900 font-serif text-sm">FAQ</Link>
-                        <Link href="/bibliotheque" className="text-gray-700 hover:text-gray-900 font-serif text-sm">Bibliothèque</Link>
-                        <Link href="/cours-enregistres" className="text-gray-700 hover:text-gray-900 font-serif text-sm flex items-center gap-1">
-                            <BookOpen className="w-4 h-4" /> Cours
-                        </Link>
-                        <Link href="/programme" className="text-gray-700 hover:text-gray-900 font-serif text-sm">Mon programme</Link>
-                        <Link href="/inscription" className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors font-serif text-sm">
-                            S'inscrire
-                        </Link>
-                    </div>
                 </div>
             </div>
         </nav>
