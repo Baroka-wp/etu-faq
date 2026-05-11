@@ -440,7 +440,7 @@ export default function TraverseePage() {
                     else if (open) setShowModal(true)
                 }}
             >
-                <DialogContent className="max-w-md">
+                <DialogContent className="w-[94vw] sm:max-w-md top-[6%] translate-y-0 max-h-[88dvh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 font-serif">
                             {step === 'success' ? (
@@ -649,7 +649,7 @@ export default function TraverseePage() {
                     }
                 }}
             >
-                <DialogContent className="w-[98vw] h-[94vh] max-w-[98vw] sm:max-w-[98vw] font-serif p-6">
+                <DialogContent className="w-[98vw] max-w-[98vw] top-[2%] translate-y-0 h-auto max-h-[94dvh] overflow-y-auto font-serif p-4 sm:p-6">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 font-serif">
                             <List className="w-5 h-5" />
@@ -658,64 +658,61 @@ export default function TraverseePage() {
                     </DialogHeader>
 
                     {listePhase === 'confirm-storage' && (
-                        <div className="space-y-4 py-2">
-                            <p className="text-sm text-gray-600">
-                                Un nom sacré est mémorisé sur cet appareil. Souhaitez-vous l’utiliser pour consulter la liste des inscrits à cet événement ?
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 text-center bg-gray-50 rounded-lg py-2 px-3 border border-gray-100">
-                                « {listeStoredNomPreview} »
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <Button
-                                    className="flex-1 bg-gray-800 hover:bg-gray-900 text-white"
-                                    onClick={() => {
-                                        if (listeStoredNomPreview) void fetchListeInscrits(listeStoredNomPreview)
-                                    }}
-                                >
-                                    Oui, afficher la liste
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="flex-1"
-                                    onClick={() => {
-                                        clearStoredNomSacre()
-                                        setListeNomInput('')
-                                        setListePhase('input')
-                                    }}
-                                >
-                                    Non, saisir un nom
-                                </Button>
+                        <div className="pt-1">
+                            <div className="max-w-2xl rounded-xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
+                                <p className="text-sm text-gray-600 leading-relaxed">
+                                    Un nom sacré est déjà enregistré sur cet appareil. Voulez-vous l’utiliser pour afficher la liste des inscrits ?
+                                </p>
+                                <p className="mt-3 text-base font-semibold text-gray-900 bg-gray-50 rounded-lg py-2 px-3 border border-gray-100">
+                                    {listeStoredNomPreview}
+                                </p>
+                                <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                                    <Button
+                                        className="flex-1 bg-gray-800 hover:bg-gray-900 text-white"
+                                        onClick={() => {
+                                            if (listeStoredNomPreview) void fetchListeInscrits(listeStoredNomPreview)
+                                        }}
+                                    >
+                                        Afficher la liste
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() => {
+                                            clearStoredNomSacre()
+                                            setListeNomInput('')
+                                            setListePhase('input')
+                                        }}
+                                    >
+                                        Utiliser un autre nom
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     )}
 
                     {listePhase === 'input' && (
-                        <div className="py-2">
-                            <div className="max-w-3xl mx-auto rounded-2xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50/40 p-6 shadow-sm">
-                                <div className="mb-5">
-                                    <p className="text-base text-gray-700 leading-relaxed">
-                                        Saisissez votre nom sacré pour afficher la liste des inscrits.
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Votre nom est mémorisé sur cet appareil pour accélérer les prochaines vérifications.
-                                    </p>
-                                </div>
+                        <div className="pt-1">
+                            <div className="max-w-2xl rounded-xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
+                                <p className="text-sm text-gray-600 leading-relaxed">
+                                    Saisissez votre nom sacré pour afficher la liste des inscrits.
+                                </p>
 
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-gray-800 tracking-wide">Nom sacré</label>
-                                    <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="mt-4 space-y-2">
+                                    <label className="block text-sm font-semibold text-gray-800">Nom sacré</label>
+                                    <div className="flex flex-col sm:flex-row gap-3 items-stretch">
                                         <Input
                                             value={listeNomInput}
                                             onChange={e => setListeNomInput(e.target.value)}
                                             onKeyDown={e => e.key === 'Enter' && handleListeValiderInput()}
-                                            placeholder="Ex: ALBIMAËL"
+                                            placeholder="Votre nom sacré..."
                                             autoFocus
-                                            className="h-12 text-base bg-white border-gray-200 focus-visible:ring-indigo-300"
+                                            className="h-11 text-base bg-white border-gray-200"
                                         />
                                         <Button
                                             onClick={handleListeValiderInput}
                                             disabled={!listeNomInput.trim()}
-                                            className="h-12 px-6 bg-gray-800 hover:bg-gray-900 text-white gap-2 whitespace-nowrap text-base"
+                                            className="h-11 px-6 bg-gray-800 hover:bg-gray-900 text-white gap-2 whitespace-nowrap"
                                         >
                                             <Search className="w-4 h-4" />
                                             Valider
