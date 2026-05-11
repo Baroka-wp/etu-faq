@@ -714,7 +714,7 @@ export default function TraverseePage() {
                                         />
                                         <Button
                                             onClick={handleListeValiderInput}
-                                            disabled={!listeNomInput.trim() || listePhase === 'loading'}
+                                            disabled={!listeNomInput.trim()}
                                             className="h-12 px-6 bg-gray-800 hover:bg-gray-900 text-white gap-2 whitespace-nowrap text-base"
                                         >
                                             <Search className="w-4 h-4" />

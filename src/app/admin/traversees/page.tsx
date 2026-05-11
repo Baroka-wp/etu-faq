@@ -155,7 +155,7 @@ export default function PlanificationsPage() {
         } finally {
             setLoading(false)
         }
-    }, [router]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [addToast, router])
 
     useEffect(() => { fetchPlanifications() }, [fetchPlanifications])
 
