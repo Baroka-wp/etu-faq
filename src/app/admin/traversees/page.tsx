@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-    Compass, Plus, Edit, Trash2, Eye, Copy, Download, FileText,
+    Compass, Plus, Trash2, Download, FileText, Edit,
     Calendar, MapPin, Users, List, ChevronLeft, ChevronRight, Clock
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -122,6 +122,7 @@ export default function PlanificationsPage() {
     const [showEditModal, setShowEditModal] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [showInscritsModal, setShowInscritsModal] = useState(false)
+    const [showDangerZone, setShowDangerZone] = useState(false)
     const [selected, setSelected] = useState<Planification | null>(null)
     const [inscrits, setInscrits] = useState<InscritItem[]>([])
     const [loadingInscrits, setLoadingInscrits] = useState(false)
@@ -263,6 +264,7 @@ export default function PlanificationsPage() {
         setSelected(p)
         setInscrits([])
         setLoadingInscrits(true)
+        setShowDangerZone(false)
         setShowInscritsModal(true)
         try {
             const res = await fetch(`/api/admin/traversees/${p.id}/inscrits`)
@@ -273,13 +275,6 @@ export default function PlanificationsPage() {
         } finally {
             setLoadingInscrits(false)
         }
-    }
-
-    const handleCopyLink = (lienUnique: string) => {
-        const url = `${window.location.origin}/traversee/${lienUnique}`
-        navigator.clipboard.writeText(url).then(() => {
-            addToast({ type: 'success', title: 'Lien copié !', message: url })
-        })
     }
 
     // ── Filtres ──────────────────────────────────────────────────────────────
@@ -414,12 +409,12 @@ export default function PlanificationsPage() {
         content += `Date      : ${formatDate(selected.date)}\n`
         content += `Lieu      : ${selected.lieu}\n`
         content += `Inscrits  : ${inscrits.length}\n`
-        content += `${'='.repeat(90)}\n\n`
-        content += `N°\tNOM\t\t\tPRÉNOM(S)\t\t\tTÉLÉPHONE\t\tGRADE\t\t\tSIGNATURE\n`
-        content += `${'-'.repeat(90)}\n`
+        content += `${'='.repeat(120)}\n\n`
+        content += `N°\tNOM\t\tPRÉNOM(S)\t\tNOM SACRÉ\t\tTÉLÉPHONE\t\tGRADE\t\tSIGNATURE\n`
+        content += `${'-'.repeat(120)}\n`
         inscrits.forEach((item, index) => {
-            const { nom, prenoms, telephoneWhatsapp, grade } = item.membre
-            content += `${index + 1}\t${nom}\t\t${prenoms}\t\t${telephoneWhatsapp}\t\t${grade}\t\t\n`
+            const { nom, prenoms, nomSacre, telephoneWhatsapp, grade } = item.membre
+            content += `${index + 1}\t${nom}\t\t${prenoms}\t\t${nomSacre || '—'}\t\t${telephoneWhatsapp}\t\t${grade}\t\t\n`
         })
         const blob = new Blob([content], { type: 'text/plain; charset=utf-8' })
         const url = window.URL.createObjectURL(blob)
@@ -453,10 +448,11 @@ export default function PlanificationsPage() {
         const cols = [
             { label: 'N°',        x: margin },
             { label: 'Nom',       x: margin + 10 },
-            { label: 'Prénom(s)', x: margin + 45 },
-            { label: 'Téléphone', x: margin + 90 },
-            { label: 'Grade',     x: margin + 125 },
-            { label: 'Signature', x: margin + 155 },
+            { label: 'Prénom(s)', x: margin + 35 },
+            { label: 'Nom sacré', x: margin + 66 },
+            { label: 'Téléphone', x: margin + 96 },
+            { label: 'Grade',     x: margin + 130 },
+            { label: 'Signature', x: margin + 154 },
         ]
 
         let y = 46
@@ -472,9 +468,9 @@ export default function PlanificationsPage() {
         pdf.setFontSize(9)
         inscrits.forEach((item, index) => {
             if (y > 270) { pdf.addPage(); y = 20 }
-            const { nom, prenoms, telephoneWhatsapp, grade } = item.membre
-            const row = [String(index + 1), nom, prenoms, telephoneWhatsapp, grade, '']
-            cols.forEach((c, i) => pdf.text((row[i] || '').substring(0, 20), c.x, y))
+            const { nom, prenoms, nomSacre, telephoneWhatsapp, grade } = item.membre
+            const row = [String(index + 1), nom, prenoms, nomSacre || '—', telephoneWhatsapp, grade, '']
+            cols.forEach((c, i) => pdf.text((row[i] || '').substring(0, 16), c.x, y))
             pdf.setDrawColor(220, 220, 220)
             pdf.line(margin, y + 3, pageW - margin, y + 3)
             y += 9
@@ -577,7 +573,7 @@ export default function PlanificationsPage() {
                 </div>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => isEdit ? setShowEditModal(false) : setShowAddModal(false)}>
+                <Button variant="outline" onClick={() => (isEdit ? setShowEditModal(false) : setShowAddModal(false))}>
                     Annuler
                 </Button>
                 <Button
@@ -706,12 +702,15 @@ export default function PlanificationsPage() {
                                         <TableHead className="font-semibold">Grades</TableHead>
                                         <TableHead className="font-semibold text-center">Inscrits</TableHead>
                                         <TableHead className="font-semibold">Lien</TableHead>
-                                        <TableHead className="font-semibold text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {filteredList.map(p => (
-                                        <TableRow key={p.id} className="hover:bg-gray-50">
+                                        <TableRow
+                                            key={p.id}
+                                            className="hover:bg-gray-50 cursor-pointer"
+                                            onClick={() => handleViewInscrits(p)}
+                                        >
                                             <TableCell>
                                                 <Badge className={`text-xs whitespace-nowrap ${TYPE_BADGE_COLORS[p.type] || 'bg-gray-100 text-gray-700'}`}>
                                                     {p.type}
@@ -748,43 +747,9 @@ export default function PlanificationsPage() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 max-w-[150px] truncate block">
-                                                        /traversee/{p.lienUnique}
-                                                    </code>
-                                                    <button
-                                                        onClick={() => handleCopyLink(p.lienUnique)}
-                                                        className="text-gray-400 hover:text-gray-700 flex-shrink-0"
-                                                        title="Copier le lien"
-                                                    >
-                                                        <Copy className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-1">
-                                                    <button
-                                                        onClick={() => handleViewInscrits(p)}
-                                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                                                        title="Voir les inscrits"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleEdit(p)}
-                                                        className="p-1.5 text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
-                                                        title="Modifier"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setSelected(p); setShowDeleteModal(true) }}
-                                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                                                        title="Supprimer"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
+                                                <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 max-w-[150px] truncate block">
+                                                    /traversee/{p.lienUnique}
+                                                </code>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -946,18 +911,20 @@ export default function PlanificationsPage() {
 
             {/* Inscrits Modal */}
             <Dialog open={showInscritsModal} onOpenChange={setShowInscritsModal}>
-                <DialogContent className="w-[95vw] max-w-6xl max-h-[92vh] flex flex-col">
+                <DialogContent className="w-[98vw] sm:w-[98vw] max-w-[98vw] sm:max-w-[98vw] h-[94vh] flex flex-col p-5 sm:p-6">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Users className="w-5 h-5" />
                             Inscrits — {selected?.titre}
                         </DialogTitle>
                         {selected && (
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <Badge className={`text-xs ${TYPE_BADGE_COLORS[selected.type] || 'bg-gray-100 text-gray-700'}`}>
-                                    {selected.type}
-                                </Badge>
-                                <span>{formatDate(selected.date)} · {selected.lieu}</span>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                    <Badge className={`text-xs ${TYPE_BADGE_COLORS[selected.type] || 'bg-gray-100 text-gray-700'}`}>
+                                        {selected.type}
+                                    </Badge>
+                                    <span>{formatDate(selected.date)} · {selected.lieu}</span>
+                                </div>
                             </div>
                         )}
                     </DialogHeader>
@@ -966,18 +933,34 @@ export default function PlanificationsPage() {
                         <p className="text-sm text-gray-600">
                             {loadingInscrits ? 'Chargement...' : `${inscrits.length} inscrit(s)`}
                         </p>
-                        {inscrits.length > 0 && (
-                            <div className="flex gap-2">
-                                <Button onClick={exportToTxt} variant="outline" size="sm" className="gap-2">
-                                    <FileText className="w-4 h-4" />
-                                    Export TXT
+                        <div className="flex gap-2">
+                            {selected && (
+                                <Button
+                                    onClick={() => {
+                                        setShowInscritsModal(false)
+                                        handleEdit(selected)
+                                    }}
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                    Modifier
                                 </Button>
-                                <Button onClick={exportToPDF} variant="outline" size="sm" className="gap-2">
-                                    <Download className="w-4 h-4" />
-                                    Export PDF
-                                </Button>
-                            </div>
-                        )}
+                            )}
+                            {inscrits.length > 0 && (
+                                <>
+                                    <Button onClick={exportToTxt} variant="outline" size="sm" className="gap-2">
+                                        <FileText className="w-4 h-4" />
+                                        Export TXT
+                                    </Button>
+                                    <Button onClick={exportToPDF} variant="outline" size="sm" className="gap-2">
+                                        <Download className="w-4 h-4" />
+                                        Export PDF
+                                    </Button>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex-1 overflow-auto">
@@ -997,6 +980,7 @@ export default function PlanificationsPage() {
                                         <TableHead className="w-12">N°</TableHead>
                                         <TableHead>Nom</TableHead>
                                         <TableHead>Prénom(s)</TableHead>
+                                        <TableHead>Nom sacré</TableHead>
                                         <TableHead>Téléphone</TableHead>
                                         <TableHead>Grade</TableHead>
                                         <TableHead>Inscrit le</TableHead>
@@ -1008,6 +992,7 @@ export default function PlanificationsPage() {
                                             <TableCell className="text-gray-500 text-sm">{index + 1}</TableCell>
                                             <TableCell className="font-medium">{item.membre.nom}</TableCell>
                                             <TableCell>{item.membre.prenoms}</TableCell>
+                                            <TableCell className="text-sm text-gray-600">{item.membre.nomSacre || '—'}</TableCell>
                                             <TableCell className="text-sm text-gray-600">{item.membre.telephoneWhatsapp}</TableCell>
                                             <TableCell>
                                                 <Badge className={`text-xs ${GRADE_COLORS[item.membre.grade] || 'bg-gray-100 text-gray-700'}`}>
@@ -1021,6 +1006,35 @@ export default function PlanificationsPage() {
                                     ))}
                                 </TableBody>
                             </Table>
+                        )}
+                    </div>
+
+                    <div className="mt-3 border-t pt-3">
+                        <button
+                            type="button"
+                            onClick={() => setShowDangerZone(v => !v)}
+                            className="text-xs text-gray-500 hover:text-gray-700 underline underline-offset-2"
+                        >
+                            {showDangerZone ? 'Masquer la zone dangereuse' : 'Afficher la zone dangereuse'}
+                        </button>
+                        {showDangerZone && (
+                            <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3 flex items-center justify-between gap-3">
+                                <p className="text-xs text-red-700">
+                                    Action irréversible : supprimer cet événement et toutes ses inscriptions.
+                                </p>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    className="gap-2"
+                                    onClick={() => {
+                                        setShowInscritsModal(false)
+                                        setShowDeleteModal(true)
+                                    }}
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    Supprimer
+                                </Button>
+                            </div>
                         )}
                     </div>
                 </DialogContent>
