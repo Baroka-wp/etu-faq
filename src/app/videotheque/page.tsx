@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Play, Clock, ChevronLeft, MessageCircle, X, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { VideothequeCuratedSection } from '@/components/videotheque/VideothequeCuratedSection'
+import { isFeaturedKabbal2026Title } from '@/lib/isFeaturedKabbal2026Title'
 
 interface Course {
     id: string
@@ -74,9 +75,10 @@ export default function VideothequePage() {
         localStorage.setItem('whatsappModalSeen', 'true')
     }
 
-    const currentIndex = selectedCourse ? courses.findIndex(c => c.id === selectedCourse.id) : -1
-    const prevCourse = currentIndex > 0 ? courses[currentIndex - 1] : null
-    const nextCourse = currentIndex < courses.length - 1 ? courses[currentIndex + 1] : null
+    const gridCourses = courses.filter((c) => !isFeaturedKabbal2026Title(c.title))
+    const currentIndex = selectedCourse ? gridCourses.findIndex((c) => c.id === selectedCourse.id) : -1
+    const prevCourse = currentIndex > 0 ? gridCourses[currentIndex - 1] : null
+    const nextCourse = currentIndex >= 0 && currentIndex < gridCourses.length - 1 ? gridCourses[currentIndex + 1] : null
 
     if (loading) {
         return (
@@ -311,14 +313,14 @@ export default function VideothequePage() {
 
             {/* Video Grid - Style YouTube */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-                {courses.length === 0 ? (
+                {gridCourses.length === 0 ? (
                     <div className="text-center py-16">
                         <Play className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-500 text-lg">Aucune vidéo disponible pour le moment</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {courses.map((course) => (
+                        {gridCourses.map((course) => (
                             <div
                                 key={course.id}
                                 onClick={() => setSelectedCourse(course)}

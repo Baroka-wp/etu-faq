@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, Video } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
+import { HomeFeaturedKabbalVideo } from '@/components/home/HomeFeaturedKabbalVideo'
 
 export default function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -160,6 +161,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <HomeFeaturedKabbalVideo />
 
         {/* Notre Histoire */}
         <section id="histoire" className="py-16 sm:py-20 bg-white">
