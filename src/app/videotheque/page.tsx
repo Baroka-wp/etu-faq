@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Play, Clock, ChevronLeft, MessageCircle, X, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { VideothequeCuratedSection } from '@/components/videotheque/VideothequeCuratedSection'
 
 interface Course {
     id: string
@@ -15,7 +16,7 @@ interface Course {
     published: boolean
 }
 
-export default function CoursEnregistresPage() {
+export default function VideothequePage() {
     const [courses, setCourses] = useState<Course[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
@@ -210,7 +211,7 @@ export default function CoursEnregistresPage() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <h3 className="font-semibold text-gray-900 mb-2 text-sm">
-                                                        Une question sur ce cours ?
+                                                        Une question sur cette vidéo ?
                                                     </h3>
                                                     <p className="text-gray-600 text-xs sm:text-sm mb-3">
                                                         Nos enseignants sont là pour vous aider.
@@ -298,20 +299,22 @@ export default function CoursEnregistresPage() {
             <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
                     <h1 className="text-4xl sm:text-5xl font-serif font-bold text-gray-900 mb-4">
-                        Cours Enregistrés
+                        Vidéothèque
                     </h1>
                     <p className="text-xl text-gray-600 font-serif">
-                        Découvrez nos enseignements en vidéo
+                        Enseignements et conférences de l&apos;ETU en vidéo
                     </p>
                 </div>
             </div>
+
+            <VideothequeCuratedSection />
 
             {/* Video Grid - Style YouTube */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
                 {courses.length === 0 ? (
                     <div className="text-center py-16">
                         <Play className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 text-lg">Aucun cours disponible pour le moment</p>
+                        <p className="text-gray-500 text-lg">Aucune vidéo disponible pour le moment</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -351,7 +354,7 @@ export default function CoursEnregistresPage() {
                                     </p>
                                     <div className="flex items-center text-gray-500 text-xs">
                                         <Clock className="w-4 h-4 mr-1" />
-                                        <span>Cours vidéo</span>
+                                        <span>Vidéo</span>
                                     </div>
                                 </div>
                             </div>
@@ -399,7 +402,7 @@ export default function CoursEnregistresPage() {
                                             Rejoignez notre communauté
                                         </h4>
                                         <p className="text-gray-600">
-                                            Soyez informé des nouveaux cours enregistrés et des actualités de l'ETU Bénin.
+                                            Soyez informé des nouvelles vidéos et des actualités de l&apos;ETU Bénin.
                                         </p>
                                     </div>
 

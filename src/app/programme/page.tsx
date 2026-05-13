@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import {
     Calendar, MapPin, Users, Search, Loader2, CalendarPlus,
-    ChevronRight, AlertCircle, BookOpen, Lock
+    ChevronRight, AlertCircle, Lock, Video
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -349,8 +349,8 @@ function SiteNav() {
                     <div className="hidden md:flex items-center space-x-6">
                         <Link href="/faq" className="text-gray-700 hover:text-gray-900 font-serif text-sm">FAQ</Link>
                         <Link href="/bibliotheque" className="text-gray-700 hover:text-gray-900 font-serif text-sm">Bibliothèque</Link>
-                        <Link href="/cours-enregistres" className="text-gray-700 hover:text-gray-900 font-serif text-sm flex items-center gap-1">
-                            <BookOpen className="w-4 h-4" /> Cours
+                        <Link href="/videotheque" className="text-gray-700 hover:text-gray-900 font-serif text-sm flex items-center gap-1">
+                            <Video className="w-4 h-4" /> Vidéothèque
                         </Link>
                         <Link href="/programme" className="text-gray-700 hover:text-gray-900 font-serif text-sm font-semibold">Mon programme</Link>
                         <Link href="/inscription" className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors font-serif text-sm">

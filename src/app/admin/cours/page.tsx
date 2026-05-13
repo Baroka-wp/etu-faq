@@ -153,7 +153,7 @@ export default function AdminCoursPage() {
                     <div className="px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Cours enregistrés</h1>
+                                <h1 className="text-2xl font-bold text-gray-900">Vidéothèque</h1>
                                 <p className="text-sm text-gray-600 mt-1">Gérez les vidéos de cours</p>
                             </div>
                             <button

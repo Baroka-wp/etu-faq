@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, BookOpen } from 'lucide-react'
+import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, Video } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 
@@ -19,63 +19,96 @@ export default function HomePage() {
       </div>
     }>
       <div className="min-h-screen bg-white">
-        {/* Navigation */}
-        <nav className="bg-white shadow-lg sticky top-0 z-50">
+        {/* Navigation — pages distinctes uniquement (pas d’ancres single-page) */}
+        <nav className="sticky top-0 z-50 border-b border-stone-200/80 bg-white/90 shadow-sm backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
+            <div className="flex justify-between items-center h-16 gap-4">
+              <a
+                href="#accueil"
+                className="flex min-w-0 shrink-0 items-center gap-3 rounded-lg outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2"
+              >
                 <img
                   src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
                   alt="Logo ETU"
-                  className="h-10 w-10 mr-3"
+                  className="h-10 w-10 shrink-0"
                 />
-                <span className="text-xl font-serif font-bold text-gray-900">ETU Bénin</span>
+                <span className="truncate text-xl font-serif font-bold leading-tight text-gray-900">
+                  ETU Bénin
+                </span>
+              </a>
+
+              <div className="hidden min-w-0 flex-1 items-center justify-end gap-5 md:flex lg:gap-7">
+                <Link
+                  href="/faq"
+                  className="shrink-0 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
+                >
+                  FAQ
+                </Link>
+                <Link
+                  href="/bibliotheque"
+                  className="shrink-0 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
+                >
+                  Bibliothèque
+                </Link>
+                <Link
+                  href="/videotheque"
+                  className="inline-flex shrink-0 items-center gap-1.5 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
+                >
+                  <Video className="h-4 w-4 shrink-0" aria-hidden />
+                  Vidéothèque
+                </Link>
+                <Link
+                  href="/inscription"
+                  className="shrink-0 rounded-lg bg-gray-800 px-4 py-2 text-[15px] font-serif font-medium text-white transition-colors hover:bg-gray-900"
+                >
+                  S&apos;inscrire
+                </Link>
               </div>
 
-              {/* Desktop Menu */}
-              <div className="hidden md:flex items-center space-x-8">
-                <a href="#accueil" className="text-gray-700 hover:text-gray-900 font-serif">Accueil</a>
-                <a href="#histoire" className="text-gray-700 hover:text-gray-900 font-serif">Notre Histoire</a>
-                <a href="#mission" className="text-gray-700 hover:text-gray-900 font-serif">Mission</a>
-                <a href="#enseignements" className="text-gray-700 hover:text-gray-900 font-serif">Enseignements</a>
-                <Link href="/faq" className="text-gray-700 hover:text-gray-900 font-serif">FAQ</Link>
-                <Link href="/bibliotheque" className="text-gray-700 hover:text-gray-900 font-serif">Bibliothèque</Link>
-                <Link href="/cours-enregistres" className="text-gray-700 hover:text-gray-900 font-serif flex items-center">
-                  <BookOpen className="w-4 h-4 mr-1" />
-                  Cours enregistrés
-                </Link>
-                <Link href="/inscription" className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors font-serif">
-                  S'inscrire
-                </Link>
-              </div>
-
-              {/* Mobile menu button */}
-              <div className="md:hidden">
+              <div className="shrink-0 md:hidden">
                 <button
+                  type="button"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="text-gray-700 hover:text-gray-900"
+                  className="rounded-lg p-2 text-gray-700 hover:bg-stone-50 hover:text-gray-900"
+                  aria-expanded={isMenuOpen}
+                  aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
                 >
                   {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </button>
               </div>
             </div>
 
-            {/* Mobile Menu */}
             {isMenuOpen && (
-              <div className="md:hidden">
-                <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-                  <a href="#accueil" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Accueil</a>
-                  <a href="#histoire" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Notre Histoire</a>
-                  <a href="#mission" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Mission</a>
-                  <a href="#enseignements" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Enseignements</a>
-                  <Link href="/faq" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">FAQ</Link>
-                  <Link href="/bibliotheque" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif">Bibliothèque</Link>
-                  <Link href="/cours-enregistres" className="block px-3 py-2 text-gray-700 hover:text-gray-900 font-serif flex items-center">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Cours enregistrés
+              <div className="border-t border-stone-200 bg-white md:hidden">
+                <div className="space-y-0.5 px-2 py-3 sm:px-3">
+                  <Link
+                    href="/faq"
+                    className="block rounded-md px-3 py-2.5 font-serif text-gray-800 hover:bg-stone-50"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    FAQ
                   </Link>
-                  <Link href="/inscription" className="block px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-serif">
-                    S'inscrire
+                  <Link
+                    href="/bibliotheque"
+                    className="block rounded-md px-3 py-2.5 font-serif text-gray-800 hover:bg-stone-50"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Bibliothèque
+                  </Link>
+                  <Link
+                    href="/videotheque"
+                    className="flex items-center gap-2 rounded-md px-3 py-2.5 font-serif text-gray-800 hover:bg-stone-50"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Video className="h-4 w-4 shrink-0" aria-hidden />
+                    Vidéothèque
+                  </Link>
+                  <Link
+                    href="/inscription"
+                    className="mx-3 mt-2 block rounded-lg bg-gray-800 py-2.5 text-center font-serif text-white hover:bg-gray-900"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    S&apos;inscrire
                   </Link>
                 </div>
               </div>
@@ -116,9 +149,9 @@ export default function HomePage() {
                   <User className="w-5 h-5 inline mr-2" />
                   S'inscrire maintenant
                 </Link>
-                <Link href="/cours-enregistres" className="bg-white text-gray-800 px-8 py-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 inline mr-2" />
-                  Cours enregistrés
+                <Link href="/videotheque" className="bg-white text-gray-800 px-8 py-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center">
+                  <Video className="w-5 h-5 inline mr-2" />
+                  Vidéothèque
                 </Link>
                 <Link href="/faq" className="bg-white text-gray-800 px-8 py-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                   En savoir plus
@@ -632,12 +665,28 @@ export default function HomePage() {
               </div>
 
               <div>
-                <h3 className="text-lg font-serif font-semibold text-gray-900 mb-4">Navigation</h3>
+                <h3 className="text-lg font-serif font-semibold text-gray-900 mb-4">Liens utiles</h3>
                 <ul className="space-y-2">
-                  <li><a href="#accueil" className="text-gray-600 hover:text-gray-900 font-serif">Accueil</a></li>
-                  <li><a href="#histoire" className="text-gray-600 hover:text-gray-900 font-serif">Notre Histoire</a></li>
-                  <li><a href="#mission" className="text-gray-600 hover:text-gray-900 font-serif">Mission</a></li>
-                  <li><Link href="/faq" className="text-gray-600 hover:text-gray-900 font-serif">FAQ</Link></li>
+                  <li>
+                    <Link href="/faq" className="text-gray-600 hover:text-gray-900 font-serif">
+                      FAQ
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/bibliotheque" className="text-gray-600 hover:text-gray-900 font-serif">
+                      Bibliothèque
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/videotheque" className="text-gray-600 hover:text-gray-900 font-serif">
+                      Vidéothèque
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/inscription" className="text-gray-600 hover:text-gray-900 font-serif">
+                      Inscription
+                    </Link>
+                  </li>
                 </ul>
               </div>
 

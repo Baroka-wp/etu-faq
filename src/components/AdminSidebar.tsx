@@ -55,7 +55,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
         },
         {
             id: 'cours',
-            label: 'Cours enregistrés',
+            label: 'Vidéothèque',
             icon: Video,
             href: '/admin/cours'
         },

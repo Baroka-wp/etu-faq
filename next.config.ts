@@ -13,6 +13,15 @@ const nextConfig: NextConfig = {
     domains: ['z-cdn-media.chatglm.cn'],
     formats: ['image/webp', 'image/avif'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/cours-enregistres',
+        destination: '/videotheque',
+        permanent: true,
+      },
+    ]
+  },
   // Headers de sécurité
   async headers() {
     return [
