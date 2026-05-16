@@ -452,9 +452,10 @@ export default function PlanificationsPage() {
     // ── Export PDF inscrits ──────────────────────────────────────────────────
     const exportToPDF = () => {
         if (!selected) return
-        const pdf = new jsPDF('p', 'mm', 'a4')
+        const pdf = new jsPDF('l', 'mm', 'a4')
         const margin = 15
-        const pageW = 210
+        const pageW = 297
+        const pageBreakY = 195
 
         pdf.setFontSize(14)
         pdf.setFont('helvetica', 'bold')
@@ -471,13 +472,13 @@ export default function PlanificationsPage() {
         pdf.line(margin, 39, pageW - margin, 39)
 
         const cols = [
-            { label: 'N°',        x: margin },
-            { label: 'Nom',       x: margin + 10 },
-            { label: 'Prénom(s)', x: margin + 35 },
-            { label: 'Nom sacré', x: margin + 66 },
-            { label: 'Téléphone', x: margin + 96 },
-            { label: 'Grade',     x: margin + 130 },
-            { label: 'Signature', x: margin + 154 },
+            { label: 'N°',         x: margin,      maxLen: 4 },
+            { label: 'Nom',        x: margin + 12, maxLen: 32 },
+            { label: 'Prénom(s)',  x: margin + 52, maxLen: 32 },
+            { label: 'Nom sacré',  x: margin + 98, maxLen: 28 },
+            { label: 'Téléphone',  x: margin + 138, maxLen: 24 },
+            { label: 'Grade',      x: margin + 178, maxLen: 22 },
+            { label: 'Signature',  x: margin + 228, maxLen: 0 },
         ]
 
         let y = 46
@@ -492,10 +493,21 @@ export default function PlanificationsPage() {
         pdf.setFont('helvetica', 'normal')
         pdf.setFontSize(9)
         inscrits.forEach((item, index) => {
-            if (y > 270) { pdf.addPage(); y = 20 }
+            if (y > pageBreakY) { pdf.addPage(); y = 20 }
             const { nom, prenoms, nomSacre, telephoneWhatsapp, grade } = item.membre
-            const row = [String(index + 1), nom, prenoms, nomSacre || '—', telephoneWhatsapp, grade, '']
-            cols.forEach((c, i) => pdf.text((row[i] || '').substring(0, 16), c.x, y))
+            const row = [
+                String(index + 1),
+                nom,
+                prenoms,
+                nomSacre || '—',
+                telephoneWhatsapp,
+                grade,
+                '',
+            ]
+            cols.forEach((c, i) => {
+                const text = row[i] || ''
+                if (c.maxLen > 0) pdf.text(text.substring(0, c.maxLen), c.x, y)
+            })
             pdf.setDrawColor(220, 220, 220)
             pdf.line(margin, y + 3, pageW - margin, y + 3)
             y += 9
