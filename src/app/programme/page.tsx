@@ -15,7 +15,14 @@ import {
     formatAppTime,
     getAppDayOfWeek,
     getAppHourMinute,
+    parseAppDatetimeLocal,
 } from '@/lib/datetime'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Evenement {
@@ -609,6 +616,8 @@ function ProgrammeCalendar({
         return EVENT_TYPE_ORDER.filter(t => seen.has(t))
     }, [events, year, month])
 
+    const [dayModal, setDayModal] = useState<{ ymd: string; events: Evenement[] } | null>(null)
+
     return (
         <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
             <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
@@ -672,8 +681,17 @@ function ProgrammeCalendar({
                     return (
                         <div
                             key={i}
-                            className={`min-h-[72px] sm:min-h-[100px] md:min-h-[110px] p-1 sm:p-2 border-b border-r border-gray-100
-                                ${!isValid ? 'bg-gray-50' : ''}
+                            role={isValid ? 'button' : undefined}
+                            tabIndex={isValid ? 0 : undefined}
+                            onClick={isValid ? () => setDayModal({ ymd: cellYMD, events: dayEvents }) : undefined}
+                            onKeyDown={isValid ? e => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault()
+                                    setDayModal({ ymd: cellYMD, events: dayEvents })
+                                }
+                            } : undefined}
+                            className={`min-h-[72px] sm:min-h-[100px] md:min-h-[110px] p-1 sm:p-2 border-b border-r border-gray-100 text-left
+                                ${!isValid ? 'bg-gray-50' : 'cursor-pointer hover:bg-gray-50/80 transition-colors'}
                                 ${isLastRow ? 'border-b-0' : ''}
                                 ${(i + 1) % 7 === 0 ? 'border-r-0' : ''}`}
                         >
@@ -709,7 +727,94 @@ function ProgrammeCalendar({
                     )
                 })}
             </div>
+
+            <CalendarDayModal day={dayModal} onClose={() => setDayModal(null)} />
         </div>
+    )
+}
+
+function CalendarDayModal({
+    day,
+    onClose,
+}: {
+    day: { ymd: string; events: Evenement[] } | null
+    onClose: () => void
+}) {
+    const title = useMemo(() => {
+        if (!day) return ''
+        if (day.events.length > 0) return formatDate(day.events[0].date)
+        return formatAppDate(parseAppDatetimeLocal(`${day.ymd}T12:00`), {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        })
+    }, [day])
+
+    return (
+        <Dialog open={!!day} onOpenChange={open => { if (!open) onClose() }}>
+            <DialogContent className="max-w-md max-h-[min(85vh,640px)] flex flex-col gap-0 p-0 overflow-hidden">
+                <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
+                    <DialogTitle className="font-serif capitalize text-lg">{title}</DialogTitle>
+                    {day && day.events.length > 0 && (
+                        <p className="text-sm text-gray-500 font-serif">
+                            {day.events.length} événement{day.events.length > 1 ? 's' : ''}
+                        </p>
+                    )}
+                </DialogHeader>
+                <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-6">
+                    {!day || day.events.length === 0 ? (
+                        <p className="text-sm text-gray-500 font-serif py-6 text-center">
+                            Aucun événement ce jour.
+                        </p>
+                    ) : (
+                        <ul className="space-y-3">
+                            {day.events.map(ev => {
+                                const timeStr = formatTime(ev.date)
+                                const barColor = TYPE_COLORS[ev.type] || 'bg-gray-400'
+                                return (
+                                    <li
+                                        key={ev.id}
+                                        className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
+                                    >
+                                        <div className="flex">
+                                            <div className={`w-1 flex-shrink-0 ${barColor}`} />
+                                            <div className="flex-1 p-4 min-w-0">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="min-w-0 flex-1">
+                                                        <span
+                                                            className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 font-serif ${TYPE_BADGE[ev.type] || 'bg-gray-100 text-gray-700'}`}
+                                                        >
+                                                            {ev.type}
+                                                        </span>
+                                                        <p className="text-base font-bold text-gray-900 font-serif capitalize leading-snug">
+                                                            {timeStr ? `${timeStr} · ` : ''}{ev.titre}
+                                                        </p>
+                                                        <div className="mt-2 space-y-1">
+                                                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                                <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-indigo-400" />
+                                                                <span className="font-serif">{ev.lieu}</span>
+                                                            </div>
+                                                            <p className="text-xs text-gray-400 font-serif">
+                                                                {gradesLabel(ev.gradesAutorises)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <Link
+                                                        href={`/traversee/${ev.lienUnique}`}
+                                                        className="flex-shrink-0 flex items-center gap-1 px-3 py-2 bg-gray-800 hover:bg-gray-900 text-white text-xs font-medium rounded-lg transition-colors font-serif"
+                                                    >
+                                                        S&apos;inscrire
+                                                        <ChevronRight className="w-3.5 h-3.5" />
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
     )
 }
 
@@ -725,6 +830,7 @@ function CalendarEventChip({
     return (
         <Link
             href={`/traversee/${event.lienUnique}`}
+            onClick={e => e.stopPropagation()}
             className={`block w-full text-left px-1 sm:px-2 py-0.5 sm:py-1 rounded text-white text-[10px] sm:text-xs transition-colors truncate font-serif leading-tight ${color} ${className}`}
             title={`${event.titre} · ${time}`}
         >
