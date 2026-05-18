@@ -770,43 +770,32 @@ function CalendarDayModal({
                                 const timeStr = formatTime(ev.date)
                                 const barColor = TYPE_COLORS[ev.type] || 'bg-gray-400'
                                 return (
-                                    <li
-                                        key={ev.id}
-                                        className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
-                                    >
-                                        <div className="flex">
+                                    <li key={ev.id}>
+                                        <Link
+                                            href={`/traversee/${ev.lienUnique}`}
+                                            className="flex bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md hover:border-gray-200 transition-all group"
+                                        >
                                             <div className={`w-1 flex-shrink-0 ${barColor}`} />
                                             <div className="flex-1 p-4 min-w-0">
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div className="min-w-0 flex-1">
-                                                        <span
-                                                            className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 font-serif ${TYPE_BADGE[ev.type] || 'bg-gray-100 text-gray-700'}`}
-                                                        >
-                                                            {ev.type}
-                                                        </span>
-                                                        <p className="text-base font-bold text-gray-900 font-serif capitalize leading-snug">
-                                                            {timeStr ? `${timeStr} · ` : ''}{ev.titre}
-                                                        </p>
-                                                        <div className="mt-2 space-y-1">
-                                                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                                <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-indigo-400" />
-                                                                <span className="font-serif">{ev.lieu}</span>
-                                                            </div>
-                                                            <p className="text-xs text-gray-400 font-serif">
-                                                                {gradesLabel(ev.gradesAutorises)}
-                                                            </p>
-                                                        </div>
+                                                <span
+                                                    className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 font-serif ${TYPE_BADGE[ev.type] || 'bg-gray-100 text-gray-700'}`}
+                                                >
+                                                    {ev.type}
+                                                </span>
+                                                <p className="text-base font-bold text-gray-900 font-serif capitalize leading-snug group-hover:text-gray-700">
+                                                    {timeStr ? `${timeStr} · ` : ''}{ev.titre}
+                                                </p>
+                                                <div className="mt-2 space-y-1">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                        <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-indigo-400" />
+                                                        <span className="font-serif">{ev.lieu}</span>
                                                     </div>
-                                                    <Link
-                                                        href={`/traversee/${ev.lienUnique}`}
-                                                        className="flex-shrink-0 flex items-center gap-1 px-3 py-2 bg-gray-800 hover:bg-gray-900 text-white text-xs font-medium rounded-lg transition-colors font-serif"
-                                                    >
-                                                        S&apos;inscrire
-                                                        <ChevronRight className="w-3.5 h-3.5" />
-                                                    </Link>
+                                                    <p className="text-xs text-gray-400 font-serif">
+                                                        {gradesLabel(ev.gradesAutorises)}
+                                                    </p>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     </li>
                                 )
                             })}
