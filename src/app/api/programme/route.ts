@@ -1,41 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { PROGRAMME_PERIODS, type ProgrammePeriod } from '@/lib/programme'
 
-function gradeAutorise(membreGrade: string, gradesAutorises: string[]): boolean {
-  if (membreGrade === 'Alchimiste') return true
-  if (gradesAutorises.length === 0) return true
-  return gradesAutorises.includes(membreGrade)
+function dateFilter(period: ProgrammePeriod) {
+  const now = new Date()
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const endOfThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
+
+  switch (period) {
+    case 'upcoming':
+      return { date: { gte: now } }
+    case 'thisMonth':
+      return { date: { gte: startOfThisMonth, lte: endOfThisMonth } }
+    case 'lastMonth':
+      return { date: { gte: startOfLastMonth, lte: endOfLastMonth } }
+    case 'past':
+      return { date: { lt: now } }
+    default:
+      return {}
+  }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const nomSacre = request.nextUrl.searchParams.get('nomSacre')
+    const period = (request.nextUrl.searchParams.get('period') || 'thisMonth') as ProgrammePeriod
+    const safePeriod = PROGRAMME_PERIODS.includes(period) ? period : 'thisMonth'
 
-    if (!nomSacre || !nomSacre.trim()) {
-      return NextResponse.json({ error: 'Le nom sacré est requis' }, { status: 400 })
-    }
-
-    const membre = await db.membre.findFirst({
-      where: {
-        nomSacre: { equals: nomSacre.trim(), mode: 'insensitive' },
-        statut: 'actif'
-      },
-      select: {
-        id: true,
-        nom: true,
-        prenoms: true,
-        nomSacre: true,
-        grade: true
-      }
-    })
-
-    if (!membre) {
-      return NextResponse.json({ error: 'Aucun membre actif trouvé avec ce nom sacré' }, { status: 404 })
-    }
-
-    // Récupérer tous les événements à venir
-    const traversees = await db.traversee.findMany({
-      where: { date: { gte: new Date() } },
+    const evenements = await db.traversee.findMany({
+      where: dateFilter(safePeriod),
       orderBy: { date: 'asc' },
       select: {
         id: true,
@@ -46,16 +40,11 @@ export async function GET(request: NextRequest) {
         lieu: true,
         lienUnique: true,
         gradesAutorises: true,
-        _count: { select: { inscriptions: true } }
-      }
+        serieId: true,
+      },
     })
 
-    // Filtrer selon le grade du membre
-    const evenements = traversees.filter(t =>
-      gradeAutorise(membre.grade, t.gradesAutorises)
-    )
-
-    return NextResponse.json({ success: true, membre, evenements })
+    return NextResponse.json({ success: true, evenements, period: safePeriod })
   } catch {
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }

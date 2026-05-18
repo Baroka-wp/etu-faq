@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
     Compass, Plus, Trash2, Download, FileText, Edit, Copy,
-    Calendar, MapPin, Users, List, ChevronLeft, ChevronRight, Clock
+    Calendar, MapPin, Users, List, ChevronLeft, ChevronRight, Clock, Repeat
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import jsPDF from 'jspdf'
@@ -20,6 +20,14 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/components/Toast'
 import { ToastContainer } from '@/components/ToastContainer'
 import { slugify } from '@/lib/utils'
+import {
+    generateOccurrences,
+    MAX_OCCURRENCES,
+    type RecurrenceRule,
+    type RecurrenceUnit,
+    type RecurrenceMode,
+    type RecurrenceEndMode,
+} from '@/lib/recurrence'
 
 // ── Types d'événements ──────────────────────────────────────────────────────
 const EVENT_TYPES = [
@@ -140,6 +148,16 @@ export default function PlanificationsPage() {
         titre: '', description: '', date: '', lieu: '', lienUnique: '',
         gradesAutorises: [...ALL_GRADES] as string[]
     })
+    const [recurrenceEnabled, setRecurrenceEnabled] = useState(false)
+    const [recurrence, setRecurrence] = useState<RecurrenceRule>({
+        mode: 'interval',
+        interval: 1,
+        unit: 'week',
+        weekdays: [],
+        endMode: 'count',
+        count: 4,
+        until: '',
+    })
     const router = useRouter()
     const { toasts, addToast, removeToast } = useToast()
 
@@ -164,7 +182,11 @@ export default function PlanificationsPage() {
         router.push('/admin-login')
     }
 
-    const resetForm = () => setFormData({ type: EVENT_TYPES[0], titre: '', description: '', date: '', lieu: '', lienUnique: '', gradesAutorises: [...ALL_GRADES] })
+    const resetForm = () => {
+        setFormData({ type: EVENT_TYPES[0], titre: '', description: '', date: '', lieu: '', lienUnique: '', gradesAutorises: [...ALL_GRADES] })
+        setRecurrenceEnabled(false)
+        setRecurrence({ mode: 'interval', interval: 1, unit: 'week', weekdays: [], endMode: 'count', count: 4, until: '' })
+    }
 
     const handleTitreChange = (titre: string) => {
         setFormData(prev => ({ ...prev, titre, lienUnique: slugify(titre) }))
@@ -211,21 +233,28 @@ export default function PlanificationsPage() {
             addToast({ type: 'error', title: 'Erreur', message: 'Tous les champs sont obligatoires' })
             return
         }
+        const useRecurrence = !isEdit && recurrenceEnabled
         setSubmitting(true)
         try {
             const url = isEdit ? `/api/admin/traversees/${selected!.id}` : '/api/admin/traversees'
             const method = isEdit ? 'PUT' : 'POST'
+            const payload = useRecurrence ? { ...formData, recurrence } : formData
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(payload)
             })
             const data = await res.json()
             if (data.success) {
+                const createdCount: number = data.created || 1
                 addToast({
                     type: 'success',
-                    title: isEdit ? 'Planification modifiée' : 'Planification créée',
-                    message: `"${formData.titre}" a été ${isEdit ? 'modifiée' : 'créée'} avec succès`
+                    title: isEdit ? 'Planification modifiée' : (createdCount > 1 ? `${createdCount} occurrences créées` : 'Planification créée'),
+                    message: isEdit
+                        ? `"${formData.titre}" a été modifiée avec succès`
+                        : (createdCount > 1
+                            ? `"${formData.titre}" — ${createdCount} dates générées`
+                            : `"${formData.titre}" a été créée avec succès`)
                 })
                 setShowAddModal(false)
                 setShowEditModal(false)
@@ -518,11 +547,11 @@ export default function PlanificationsPage() {
 
     // ── Form dialog ──────────────────────────────────────────────────────────
     const formDialogContent = (isEdit: boolean) => (
-        <DialogContent className="max-w-lg">
-            <DialogHeader>
+        <DialogContent className="max-w-lg max-h-[min(90vh,840px)] flex flex-col gap-0 p-0 overflow-hidden">
+            <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
                 <DialogTitle>{isEdit ? 'Modifier la planification' : 'Nouvelle planification'}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-2">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-2 space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Type d'événement *</label>
                     <select
@@ -606,10 +635,179 @@ export default function PlanificationsPage() {
                             placeholder="sortie-foret-toho"
                         />
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">Lettres minuscules, chiffres et tirets uniquement</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                        Lettres minuscules, chiffres et tirets uniquement
+                        {!isEdit && recurrenceEnabled && ' — chaque occurrence sera suffixée par sa date'}
+                    </p>
                 </div>
+
+                {!isEdit && (
+                    <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={recurrenceEnabled}
+                                onChange={e => setRecurrenceEnabled(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300"
+                            />
+                            <Repeat className="w-4 h-4 text-gray-600" />
+                            <span className="text-sm font-medium text-gray-800">Événement récurrent</span>
+                        </label>
+
+                        {recurrenceEnabled && (
+                            <div className="mt-3 space-y-3">
+                                {/* Mode */}
+                                <div className="flex gap-2">
+                                    {([
+                                        { v: 'interval', label: 'Intervalle régulier' },
+                                        { v: 'weekdays', label: 'Jours de la semaine' },
+                                    ] as const).map(opt => (
+                                        <button
+                                            type="button"
+                                            key={opt.v}
+                                            onClick={() => setRecurrence(prev => ({ ...prev, mode: opt.v as RecurrenceMode }))}
+                                            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                                                recurrence.mode === opt.v
+                                                    ? 'bg-gray-900 text-white border-gray-900'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                                            }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {recurrence.mode === 'interval' ? (
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-600">Tous les</span>
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            value={recurrence.interval ?? 1}
+                                            onChange={e => setRecurrence(prev => ({ ...prev, interval: Math.max(1, Number(e.target.value) || 1) }))}
+                                            className="w-20"
+                                        />
+                                        <select
+                                            value={recurrence.unit ?? 'week'}
+                                            onChange={e => setRecurrence(prev => ({ ...prev, unit: e.target.value as RecurrenceUnit }))}
+                                            className="px-2 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                                        >
+                                            <option value="day">jour(s)</option>
+                                            <option value="week">semaine(s)</option>
+                                            <option value="month">mois</option>
+                                        </select>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-wrap gap-1">
+                                        {[
+                                            { v: 1, label: 'Lun' },
+                                            { v: 2, label: 'Mar' },
+                                            { v: 3, label: 'Mer' },
+                                            { v: 4, label: 'Jeu' },
+                                            { v: 5, label: 'Ven' },
+                                            { v: 6, label: 'Sam' },
+                                            { v: 0, label: 'Dim' },
+                                        ].map(d => {
+                                            const checked = (recurrence.weekdays || []).includes(d.v)
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={d.v}
+                                                    onClick={() => setRecurrence(prev => {
+                                                        const set = new Set(prev.weekdays || [])
+                                                        if (set.has(d.v)) set.delete(d.v)
+                                                        else set.add(d.v)
+                                                        return { ...prev, weekdays: Array.from(set).sort() }
+                                                    })}
+                                                    className={`w-12 px-2 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                                                        checked
+                                                            ? 'bg-gray-900 text-white border-gray-900'
+                                                            : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+                                                    }`}
+                                                >
+                                                    {d.label}
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* Borne */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <div className="flex">
+                                        {([
+                                            { v: 'count', label: 'Nb occurrences' },
+                                            { v: 'until', label: "Jusqu'à une date" },
+                                        ] as const).map((opt, i) => (
+                                            <button
+                                                type="button"
+                                                key={opt.v}
+                                                onClick={() => setRecurrence(prev => ({ ...prev, endMode: opt.v as RecurrenceEndMode }))}
+                                                className={`px-3 py-1.5 text-xs font-medium border transition-colors ${i === 0 ? 'rounded-l-md' : 'rounded-r-md -ml-px'} ${
+                                                    recurrence.endMode === opt.v
+                                                        ? 'bg-gray-900 text-white border-gray-900 z-10'
+                                                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                                                }`}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {recurrence.endMode === 'count' ? (
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            max={MAX_OCCURRENCES}
+                                            value={recurrence.count ?? 4}
+                                            onChange={e => setRecurrence(prev => ({ ...prev, count: Math.min(MAX_OCCURRENCES, Math.max(1, Number(e.target.value) || 1)) }))}
+                                            className="w-24"
+                                        />
+                                    ) : (
+                                        <Input
+                                            type="date"
+                                            value={recurrence.until ?? ''}
+                                            onChange={e => setRecurrence(prev => ({ ...prev, until: e.target.value }))}
+                                            className="w-44"
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Aperçu */}
+                                {(() => {
+                                    if (!formData.date) {
+                                        return <p className="text-xs text-gray-400">Renseigne la date de début pour voir l&apos;aperçu</p>
+                                    }
+                                    const occ = generateOccurrences(recurrence, new Date(formData.date))
+                                    if (occ.length === 0) {
+                                        return <p className="text-xs text-amber-600">Aucune occurrence — vérifie la règle.</p>
+                                    }
+                                    const preview = occ.slice(0, 8)
+                                    return (
+                                        <div className="rounded-md border border-gray-200 bg-white p-2">
+                                            <p className="text-xs font-medium text-gray-700 mb-1">
+                                                {occ.length} occurrence{occ.length > 1 ? 's' : ''} générée{occ.length > 1 ? 's' : ''}
+                                                {occ.length === MAX_OCCURRENCES && ' (plafond)'}
+                                            </p>
+                                            <ul className="text-xs text-gray-600 space-y-0.5">
+                                                {preview.map((d, i) => (
+                                                    <li key={i} className="flex items-center gap-1">
+                                                        <span className="text-gray-400">{i + 1}.</span>
+                                                        {d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+                                                    </li>
+                                                ))}
+                                                {occ.length > preview.length && (
+                                                    <li className="text-gray-400 italic">+ {occ.length - preview.length} autre{occ.length - preview.length > 1 ? 's' : ''}…</li>
+                                                )}
+                                            </ul>
+                                        </div>
+                                    )
+                                })()}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
-            <DialogFooter>
+            <DialogFooter className="shrink-0 px-6 py-4 border-t border-gray-100 bg-background">
                 <Button variant="outline" onClick={() => (isEdit ? setShowEditModal(false) : setShowAddModal(false))}>
                     Annuler
                 </Button>
@@ -618,7 +816,15 @@ export default function PlanificationsPage() {
                     disabled={submitting}
                     className="bg-gray-900 hover:bg-gray-700 text-white"
                 >
-                    {submitting ? 'En cours...' : isEdit ? 'Enregistrer' : 'Créer'}
+                    {submitting
+                        ? 'En cours...'
+                        : isEdit
+                            ? 'Enregistrer'
+                            : (() => {
+                                if (!recurrenceEnabled || !formData.date) return 'Créer'
+                                const n = generateOccurrences(recurrence, new Date(formData.date)).length
+                                return n > 1 ? `Créer ${n} occurrences` : 'Créer'
+                            })()}
                 </Button>
             </DialogFooter>
         </DialogContent>

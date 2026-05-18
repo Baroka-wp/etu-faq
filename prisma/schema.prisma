@@ -155,12 +155,14 @@ model Traversee {
   lieu             String
   lienUnique       String   @unique
   gradesAutorises  String[]
+  serieId          String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   inscriptions InscriptionTraversee[]
 
   @@index([lienUnique])
+  @@index([serieId])
 }
 
 model InscriptionTraversee {
