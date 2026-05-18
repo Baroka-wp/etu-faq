@@ -1,6 +1,8 @@
 // Règles de récurrence pour les planifications.
 // Réutilisé côté serveur (génération définitive) et côté client (aperçu).
 
+import { formatAppDateYMD, formatAppDatetimeLocal, getAppDayOfWeek, parseAppDatetimeLocal } from '@/lib/datetime'
+
 export type RecurrenceUnit = 'day' | 'week' | 'month'
 export type RecurrenceMode = 'interval' | 'weekdays'
 export type RecurrenceEndMode = 'count' | 'until'
@@ -34,9 +36,7 @@ function addMonths(d: Date, n: number): Date {
 }
 
 function sameYMD(a: Date, b: Date): boolean {
-    return a.getFullYear() === b.getFullYear()
-        && a.getMonth() === b.getMonth()
-        && a.getDate() === b.getDate()
+    return formatAppDateYMD(a) === formatAppDateYMD(b)
 }
 
 export interface ValidationResult {
@@ -64,7 +64,7 @@ export function validateRecurrence(rule: RecurrenceRule, startDate: Date): Valid
         if (rule.count > MAX_OCCURRENCES) return { ok: false, error: `Maximum ${MAX_OCCURRENCES} occurrences` }
     } else if (rule.endMode === 'until') {
         if (!rule.until) return { ok: false, error: 'Date de fin manquante' }
-        const end = new Date(rule.until)
+        const end = parseAppDatetimeLocal(`${rule.until}T23:59`)
         if (Number.isNaN(end.getTime())) return { ok: false, error: 'Date de fin invalide' }
         if (end < startDate) return { ok: false, error: 'La date de fin est antérieure à la date de début' }
     } else {
@@ -84,10 +84,9 @@ export function generateOccurrences(rule: RecurrenceRule, startDate: Date): Date
         ? Math.min(rule.count || MAX_OCCURRENCES, MAX_OCCURRENCES)
         : MAX_OCCURRENCES
 
-    const untilDate = rule.endMode === 'until' && rule.until ? new Date(rule.until) : null
-    if (untilDate) {
-        untilDate.setHours(23, 59, 59, 999)
-    }
+    const untilDate = rule.endMode === 'until' && rule.until
+        ? parseAppDatetimeLocal(`${rule.until}T23:59`)
+        : null
 
     const results: Date[] = []
 
@@ -107,14 +106,12 @@ export function generateOccurrences(rule: RecurrenceRule, startDate: Date): Date
         }
     } else {
         const weekdays = new Set(rule.weekdays || [])
-        // On parcourt jour par jour à partir de startDate.
+        const timePart = formatAppDatetimeLocal(startDate).split('T')[1] || '12:00'
         let cursor = new Date(startDate)
         let safety = 0
         while (results.length < limit && safety < 365 * 5) {
-            const dow = cursor.getDay()
-            if (weekdays.has(dow)) {
-                const occ = new Date(startDate)
-                occ.setFullYear(cursor.getFullYear(), cursor.getMonth(), cursor.getDate())
+            if (weekdays.has(getAppDayOfWeek(cursor))) {
+                const occ = parseAppDatetimeLocal(`${formatAppDateYMD(cursor)}T${timePart}`)
                 if (untilDate && occ > untilDate) break
                 if (results.length === 0 || !sameYMD(results[results.length - 1], occ)) {
                     results.push(occ)
@@ -129,8 +126,5 @@ export function generateOccurrences(rule: RecurrenceRule, startDate: Date): Date
 }
 
 export function formatYMD(d: Date): string {
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${y}-${m}-${day}`
+    return formatAppDateYMD(d)
 }

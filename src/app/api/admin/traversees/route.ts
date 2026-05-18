@@ -7,6 +7,7 @@ import {
   type RecurrenceRule,
 } from '@/lib/recurrence'
 import { randomUUID } from 'crypto'
+import { parseAppDatetimeLocal } from '@/lib/datetime'
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,8 +24,19 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ success: true, data: traversees })
-  } catch {
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+  } catch (error: unknown) {
+    console.error('GET /api/admin/traversees:', error)
+    const details = error instanceof Error ? error.message : undefined
+    const staleSchema = details?.includes('serieId') || details?.includes('P2022')
+    return NextResponse.json(
+      {
+        error: staleSchema
+          ? 'Schéma base obsolète. Exécutez : npx prisma db push'
+          : 'Erreur serveur',
+        ...(process.env.NODE_ENV === 'development' && details ? { details } : {}),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -54,7 +66,7 @@ export async function POST(request: NextRequest) {
       ? gradesAutorises
       : ['Explorateur', 'Constructeur', 'Navigateur', 'Alchimiste']
 
-    const startDate = new Date(date)
+    const startDate = parseAppDatetimeLocal(date)
 
     // ── Cas simple : pas de récurrence ────────────────────────────────────
     if (!recurrence) {

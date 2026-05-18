@@ -4,9 +4,18 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import {
     Calendar, MapPin, Loader2, CalendarPlus,
-    ChevronRight, ChevronDown, Repeat, Video
+    ChevronRight, ChevronDown, Repeat, Video, List,
+    ChevronLeft,
 } from 'lucide-react'
 import type { ProgrammePeriod } from '@/lib/programme'
+import {
+    formatAppDate,
+    formatAppDateYMD,
+    formatAppHourShort,
+    formatAppTime,
+    getAppDayOfWeek,
+    getAppHourMinute,
+} from '@/lib/datetime'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Evenement {
@@ -60,6 +69,26 @@ const TYPE_COLORS: Record<string, string> = {
     'Rencontre':                'bg-pink-500',
 }
 
+const TYPE_CALENDAR_COLORS: Record<string, string> = {
+    'Traversée Grand Navire':   'bg-blue-600 hover:bg-blue-700',
+    'Traversée Équipage':       'bg-sky-600 hover:bg-sky-700',
+    "Traversée d'Initiation":   'bg-emerald-600 hover:bg-emerald-700',
+    'Cours de Grade':           'bg-purple-700 hover:bg-purple-800',
+    'Cours':                    'bg-indigo-600 hover:bg-indigo-700',
+    'Agape':                    'bg-orange-500 hover:bg-orange-600',
+    'Rencontre':                'bg-pink-600 hover:bg-pink-700',
+}
+
+const TYPE_BADGE: Record<string, string> = {
+    'Traversée Grand Navire':   'bg-blue-100 text-blue-800',
+    'Traversée Équipage':       'bg-sky-100 text-sky-800',
+    "Traversée d'Initiation":   'bg-emerald-100 text-emerald-800',
+    'Cours de Grade':           'bg-purple-100 text-purple-800',
+    'Cours':                    'bg-indigo-100 text-indigo-800',
+    'Agape':                    'bg-orange-100 text-orange-800',
+    'Rencontre':                'bg-pink-100 text-pink-800',
+}
+
 const PERIOD_FILTERS: { key: ProgrammePeriod; label: string }[] = [
     { key: 'upcoming', label: 'À venir' },
     { key: 'thisMonth', label: 'Ce mois' },
@@ -70,19 +99,19 @@ const PERIOD_FILTERS: { key: ProgrammePeriod; label: string }[] = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
+    return formatAppDate(dateStr, {
         weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
     })
 }
 
 function formatDateShort(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
+    return formatAppDate(dateStr, {
         weekday: 'short', day: 'numeric', month: 'short',
     })
 }
 
 function formatTime(dateStr: string) {
-    const t = new Date(dateStr).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    const t = formatAppTime(dateStr)
     return t !== '00:00' ? t : null
 }
 
@@ -103,11 +132,8 @@ const WEEKDAY_PLURAL: Record<number, string> = {
 
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0]
 
-function formatHourFr(date: Date): string {
-    const h = date.getHours()
-    const m = date.getMinutes()
-    if (m === 0) return `${h}h`
-    return `${h}h${String(m).padStart(2, '0')}`
+function formatHourFr(date: Date | string): string {
+    return formatAppHourShort(date)
 }
 
 function joinFrenchList(items: string[]): string {
@@ -126,13 +152,16 @@ function formatSerieSchedule(occurrences: { date: string }[]): string {
     }
 
     const dates = occurrences.map(o => new Date(o.date))
-    const times = dates.map(d => `${d.getHours()}:${d.getMinutes()}`)
+    const times = dates.map(d => {
+        const { hour, minute } = getAppHourMinute(d)
+        return `${hour}:${minute}`
+    })
     const sameTime = times.every(t => t === times[0])
     const timePart = sameTime ? ` à ${formatHourFr(dates[0])}` : ''
 
-    const weekdaySet = new Set(dates.map(d => d.getDay()))
+    const weekdaySet = new Set(dates.map(d => getAppDayOfWeek(d)))
     const weekdays = WEEKDAY_ORDER.filter(d => weekdaySet.has(d))
-    const allOnKnownDays = dates.every(d => weekdaySet.has(d.getDay()))
+    const allOnKnownDays = dates.every(d => weekdaySet.has(getAppDayOfWeek(d)))
 
     if (!allOnKnownDays || weekdays.length === 0) {
         const sorted = [...occurrences].sort(
@@ -261,6 +290,11 @@ export default function ProgrammePage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set())
+    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+    const [calendarDate, setCalendarDate] = useState(() => {
+        const now = new Date()
+        return new Date(now.getFullYear(), now.getMonth(), 1)
+    })
 
     const fetchProgramme = useCallback(async () => {
         setLoading(true)
@@ -328,16 +362,40 @@ export default function ProgrammePage() {
                             </button>
                         ))}
                     </div>
-                    {flatEvents.length > 0 && (
-                        <button
-                            type="button"
-                            onClick={() => downloadICS(flatEvents, `programme-etu-${period}.ics`)}
-                            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-400 font-serif self-start"
-                        >
-                            <CalendarPlus className="w-4 h-4" />
-                            Exporter .ics
-                        </button>
-                    )}
+                    <div className="flex items-center gap-2 flex-wrap sm:justify-end">
+                        <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setViewMode('list')}
+                                className={`px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium font-serif transition-colors ${
+                                    viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'
+                                }`}
+                            >
+                                <List className="w-4 h-4" />
+                                Liste
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setViewMode('calendar')}
+                                className={`px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium font-serif transition-colors ${
+                                    viewMode === 'calendar' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'
+                                }`}
+                            >
+                                <Calendar className="w-4 h-4" />
+                                Calendrier
+                            </button>
+                        </div>
+                        {flatEvents.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => downloadICS(flatEvents, `programme-etu-${period}.ics`)}
+                                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-400 font-serif"
+                            >
+                                <CalendarPlus className="w-4 h-4" />
+                                <span className="hidden sm:inline">Exporter .ics</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {loading ? (
@@ -348,12 +406,18 @@ export default function ProgrammePage() {
                     <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
                         <p className="text-red-700 font-serif">{error}</p>
                     </div>
-                ) : entries.length === 0 ? (
+                ) : evenements.length === 0 ? (
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
                         <Calendar className="w-14 h-14 text-gray-200 mx-auto mb-4" />
                         <p className="text-gray-600 font-semibold font-serif">Aucun événement</p>
                         <p className="text-gray-400 text-sm mt-1 font-serif">Aucun événement pour ce filtre de période.</p>
                     </div>
+                ) : viewMode === 'calendar' ? (
+                    <ProgrammeCalendar
+                        events={evenements}
+                        calendarDate={calendarDate}
+                        onCalendarDateChange={setCalendarDate}
+                    />
                 ) : (
                     <div className="space-y-10">
                         {byType.map(({ type, entries: typeEntries }) => (
@@ -463,6 +527,183 @@ export default function ProgrammePage() {
                 )}
             </main>
         </div>
+    )
+}
+
+const CALENDAR_DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+const MAX_EVENTS_PER_DAY_MOBILE = 2
+const MAX_EVENTS_PER_DAY_DESKTOP = 4
+
+function ProgrammeCalendar({
+    events,
+    calendarDate,
+    onCalendarDateChange,
+}: {
+    events: Evenement[]
+    calendarDate: Date
+    onCalendarDateChange: (d: Date) => void
+}) {
+    const year = calendarDate.getFullYear()
+    const month = calendarDate.getMonth()
+    const todayYMD = formatAppDateYMD(new Date())
+
+    const byDay = useMemo(() => {
+        const map: Record<number, Evenement[]> = {}
+        const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}-`
+        for (const ev of events) {
+            const ymd = formatAppDateYMD(ev.date)
+            if (!ymd.startsWith(monthPrefix)) continue
+            const day = parseInt(ymd.slice(8, 10), 10)
+            if (!map[day]) map[day] = []
+            map[day].push(ev)
+        }
+        for (const day of Object.keys(map)) {
+            map[Number(day)].sort(
+                (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+            )
+        }
+        return map
+    }, [events, year, month])
+
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const startOffset = (firstDay.getDay() + 6) % 7
+    const totalCells = startOffset + lastDay.getDate()
+    const rows = Math.ceil(totalCells / 7)
+
+    const legendTypes = useMemo(() => {
+        const seen = new Set<string>()
+        for (const ev of events) {
+            const ymd = formatAppDateYMD(ev.date)
+            if (ymd.startsWith(`${year}-${String(month + 1).padStart(2, '0')}-`)) {
+                seen.add(ev.type)
+            }
+        }
+        return EVENT_TYPE_ORDER.filter(t => seen.has(t))
+    }, [events, year, month])
+
+    return (
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
+                <button
+                    type="button"
+                    onClick={() => onCalendarDateChange(new Date(year, month - 1, 1))}
+                    className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                    aria-label="Mois précédent"
+                >
+                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                </button>
+                <h2 className="text-sm sm:text-base font-semibold text-gray-900 capitalize font-serif">
+                    {calendarDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                </h2>
+                <button
+                    type="button"
+                    onClick={() => onCalendarDateChange(new Date(year, month + 1, 1))}
+                    className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                    aria-label="Mois suivant"
+                >
+                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                </button>
+            </div>
+
+            {legendTypes.length > 0 && (
+                <div className="px-3 sm:px-6 py-2 border-b border-gray-100 flex flex-wrap gap-1.5">
+                    {legendTypes.map(t => (
+                        <span
+                            key={t}
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium font-serif ${TYPE_BADGE[t] || 'bg-gray-100 text-gray-700'}`}
+                        >
+                            {t}
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            <div className="grid grid-cols-7 border-b border-gray-100">
+                {CALENDAR_DAY_LABELS.map(d => (
+                    <div
+                        key={d}
+                        className="py-1.5 sm:py-2 text-center text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wide font-serif"
+                    >
+                        <span className="hidden sm:inline">{d}</span>
+                        <span className="sm:hidden">{d.charAt(0)}</span>
+                    </div>
+                ))}
+            </div>
+
+            <div className="grid grid-cols-7">
+                {Array.from({ length: rows * 7 }).map((_, i) => {
+                    const dayNum = i - startOffset + 1
+                    const isValid = dayNum >= 1 && dayNum <= lastDay.getDate()
+                    const cellYMD = isValid
+                        ? `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
+                        : ''
+                    const isToday = isValid && cellYMD === todayYMD
+                    const dayEvents = isValid ? (byDay[dayNum] || []) : []
+                    const isLastRow = i >= (rows - 1) * 7
+
+                    return (
+                        <div
+                            key={i}
+                            className={`min-h-[72px] sm:min-h-[100px] md:min-h-[110px] p-1 sm:p-2 border-b border-r border-gray-100
+                                ${!isValid ? 'bg-gray-50' : ''}
+                                ${isLastRow ? 'border-b-0' : ''}
+                                ${(i + 1) % 7 === 0 ? 'border-r-0' : ''}`}
+                        >
+                            {isValid && (
+                                <>
+                                    <span
+                                        className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 text-xs sm:text-sm font-medium rounded-full mb-0.5 sm:mb-1 font-serif
+                                            ${isToday ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+                                    >
+                                        {dayNum}
+                                    </span>
+                                    <div className="space-y-0.5 sm:space-y-1">
+                                        {dayEvents.slice(0, MAX_EVENTS_PER_DAY_MOBILE).map(ev => (
+                                            <CalendarEventChip key={ev.id} event={ev} className="sm:hidden" />
+                                        ))}
+                                        {dayEvents.length > MAX_EVENTS_PER_DAY_MOBILE && (
+                                            <p className="text-[10px] text-gray-500 font-serif sm:hidden px-0.5">
+                                                +{dayEvents.length - MAX_EVENTS_PER_DAY_MOBILE}
+                                            </p>
+                                        )}
+                                        {dayEvents.slice(0, MAX_EVENTS_PER_DAY_DESKTOP).map(ev => (
+                                            <CalendarEventChip key={ev.id} event={ev} className="hidden sm:block" />
+                                        ))}
+                                        {dayEvents.length > MAX_EVENTS_PER_DAY_DESKTOP && (
+                                            <p className="hidden sm:block text-[10px] text-gray-500 font-serif px-0.5">
+                                                +{dayEvents.length - MAX_EVENTS_PER_DAY_DESKTOP}
+                                            </p>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
+        </div>
+    )
+}
+
+function CalendarEventChip({
+    event,
+    className = '',
+}: {
+    event: Evenement
+    className?: string
+}) {
+    const time = formatAppHourShort(event.date)
+    const color = TYPE_CALENDAR_COLORS[event.type] || 'bg-gray-900 hover:bg-gray-800'
+    return (
+        <Link
+            href={`/traversee/${event.lienUnique}`}
+            className={`block w-full text-left px-1 sm:px-2 py-0.5 sm:py-1 rounded text-white text-[10px] sm:text-xs transition-colors truncate font-serif leading-tight ${color} ${className}`}
+            title={`${event.titre} · ${time}`}
+        >
+            <span className="font-medium">{time}</span>
+            <span className="opacity-90"> {event.titre}</span>
+        </Link>
     )
 }
 

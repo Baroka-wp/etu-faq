@@ -1,21 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { PROGRAMME_PERIODS, type ProgrammePeriod } from '@/lib/programme'
+import { appMonthBounds } from '@/lib/datetime'
 
 function dateFilter(period: ProgrammePeriod) {
   const now = new Date()
-  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  const endOfThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
+  const thisMonth = appMonthBounds(now, 0)
+  const lastMonth = appMonthBounds(now, -1)
 
   switch (period) {
     case 'upcoming':
       return { date: { gte: now } }
     case 'thisMonth':
-      return { date: { gte: startOfThisMonth, lte: endOfThisMonth } }
+      return { date: { gte: thisMonth.start, lte: thisMonth.end } }
     case 'lastMonth':
-      return { date: { gte: startOfLastMonth, lte: endOfLastMonth } }
+      return { date: { gte: lastMonth.start, lte: lastMonth.end } }
     case 'past':
       return { date: { lt: now } }
     default:

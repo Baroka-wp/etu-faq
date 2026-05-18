@@ -13,6 +13,7 @@ import {
     Dialog, DialogContent, DialogHeader, DialogTitle
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { formatAppDate, formatAppTime } from '@/lib/datetime'
 
 // ── Interfaces ────────────────────────────────────────────────────────────────
 interface TraverseeData {
@@ -92,13 +93,13 @@ const GRADE_COLORS: Record<string, string> = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    return formatAppDate(dateStr, {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     })
 }
 
 function formatTime(dateStr: string) {
-    const time = new Date(dateStr).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    const time = formatAppTime(dateStr)
     return time !== '00:00' ? time : null
 }
 

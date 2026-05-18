@@ -28,6 +28,12 @@ import {
     type RecurrenceMode,
     type RecurrenceEndMode,
 } from '@/lib/recurrence'
+import {
+    formatAppDate,
+    formatAppDatetimeLocal,
+    formatAppTime,
+    parseAppDatetimeLocal,
+} from '@/lib/datetime'
 
 // ── Types d'événements ──────────────────────────────────────────────────────
 const EVENT_TYPES = [
@@ -72,8 +78,15 @@ interface Planification {
     lieu: string
     lienUnique: string
     gradesAutorises: string[]
+    serieId: string | null
     createdAt: string
     _count: { inscriptions: number }
+}
+
+const SERIES_SLUG_SUFFIX = /-\d{4}-\d{2}-\d{2}$/
+
+function seriesSlugBase(slug: string): string {
+    return slug.replace(SERIES_SLUG_SUFFIX, '')
 }
 
 interface InscritItem {
@@ -103,22 +116,15 @@ function gradesLabel(gradesAutorises: string[]): string {
 }
 
 function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
-        day: '2-digit', month: 'long', year: 'numeric'
-    })
+    return formatAppDate(dateStr, { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
 function formatDateTime(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-    })
+    return `${formatAppDate(dateStr, { day: '2-digit', month: '2-digit', year: 'numeric' })} ${formatAppTime(dateStr)}`
 }
 
 function formatTime(dateStr: string) {
-    return new Date(dateStr).toLocaleTimeString('fr-FR', {
-        hour: '2-digit', minute: '2-digit'
-    })
+    return formatAppTime(dateStr)
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -158,6 +164,7 @@ export default function PlanificationsPage() {
         count: 4,
         until: '',
     })
+    const [applyToSeries, setApplyToSeries] = useState(false)
     const router = useRouter()
     const { toasts, addToast, removeToast } = useToast()
 
@@ -167,7 +174,15 @@ export default function PlanificationsPage() {
             const res = await fetch('/api/admin/traversees')
             if (res.status === 401) { router.push('/admin-login'); return }
             const data = await res.json()
-            if (data.success) setPlanifications(data.data)
+            if (data.success) {
+                setPlanifications(data.data)
+            } else {
+                addToast({
+                    type: 'error',
+                    title: 'Erreur',
+                    message: data.error || 'Impossible de charger les planifications',
+                })
+            }
         } catch {
             addToast({ type: 'error', title: 'Erreur', message: 'Impossible de charger les planifications' })
         } finally {
@@ -186,11 +201,20 @@ export default function PlanificationsPage() {
         setFormData({ type: EVENT_TYPES[0], titre: '', description: '', date: '', lieu: '', lienUnique: '', gradesAutorises: [...ALL_GRADES] })
         setRecurrenceEnabled(false)
         setRecurrence({ mode: 'interval', interval: 1, unit: 'week', weekdays: [], endMode: 'count', count: 4, until: '' })
+        setApplyToSeries(false)
     }
 
-    const handleTitreChange = (titre: string) => {
-        setFormData(prev => ({ ...prev, titre, lienUnique: slugify(titre) }))
+    const handleTitreChange = (titre: string, isEdit: boolean) => {
+        setFormData(prev => ({
+            ...prev,
+            titre,
+            ...(isEdit && selected?.serieId ? {} : { lienUnique: slugify(titre) }),
+        }))
     }
+
+    const serieOccurrenceCount = selected?.serieId
+        ? planifications.filter(p => p.serieId === selected.serieId).length
+        : 0
 
     const handleAdd = () => {
         resetForm()
@@ -214,18 +238,30 @@ export default function PlanificationsPage() {
     }
 
     const handleEdit = (p: Planification) => {
-        const dateLocal = new Date(p.date).toISOString().slice(0, 16)
+        const dateLocal = formatAppDatetimeLocal(p.date)
         setFormData({
             type: p.type || EVENT_TYPES[0],
             titre: p.titre,
             description: p.description,
             date: dateLocal,
             lieu: p.lieu,
-            lienUnique: p.lienUnique,
+            lienUnique: p.serieId ? seriesSlugBase(p.lienUnique) : p.lienUnique,
             gradesAutorises: p.gradesAutorises.length > 0 ? p.gradesAutorises : [...ALL_GRADES]
         })
         setSelected(p)
+        setApplyToSeries(false)
         setShowEditModal(true)
+    }
+
+    const handleApplyToSeriesChange = (checked: boolean) => {
+        setApplyToSeries(checked)
+        if (!selected) return
+        setFormData(prev => ({
+            ...prev,
+            lienUnique: checked
+                ? seriesSlugBase(selected.lienUnique)
+                : selected.lienUnique,
+        }))
     }
 
     const handleSubmit = async (isEdit: boolean) => {
@@ -238,7 +274,11 @@ export default function PlanificationsPage() {
         try {
             const url = isEdit ? `/api/admin/traversees/${selected!.id}` : '/api/admin/traversees'
             const method = isEdit ? 'PUT' : 'POST'
-            const payload = useRecurrence ? { ...formData, recurrence } : formData
+            const payload = useRecurrence
+                ? { ...formData, recurrence }
+                : isEdit
+                    ? { ...formData, applyToSeries: applyToSeries && !!selected?.serieId }
+                    : formData
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
@@ -246,12 +286,16 @@ export default function PlanificationsPage() {
             })
             const data = await res.json()
             if (data.success) {
-                const createdCount: number = data.created || 1
+                const createdCount: number = data.created || data.updated || 1
                 addToast({
                     type: 'success',
-                    title: isEdit ? 'Planification modifiée' : (createdCount > 1 ? `${createdCount} occurrences créées` : 'Planification créée'),
+                    title: isEdit
+                        ? (data.updated > 1 ? `${data.updated} séances modifiées` : 'Planification modifiée')
+                        : (createdCount > 1 ? `${createdCount} occurrences créées` : 'Planification créée'),
                     message: isEdit
-                        ? `"${formData.titre}" a été modifiée avec succès`
+                        ? (data.updated > 1
+                            ? `"${formData.titre}" — ${data.updated} occurrences mises à jour`
+                            : `"${formData.titre}" a été modifiée avec succès`)
                         : (createdCount > 1
                             ? `"${formData.titre}" — ${createdCount} dates générées`
                             : `"${formData.titre}" a été créée avec succès`)
@@ -568,7 +612,7 @@ export default function PlanificationsPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Titre *</label>
                     <Input
                         value={formData.titre}
-                        onChange={e => handleTitreChange(e.target.value)}
+                        onChange={e => handleTitreChange(e.target.value, isEdit)}
                         placeholder="Ex: Sortie forêt de Toho"
                     />
                 </div>
@@ -638,8 +682,33 @@ export default function PlanificationsPage() {
                     <p className="text-xs text-gray-400 mt-1">
                         Lettres minuscules, chiffres et tirets uniquement
                         {!isEdit && recurrenceEnabled && ' — chaque occurrence sera suffixée par sa date'}
+                        {isEdit && applyToSeries && selected?.serieId && ' — suffixe de date ajouté automatiquement pour chaque séance'}
                     </p>
                 </div>
+
+                {isEdit && selected?.serieId && (
+                    <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-3">
+                        <label className="flex items-start gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={applyToSeries}
+                                onChange={e => handleApplyToSeriesChange(e.target.checked)}
+                                className="w-4 h-4 mt-0.5 rounded border-gray-300"
+                            />
+                            <div>
+                                <span className="text-sm font-medium text-gray-800 flex items-center gap-1.5">
+                                    <Repeat className="w-4 h-4 text-indigo-600" />
+                                    Appliquer à toute la série
+                                </span>
+                                <p className="text-xs text-gray-600 mt-1">
+                                    Met à jour le type, le titre, la description, le lieu et les grades sur les{' '}
+                                    <strong>{serieOccurrenceCount} séances</strong>.
+                                    L&apos;heure choisie sera appliquée à toutes ; la date modifie uniquement cette séance.
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                )}
 
                 {!isEdit && (
                     <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-3">
@@ -777,7 +846,7 @@ export default function PlanificationsPage() {
                                     if (!formData.date) {
                                         return <p className="text-xs text-gray-400">Renseigne la date de début pour voir l&apos;aperçu</p>
                                     }
-                                    const occ = generateOccurrences(recurrence, new Date(formData.date))
+                                    const occ = generateOccurrences(recurrence, parseAppDatetimeLocal(formData.date))
                                     if (occ.length === 0) {
                                         return <p className="text-xs text-amber-600">Aucune occurrence — vérifie la règle.</p>
                                     }
@@ -819,10 +888,12 @@ export default function PlanificationsPage() {
                     {submitting
                         ? 'En cours...'
                         : isEdit
-                            ? 'Enregistrer'
+                            ? (applyToSeries && serieOccurrenceCount > 1
+                                ? `Enregistrer (${serieOccurrenceCount} séances)`
+                                : 'Enregistrer')
                             : (() => {
                                 if (!recurrenceEnabled || !formData.date) return 'Créer'
-                                const n = generateOccurrences(recurrence, new Date(formData.date)).length
+                                const n = generateOccurrences(recurrence, parseAppDatetimeLocal(formData.date)).length
                                 return n > 1 ? `Créer ${n} occurrences` : 'Créer'
                             })()}
                 </Button>

@@ -1,5 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import {
+  formatAppDateYMD,
+  getAppHourMinute,
+  parseAppDatetimeLocal,
+} from '@/lib/datetime'
+import { formatYMD } from '@/lib/recurrence'
+
+const SERIES_SLUG_SUFFIX = /-\d{4}-\d{2}-\d{2}$/
+
+function seriesSlugBase(slug: string): string {
+  return slug.replace(SERIES_SLUG_SUFFIX, '')
+}
+
+function applyAppTimeToDate(occurrenceDate: Date, timeSource: Date): Date {
+  const ymd = formatAppDateYMD(occurrenceDate)
+  const { hour, minute } = getAppHourMinute(timeSource)
+  const h = String(hour).padStart(2, '0')
+  const m = String(minute).padStart(2, '0')
+  return parseAppDatetimeLocal(`${ymd}T${h}:${m}`)
+}
 
 export async function PUT(
   request: NextRequest,
@@ -12,7 +32,17 @@ export async function PUT(
     }
 
     const { id } = await params
-    const { type, titre, description, date, lieu, lienUnique, gradesAutorises } = await request.json()
+    const body = await request.json()
+    const {
+      type,
+      titre,
+      description,
+      date,
+      lieu,
+      lienUnique,
+      gradesAutorises,
+      applyToSeries,
+    } = body
 
     if (!titre || !description || !date || !lieu || !lienUnique) {
       return NextResponse.json({ error: 'Tous les champs sont obligatoires' }, { status: 400 })
@@ -34,13 +64,75 @@ export async function PUT(
       ? gradesAutorises
       : ['Explorateur', 'Constructeur', 'Navigateur', 'Alchimiste']
 
+    const parsedDate = parseAppDatetimeLocal(date)
+    const shared = {
+      type: type || 'Traversée Grand Navire',
+      titre,
+      description,
+      lieu,
+      gradesAutorises: grades,
+    }
+
+    if (applyToSeries && existing.serieId) {
+      const siblings = await db.traversee.findMany({
+        where: { serieId: existing.serieId },
+        orderBy: { date: 'asc' },
+      })
+
+      const baseSlug = seriesSlugBase(lienUnique)
+      const updates = siblings.map(s => {
+        const occDate = s.id === id ? parsedDate : applyAppTimeToDate(s.date, parsedDate)
+        return {
+          id: s.id,
+          date: occDate,
+          lienUnique: `${baseSlug}-${formatYMD(occDate)}`,
+        }
+      })
+
+      const newSlugs = updates.map(u => u.lienUnique)
+      const siblingIds = siblings.map(s => s.id)
+      const conflicts = await db.traversee.findMany({
+        where: {
+          lienUnique: { in: newSlugs },
+          id: { notIn: siblingIds },
+        },
+        select: { lienUnique: true },
+      })
+      if (conflicts.length > 0) {
+        return NextResponse.json(
+          { error: `Conflit de lien unique : ${conflicts.map(c => c.lienUnique).join(', ')}` },
+          { status: 409 }
+        )
+      }
+
+      await db.$transaction(
+        updates.map(u =>
+          db.traversee.update({
+            where: { id: u.id },
+            data: { ...shared, date: u.date, lienUnique: u.lienUnique },
+          })
+        )
+      )
+
+      const traversee = await db.traversee.findUnique({
+        where: { id },
+        include: { _count: { select: { inscriptions: true } } },
+      })
+
+      return NextResponse.json({
+        success: true,
+        data: traversee,
+        updated: updates.length,
+      })
+    }
+
     const traversee = await db.traversee.update({
       where: { id },
-      data: { type: type || 'Traversée Grand Navire', titre, description, date: new Date(date), lieu, lienUnique, gradesAutorises: grades },
-      include: { _count: { select: { inscriptions: true } } }
+      data: { ...shared, date: parsedDate, lienUnique },
+      include: { _count: { select: { inscriptions: true } } },
     })
 
-    return NextResponse.json({ success: true, data: traversee })
+    return NextResponse.json({ success: true, data: traversee, updated: 1 })
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       return NextResponse.json({ error: 'Ce lien unique est déjà utilisé.' }, { status: 409 })
