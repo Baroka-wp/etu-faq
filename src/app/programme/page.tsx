@@ -97,6 +97,20 @@ const PERIOD_FILTERS: { key: ProgrammePeriod; label: string }[] = [
     { key: 'past', label: 'Passés' },
 ]
 
+const PROGRAMME_VIEW_STORAGE_KEY = 'etu-programme-view-mode'
+type ProgrammeViewMode = 'list' | 'calendar'
+
+function readStoredViewMode(): ProgrammeViewMode {
+    if (typeof window === 'undefined') return 'calendar'
+    try {
+        const stored = localStorage.getItem(PROGRAMME_VIEW_STORAGE_KEY)
+        if (stored === 'list' || stored === 'calendar') return stored
+    } catch {
+        // localStorage indisponible
+    }
+    return 'calendar'
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatDate(dateStr: string) {
     return formatAppDate(dateStr, {
@@ -290,11 +304,24 @@ export default function ProgrammePage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set())
-    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+    const [viewMode, setViewModeState] = useState<ProgrammeViewMode>('calendar')
     const [calendarDate, setCalendarDate] = useState(() => {
         const now = new Date()
         return new Date(now.getFullYear(), now.getMonth(), 1)
     })
+
+    useEffect(() => {
+        setViewModeState(readStoredViewMode())
+    }, [])
+
+    const setViewMode = useCallback((mode: ProgrammeViewMode) => {
+        setViewModeState(mode)
+        try {
+            localStorage.setItem(PROGRAMME_VIEW_STORAGE_KEY, mode)
+        } catch {
+            // localStorage indisponible
+        }
+    }, [])
 
     const fetchProgramme = useCallback(async () => {
         setLoading(true)
