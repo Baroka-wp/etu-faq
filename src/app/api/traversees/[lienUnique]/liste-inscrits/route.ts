@@ -55,7 +55,7 @@ export async function POST(
       where: { traverseeId: traversee.id },
       include: {
         membre: {
-          select: { nom: true, prenoms: true }
+          select: { nom: true, prenoms: true, nomSacre: true }
         }
       },
       orderBy: { createdAt: 'asc' }
@@ -63,7 +63,8 @@ export async function POST(
 
     const inscrits = rows.map((r) => ({
       nom: r.membre.nom,
-      prenoms: r.membre.prenoms
+      prenoms: r.membre.prenoms,
+      nomSacre: r.membre.nomSacre,
     }))
 
     return NextResponse.json({ success: true, data: inscrits })

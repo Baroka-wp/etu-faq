@@ -71,6 +71,7 @@ type ListePhase = 'confirm-storage' | 'input' | 'loading' | 'result' | 'error'
 interface InscritListeItem {
     nom: string
     prenoms: string
+    nomSacre?: string | null
 }
 
 // ── Couleurs ──────────────────────────────────────────────────────────────────
@@ -751,7 +752,10 @@ export default function TraverseePage() {
                                     <li key={`${row.nom}-${row.prenoms}-${i}`} className="px-3 py-2 text-sm text-gray-800">
                                         <span className="font-medium">{row.nom}</span>
                                         {' '}
-                                        <span className="text-gray-600">{row.prenoms}</span>
+                                        <span className="text-gray-600">
+                                            {row.prenoms}
+                                            {row.nomSacre ? ` (${row.nomSacre})` : ''}
+                                        </span>
                                     </li>
                                 ))}
                             </ul>
