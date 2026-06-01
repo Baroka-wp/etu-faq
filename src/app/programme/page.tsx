@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import {
     Calendar, MapPin, Loader2, CalendarPlus,
-    ChevronRight, ChevronDown, Repeat, Video, List,
-    ChevronLeft,
+    ChevronDown, Video, List,
+    ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import type { ProgrammePeriod } from '@/lib/programme'
 import {
@@ -108,14 +108,14 @@ const PROGRAMME_VIEW_STORAGE_KEY = 'etu-programme-view-mode'
 type ProgrammeViewMode = 'list' | 'calendar'
 
 function readStoredViewMode(): ProgrammeViewMode {
-    if (typeof window === 'undefined') return 'calendar'
+    if (typeof window === 'undefined') return 'list'
     try {
         const stored = localStorage.getItem(PROGRAMME_VIEW_STORAGE_KEY)
         if (stored === 'list' || stored === 'calendar') return stored
     } catch {
         // localStorage indisponible
     }
-    return 'calendar'
+    return 'list'
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -139,6 +139,10 @@ function formatTime(dateStr: string) {
 function gradesLabel(grades: string[]): string {
     if (grades.length === 0 || grades.length >= 4) return 'Tous les grades'
     return grades.join(', ')
+}
+
+function isTraverseeType(type: string): boolean {
+    return type.startsWith('Traversée')
 }
 
 const WEEKDAY_PLURAL: Record<number, string> = {
@@ -210,6 +214,14 @@ function formatSerieSchedule(occurrences: { date: string }[]): string {
     return `Tous les ${joinFrenchList(dayNames)}${timePart}`
 }
 
+function getProchaineOccurrence<T extends { date: string }>(occurrences: T[]): T | null {
+    const now = Date.now()
+    const sorted = [...occurrences].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    )
+    return sorted.find(o => new Date(o.date).getTime() >= now) ?? null
+}
+
 function buildEntries(events: Evenement[]): ProgrammeEntry[] {
     const bySerie = new Map<string, Evenement[]>()
     const singles: Evenement[] = []
@@ -254,20 +266,34 @@ function buildEntries(events: Evenement[]): ProgrammeEntry[] {
     return entries
 }
 
-function groupByType(entries: ProgrammeEntry[]): { type: string; entries: ProgrammeEntry[] }[] {
-    const map = new Map<string, ProgrammeEntry[]>()
+type RubriqueKey = 'TEMPLE' | 'ECOLE'
+
+const RUBRIQUE_COLORS: Record<RubriqueKey, string> = {
+    TEMPLE: 'bg-blue-500',
+    ECOLE: 'bg-emerald-500',
+}
+
+function getEntryType(entry: ProgrammeEntry): string {
+    return entry.kind === 'single' ? entry.event.type : entry.type
+}
+
+function getRubrique(type: string): RubriqueKey {
+    return isTraverseeType(type) ? 'TEMPLE' : 'ECOLE'
+}
+
+function groupByRubrique(entries: ProgrammeEntry[]): { rubrique: RubriqueKey; entries: ProgrammeEntry[] }[] {
+    const temple: ProgrammeEntry[] = []
+    const ecole: ProgrammeEntry[] = []
+
     for (const entry of entries) {
-        const type = entry.kind === 'single' ? entry.event.type : entry.type
-        if (!map.has(type)) map.set(type, [])
-        map.get(type)!.push(entry)
+        const bucket = getRubrique(getEntryType(entry)) === 'TEMPLE' ? temple : ecole
+        bucket.push(entry)
     }
 
-    const orderedTypes = [
-        ...EVENT_TYPE_ORDER.filter(t => map.has(t)),
-        ...[...map.keys()].filter(t => !EVENT_TYPE_ORDER.includes(t as typeof EVENT_TYPE_ORDER[number])),
-    ]
-
-    return orderedTypes.map(type => ({ type, entries: map.get(type)! }))
+    const sections: { rubrique: RubriqueKey; entries: ProgrammeEntry[] }[] = []
+    if (temple.length > 0) sections.push({ rubrique: 'TEMPLE', entries: temple })
+    if (ecole.length > 0) sections.push({ rubrique: 'ECOLE', entries: ecole })
+    return sections
 }
 
 function downloadICS(events: Evenement[], filename: string) {
@@ -311,7 +337,7 @@ export default function ProgrammePage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set())
-    const [viewMode, setViewModeState] = useState<ProgrammeViewMode>('calendar')
+    const [viewMode, setViewModeState] = useState<ProgrammeViewMode>('list')
     const [calendarDate, setCalendarDate] = useState(() => {
         const now = new Date()
         return new Date(now.getFullYear(), now.getMonth(), 1)
@@ -353,7 +379,7 @@ export default function ProgrammePage() {
     useEffect(() => { fetchProgramme() }, [fetchProgramme])
 
     const entries = useMemo(() => buildEntries(evenements), [evenements])
-    const byType = useMemo(() => groupByType(entries), [entries])
+    const byRubrique = useMemo(() => groupByRubrique(entries), [entries])
     const flatEvents = evenements
 
     const toggleSerie = (serieId: string) => {
@@ -453,26 +479,21 @@ export default function ProgrammePage() {
                         onCalendarDateChange={setCalendarDate}
                     />
                 ) : (
-                    <div className="space-y-10">
-                        {byType.map(({ type, entries: typeEntries }) => (
-                            <section key={type}>
-                                <header className="flex items-center gap-3 mb-6 pb-3 border-b border-gray-200">
-                                    <span
-                                        className={`w-1.5 h-9 rounded-full flex-shrink-0 ${TYPE_COLORS[type] || 'bg-gray-400'}`}
-                                        aria-hidden
-                                    />
-                                    <div className="flex-1">
-                                        <h2 className="text-xl sm:text-2xl font-serif font-bold text-gray-900 leading-tight">
-                                            {type}
-                                        </h2>
-                                        <p className="text-sm text-gray-500 font-serif mt-0.5">
-                                            {typeEntries.length} élément{typeEntries.length > 1 ? 's' : ''}
-                                        </p>
-                                    </div>
+                    <div className="space-y-8">
+                        {byRubrique.map(({ rubrique, entries: sectionEntries }) => (
+                            <section key={rubrique}>
+                                <header className="mb-3 pb-2 border-b border-gray-100">
+                                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 font-serif flex items-center gap-2.5 leading-tight">
+                                        <span
+                                            className={`w-2.5 h-2.5 rounded-full shrink-0 ${RUBRIQUE_COLORS[rubrique]}`}
+                                            aria-hidden
+                                        />
+                                        {rubrique}
+                                    </h2>
                                 </header>
 
-                                <div className="space-y-4">
-                                    {typeEntries.map(entry => {
+                                <div className="divide-y divide-gray-100">
+                                    {sectionEntries.map(entry => {
                                         if (entry.kind === 'single') {
                                             return (
                                                 <EventCard key={entry.event.id} event={entry.event} />
@@ -480,77 +501,79 @@ export default function ProgrammePage() {
                                         }
 
                                         const expanded = expandedSeries.has(entry.serieId)
-                                        const barColor = TYPE_COLORS[entry.type] || 'bg-gray-400'
                                         const scheduleLabel = formatSerieSchedule(entry.occurrences)
+                                        const prochaine = getProchaineOccurrence(entry.occurrences)
+                                        const prochaineTime = prochaine ? formatTime(prochaine.date) : null
 
                                         return (
-                                            <div
-                                                key={entry.serieId}
-                                                className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
-                                            >
-                                                <div className="flex">
-                                                    <div className={`w-1.5 flex-shrink-0 ${barColor}`} />
-                                                    <div className="flex-1 p-4">
-                                                        <div className="flex items-start justify-between gap-3">
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                                                    <span className="inline-flex items-center gap-1 text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full font-medium">
-                                                                        <Repeat className="w-3 h-3" />
-                                                                        Série · {entry.occurrences.length} séances
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-lg sm:text-xl font-bold text-gray-900 font-serif capitalize leading-snug">
-                                                                    {scheduleLabel}
-                                                                </p>
-                                                                <p className="text-sm text-gray-600 font-serif mt-1">{entry.titre}</p>
-                                                                <div className="mt-2 space-y-1 text-sm text-gray-500">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <MapPin className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
-                                                                        <span className="font-serif">{entry.lieu}</span>
-                                                                    </div>
-                                                                    <p className="text-xs text-gray-400 font-serif">{gradesLabel(entry.gradesAutorises)}</p>
-                                                                </div>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => toggleSerie(entry.serieId)}
-                                                                className="flex-shrink-0 flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 hover:border-gray-400 text-gray-600 hover:text-gray-900 transition-colors font-serif"
-                                                            >
-                                                                {expanded ? 'Réduire' : 'Voir les dates'}
-                                                                <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-                                                            </button>
-                                                        </div>
-
-                                                        {expanded && (
-                                                            <ul className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                                                                {entry.occurrences.map(occ => {
-                                                                    const timeStr = formatTime(occ.date)
-                                                                    return (
-                                                                        <li
-                                                                            key={occ.id}
-                                                                            className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-gray-50 hover:bg-gray-100/80 transition-colors"
-                                                                        >
-                                                                            <div className="min-w-0">
-                                                                                <p className="text-sm font-medium text-gray-800 font-serif capitalize">
-                                                                                    {formatDate(occ.date)}
-                                                                                    {timeStr && <span className="text-gray-400 font-normal"> · {timeStr}</span>}
-                                                                                </p>
-                                                                            </div>
-                                                                            <a
-                                                                                href={`/traversee/${occ.lienUnique}`}
-                                                                                className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 bg-gray-800 hover:bg-gray-900 text-white text-xs font-medium rounded-lg transition-colors font-serif"
-                                                                            >
-                                                                                S&apos;inscrire
-                                                                                <ChevronRight className="w-3.5 h-3.5" />
-                                                                            </a>
-                                                                        </li>
-                                                                    )
-                                                                })}
-                                                            </ul>
+                                            <div key={entry.serieId} className="py-3.5">
+                                                <p className="text-xs text-gray-400 font-serif mb-1">
+                                                    Série · {entry.occurrences.length} séances
+                                                </p>
+                                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-sm font-medium text-gray-900 font-serif capitalize">
+                                                            {scheduleLabel}
+                                                        </p>
+                                                        <p className="text-sm text-gray-600 font-serif mt-0.5">{entry.titre}</p>
+                                                        <p className="text-xs text-gray-400 font-serif mt-1">
+                                                            {entry.lieu}
+                                                            <span className="mx-1.5">·</span>
+                                                            {gradesLabel(entry.gradesAutorises)}
+                                                        </p>
+                                                        {prochaine && (
+                                                            <p className="mt-2 text-sm font-semibold text-gray-900 font-serif capitalize">
+                                                                <span className="text-gray-500 font-normal">Prochaine séance · </span>
+                                                                <span className="text-red-600">{formatDate(prochaine.date)}</span>
+                                                                {prochaineTime && (
+                                                                    <span className="text-gray-600 font-medium"> · {prochaineTime}</span>
+                                                                )}
+                                                            </p>
                                                         )}
-
                                                     </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleSerie(entry.serieId)}
+                                                        className="shrink-0 flex items-center gap-1 text-xs font-medium text-gray-800 hover:text-gray-900 font-serif transition-colors sm:pt-0.5"
+                                                    >
+                                                        {expanded ? 'Réduire' : 'Voir toutes les dates'}
+                                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                                                    </button>
                                                 </div>
+
+                                                {expanded && (
+                                                    <ul className="mt-3 ml-3 border-l border-gray-200 space-y-0 divide-y divide-gray-50">
+                                                        {entry.occurrences.map(occ => {
+                                                            const timeStr = formatTime(occ.date)
+                                                            const dateLine = (
+                                                                <p className="text-sm font-serif capitalize">
+                                                                    <span className="text-red-600 font-medium">{formatDate(occ.date)}</span>
+                                                                    {timeStr && <span className="text-gray-500 font-normal"> · {timeStr}</span>}
+                                                                </p>
+                                                            )
+                                                            if (isTraverseeType(occ.type)) {
+                                                                return (
+                                                                    <li key={occ.id}>
+                                                                        <Link
+                                                                            href={`/traversee/${occ.lienUnique}`}
+                                                                            className="flex items-center justify-between gap-3 py-2 pl-3 hover:bg-gray-50/80 -mr-1 pr-1 rounded transition-colors group"
+                                                                        >
+                                                                            {dateLine}
+                                                                            <span className="text-xs text-gray-500 group-hover:text-gray-900 shrink-0">
+                                                                                S&apos;inscrire →
+                                                                            </span>
+                                                                        </Link>
+                                                                    </li>
+                                                                )
+                                                            }
+                                                            return (
+                                                                <li key={occ.id} className="py-2 pl-3">
+                                                                    {dateLine}
+                                                                </li>
+                                                            )
+                                                        })}
+                                                    </ul>
+                                                )}
                                             </div>
                                         )
                                     })}
@@ -769,33 +792,43 @@ function CalendarDayModal({
                             {day.events.map(ev => {
                                 const timeStr = formatTime(ev.date)
                                 const barColor = TYPE_COLORS[ev.type] || 'bg-gray-400'
+                                const cardClass = 'flex bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden'
+                                const cardBody = (
+                                    <>
+                                        <div className={`w-1 flex-shrink-0 ${barColor}`} />
+                                        <div className="flex-1 p-4 min-w-0">
+                                            <span
+                                                className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 font-serif ${TYPE_BADGE[ev.type] || 'bg-gray-100 text-gray-700'}`}
+                                            >
+                                                {ev.type}
+                                            </span>
+                                            <p className="text-base font-bold text-gray-900 font-serif capitalize leading-snug">
+                                                {timeStr ? `${timeStr} · ` : ''}{ev.titre}
+                                            </p>
+                                            <div className="mt-2 space-y-1">
+                                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                    <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-indigo-400" />
+                                                    <span className="font-serif">{ev.lieu}</span>
+                                                </div>
+                                                <p className="text-xs text-gray-400 font-serif">
+                                                    {gradesLabel(ev.gradesAutorises)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )
                                 return (
                                     <li key={ev.id}>
-                                        <Link
-                                            href={`/traversee/${ev.lienUnique}`}
-                                            className="flex bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md hover:border-gray-200 transition-all group"
-                                        >
-                                            <div className={`w-1 flex-shrink-0 ${barColor}`} />
-                                            <div className="flex-1 p-4 min-w-0">
-                                                <span
-                                                    className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 font-serif ${TYPE_BADGE[ev.type] || 'bg-gray-100 text-gray-700'}`}
-                                                >
-                                                    {ev.type}
-                                                </span>
-                                                <p className="text-base font-bold text-gray-900 font-serif capitalize leading-snug group-hover:text-gray-700">
-                                                    {timeStr ? `${timeStr} · ` : ''}{ev.titre}
-                                                </p>
-                                                <div className="mt-2 space-y-1">
-                                                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                        <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-indigo-400" />
-                                                        <span className="font-serif">{ev.lieu}</span>
-                                                    </div>
-                                                    <p className="text-xs text-gray-400 font-serif">
-                                                        {gradesLabel(ev.gradesAutorises)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </Link>
+                                        {isTraverseeType(ev.type) ? (
+                                            <Link
+                                                href={`/traversee/${ev.lienUnique}`}
+                                                className={`${cardClass} hover:shadow-md hover:border-gray-200 transition-all group`}
+                                            >
+                                                {cardBody}
+                                            </Link>
+                                        ) : (
+                                            <div className={cardClass}>{cardBody}</div>
+                                        )}
                                     </li>
                                 )
                             })}
@@ -816,57 +849,71 @@ function CalendarEventChip({
 }) {
     const time = formatAppHourShort(event.date)
     const color = TYPE_CALENDAR_COLORS[event.type] || 'bg-gray-900 hover:bg-gray-800'
+    const chipClass = `block w-full text-left px-1 sm:px-2 py-0.5 sm:py-1 rounded text-white text-[10px] sm:text-xs transition-colors truncate font-serif leading-tight ${color} ${className}`
+    const chipContent = (
+        <>
+            <span className="font-medium">{time}</span>
+            <span className="opacity-90"> {event.titre}</span>
+        </>
+    )
+    if (!isTraverseeType(event.type)) {
+        return (
+            <span className={chipClass} title={`${event.titre} · ${time}`}>
+                {chipContent}
+            </span>
+        )
+    }
     return (
         <Link
             href={`/traversee/${event.lienUnique}`}
             onClick={e => e.stopPropagation()}
-            className={`block w-full text-left px-1 sm:px-2 py-0.5 sm:py-1 rounded text-white text-[10px] sm:text-xs transition-colors truncate font-serif leading-tight ${color} ${className}`}
+            className={chipClass}
             title={`${event.titre} · ${time}`}
         >
-            <span className="font-medium">{time}</span>
-            <span className="opacity-90"> {event.titre}</span>
+            {chipContent}
         </Link>
     )
 }
 
 function EventCard({ event }: { event: Evenement }) {
     const timeStr = formatTime(event.date)
-    const barColor = TYPE_COLORS[event.type] || 'bg-gray-400'
+    const showInscrire = isTraverseeType(event.type)
+    const rowClass = 'flex items-start justify-between gap-4 py-3.5 transition-colors'
 
-    return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="flex">
-                <div className={`w-1.5 flex-shrink-0 ${barColor}`} />
-                <div className="flex-1 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                            <p className="text-lg sm:text-xl font-bold text-gray-900 font-serif capitalize leading-snug">
-                                {formatDate(event.date)}
-                                {timeStr && (
-                                    <span className="text-gray-600 font-semibold"> · {timeStr}</span>
-                                )}
-                            </p>
-                            <p className="text-sm text-gray-600 font-serif mt-1">{event.titre}</p>
-                            <div className="mt-2 space-y-1">
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                    <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-indigo-400" />
-                                    <span className="font-serif">{event.lieu}</span>
-                                </div>
-                                <p className="text-xs text-gray-400 font-serif">{gradesLabel(event.gradesAutorises)}</p>
-                            </div>
-                        </div>
-                        <a
-                            href={`/traversee/${event.lienUnique}`}
-                            className="flex-shrink-0 flex items-center gap-1 px-3 py-2 bg-gray-800 hover:bg-gray-900 text-white text-xs font-medium rounded-lg transition-colors font-serif shadow-sm"
-                        >
-                            S&apos;inscrire
-                            <ChevronRight className="w-3.5 h-3.5" />
-                        </a>
-                    </div>
-                </div>
+    const content = (
+        <>
+            <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium font-serif capitalize">
+                    <span className="text-red-600">{formatDate(event.date)}</span>
+                    {timeStr && <span className="text-gray-500 font-normal"> · {timeStr}</span>}
+                </p>
+                <p className="text-sm text-gray-600 font-serif mt-0.5">{event.titre}</p>
+                <p className="text-xs text-gray-400 font-serif mt-1">
+                    {event.lieu}
+                    <span className="mx-1.5">·</span>
+                    {gradesLabel(event.gradesAutorises)}
+                </p>
             </div>
-        </div>
+            {showInscrire && (
+                <span className="shrink-0 text-xs text-gray-500 group-hover:text-gray-900 pt-0.5">
+                    S&apos;inscrire →
+                </span>
+            )}
+        </>
     )
+
+    if (showInscrire) {
+        return (
+            <Link
+                href={`/traversee/${event.lienUnique}`}
+                className={`${rowClass} group -mx-1 px-1 rounded-md hover:bg-gray-50/80`}
+            >
+                {content}
+            </Link>
+        )
+    }
+
+    return <div className={rowClass}>{content}</div>
 }
 
 function SiteNav() {
