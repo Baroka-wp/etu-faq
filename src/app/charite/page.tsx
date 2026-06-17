@@ -8,19 +8,19 @@ import DonModal from '@/components/DonModal'
 const activites = [
   {
     titre: 'Enfants abandonnés',
-    image: '/img_2.png',
+    image: '/img_2.webp',
   },
   {
     titre: 'Orphelins',
-    image: '/img_4.png',
+    image: '/img_4.webp',
   },
   {
     titre: 'Femmes en maternité',
-    image: '/img_1.png',
+    image: '/img_1.webp',
   },
   {
     titre: 'Assistance aux malades',
-    image: '/img_3.png',
+    image: '/img_3.webp',
   },
 ]
 
@@ -33,7 +33,7 @@ export default function CharitePage() {
       {/* ── HERO BANNIÈRE ── */}
       <section className="relative h-[90vh] min-h-[560px] max-h-[780px]">
         <img
-          src="/img_1.png"
+          src="/img_1.webp"
           alt="Actions caritatives ETU Bénin"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
@@ -103,7 +103,7 @@ export default function CharitePage() {
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl lg:translate-y-6">
               <img
-                src="/img_2.png"
+                src="/img_2.webp"
                 alt="Membres ETU en action au centre de santé"
                 className="w-full h-72 sm:h-96 object-cover"
               />
@@ -195,7 +195,7 @@ export default function CharitePage() {
       {/* ── BREAK IMAGE PLEINE LARGEUR ── */}
       <section className="relative h-64 sm:h-80 lg:h-96 overflow-hidden">
         <img
-          src="/img_3.png"
+          src="/img_3.webp"
           alt="Clinique communautaire l'Espoir — ETU Bénin"
           className="w-full h-full object-cover object-center"
         />
@@ -217,7 +217,7 @@ export default function CharitePage() {
           <div className="lg:col-span-3 relative">
             <div className="rounded-2xl overflow-hidden shadow-2xl">
               <img
-                src="/img_1.png"
+                src="/img_5.webp"
                 alt="Solidarité ETU Bénin"
                 className="w-full h-80 lg:h-[440px] object-cover"
               />

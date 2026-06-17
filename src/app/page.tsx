@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, Video, Heart } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
-import { HomeFeaturedKabbalVideo } from '@/components/home/HomeFeaturedKabbalVideo'
 import DonModal from '@/components/DonModal'
 
 export default function HomePage() {
@@ -134,48 +133,54 @@ export default function HomePage() {
           </div>
         </nav>
 
-        {/* Section d'Accueil : Héros */}
-        <section id="accueil" className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-16 sm:py-20">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-6 sm:space-y-0 sm:space-x-8 mb-12">
-              <img
-                src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
-                alt="Logo ETU - École Transcendantaliste Universelle"
-                className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40"
-              />
-              <div className="text-center sm:text-left">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-gray-900 leading-tight mb-4">
-                  École Transcendantaliste Universelle
-                </h1>
-                <p className="text-lg sm:text-xl font-serif text-gray-600 uppercase tracking-wider">
-                  Ordre des Marins Pêcheurs
-                </p>
+        {/* ── HERO ── */}
+        <section id="accueil" className="relative min-h-[92vh] flex items-end overflow-hidden">
+          {/* Image de fond */}
+          <img
+            src="/img_6.webp"
+            alt="ETU Bénin en action"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+          <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pb-16 sm:pb-24 w-full">
+            <div className="max-w-2xl">
+              {/* Tag */}
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
+                <span className="text-xs font-serif text-white/90 tracking-widest uppercase">Depuis 1977 · Bénin</span>
               </div>
-            </div>
 
-            <div className="max-w-4xl mx-auto">
-              <blockquote className="text-xl sm:text-2xl lg:text-3xl font-serif text-gray-800 italic mb-8 leading-relaxed">
-                « Un jour, tout ce qui est caché sera dévoilé », disait le Christ. Ce Jour est maintenant arrivé.
-              </blockquote>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-white leading-tight mb-6">
+                École<br />
+                Transcendantaliste<br />
+                <span className="text-stone-300">Universelle</span>
+              </h1>
 
-              <p className="text-lg sm:text-xl text-gray-700 mb-8 leading-relaxed">
-                L'ETU a été instituée pour dévoiler les Enseignements dispensés par les hautes Écoles Initiatiques et couverts du sceau du secret. Notre mission est de vous transmettre les clés pour comprendre les lois divines et préparer l'humanité à l'ère du Verseau.
+              <p className="text-base sm:text-lg font-serif text-white/70 leading-relaxed mb-10 max-w-lg">
+                Dévoiler les enseignements des hautes Écoles Initiatiques. Transmettre les clés des lois divines. Servir l'humanité.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/inscription" className="bg-gray-800 text-white px-8 py-4 rounded-lg hover:bg-gray-900 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                  <User className="w-5 h-5 inline mr-2" />
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/inscription"
+                  className="inline-flex items-center gap-2 bg-white text-gray-900 px-6 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-stone-100 transition-all shadow-xl"
+                >
+                  <User className="w-4 h-4" />
                   S'inscrire maintenant
                 </Link>
-                <Link href="/videotheque" className="bg-white text-gray-800 px-8 py-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center">
-                  <Video className="w-5 h-5 inline mr-2" />
-                  Vidéothèque
+                <Link
+                  href="/videotheque"
+                  className="inline-flex items-center gap-2 bg-white/10 border border-white/30 backdrop-blur-sm text-white px-6 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-white/20 transition-all"
+                >
+                  <Video className="w-4 h-4" />
+                  Voir les cours
                 </Link>
                 <button
                   onClick={() => setDonModalOpen(true)}
-                  className="bg-white text-gray-800 px-8 py-4 rounded-lg border-2 border-rose-200 hover:border-rose-300 hover:bg-rose-50 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                  className="inline-flex items-center gap-2 bg-rose-500/20 border border-rose-300/40 backdrop-blur-sm text-white px-6 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-rose-500/30 transition-all"
                 >
-                  <Heart className="w-5 h-5 text-rose-400" />
+                  <Heart className="w-4 h-4 text-rose-300" />
                   Faire un don
                 </button>
               </div>
@@ -183,31 +188,69 @@ export default function HomePage() {
           </div>
         </section>
 
-        <HomeFeaturedKabbalVideo />
-
-        {/* Notre Histoire */}
+        {/* ── NOTRE HISTOIRE ── */}
         <section id="histoire" className="py-16 sm:py-20 bg-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-gray-900 mb-6">
-                Notre Histoire
-              </h2>
-              <div className="w-24 h-1 bg-gray-800 mx-auto"></div>
-            </div>
+          <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <div>
+                <p className="text-xs font-serif uppercase tracking-widest text-stone-400 mb-4">Notre Histoire</p>
+                <div className="flex items-center gap-4 mb-6">
+                  <img src="/logo.svg" alt="Logo ETU" className="h-14 w-14 shrink-0" />
+                  <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 leading-snug">
+                    L'Origine de l'École
+                  </h2>
+                </div>
+                <p className="text-base text-gray-700 leading-relaxed mb-5">
+                  <strong>CECI EST LA VOLONTE DES FRÈRES AÎNÉS</strong> du Monde Divin. KABALEB a été le canal à travers lequel ils ont transmis les enseignements que nous avons le privilège de vous transmettre.
+                </p>
+                <p className="text-base text-gray-600 leading-relaxed mb-8">
+                  Fondée en juillet 1977 par Enrique LLOP, l'ETU est aujourd'hui présente en Europe, en Afrique (Côte d'Ivoire, Bénin, Burkina Faso, Cameroun, Gabon) et bientôt en Amérique.
+                </p>
+                <Link
+                  href="/inscription"
+                  className="inline-flex items-center gap-2 bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl text-sm font-serif font-semibold transition-all shadow-lg"
+                >
+                  <User className="w-4 h-4" />
+                  Rejoindre l'École
+                </Link>
+              </div>
 
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-gray-50 rounded-xl p-8 sm:p-12">
-                <h3 className="text-2xl sm:text-3xl font-serif text-gray-900 mb-6">
-                  L'Origine de l'École
-                </h3>
-                <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  <strong>CECI EST LA VOLONTE DES FRÈRES AÎNÉS</strong> du Monde Divin et KABALEB a été le canal à travers lequel ils ont transmis les enseignements que nous avons le privilège de vous transmettre.
-                </p>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  KABALEB, de son vrai nom Enrique LLOP, né le 22 Février 1927 à Gerone en Espagne, a créé l'École Transcendantaliste Universelle en Juillet 1977. Aujourd'hui, elle est implantée en Europe (Espagne, France, Suisse, Belgique, Allemagne, Italie), en Afrique (Côte d'Ivoire, Bénin, Burkina Faso, Cameroun et Gabon) et bientôt en Amérique (Canada et Argentine).
-                </p>
+              {/* Carte stats + image */}
+              <div className="relative">
+                <div className="rounded-2xl overflow-hidden shadow-xl">
+                  <img src="/img_2.webp" alt="Membres ETU" className="w-full h-72 object-cover" />
+                </div>
+                <div className="grid grid-cols-3 gap-3 mt-4">
+                  {[
+                    { n: '1977', label: 'Fondée en' },
+                    { n: '10+', label: 'Pays' },
+                    { n: '4', label: 'Grades' },
+                  ].map(({ n, label }) => (
+                    <div key={label} className="bg-stone-50 rounded-xl border border-stone-100 p-4 text-center">
+                      <p className="text-2xl font-serif font-bold text-gray-900">{n}</p>
+                      <p className="text-xs font-serif text-gray-500 mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ── CTA INSCRIPTION ── */}
+        <section className="bg-gray-900 py-12">
+          <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div>
+              <p className="text-white font-serif font-bold text-lg sm:text-xl">Prêt à commencer votre parcours ?</p>
+              <p className="text-stone-400 font-serif text-sm mt-1">Formation de 6 mois · 12 000 FCFA · En ligne ou en présentiel</p>
+            </div>
+            <Link
+              href="/inscription"
+              className="flex-shrink-0 inline-flex items-center gap-2 bg-white text-gray-900 px-7 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-stone-100 transition-all shadow-lg"
+            >
+              <User className="w-4 h-4" />
+              S'inscrire maintenant
+            </Link>
           </div>
         </section>
 
@@ -613,66 +656,63 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Notre Action Spirituelle et Sociale */}
-        <section className="py-16 sm:py-20 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-gray-900 mb-6">
-                Notre Action Spirituelle et Sociale
-              </h2>
-              <div className="w-24 h-1 bg-gray-800 mx-auto"></div>
-            </div>
-
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-lg p-8 border border-gray-200 hover:border-gray-300 transition-all duration-300">
-                <h3 className="text-2xl font-serif text-gray-900 mb-6">Au-delà des cours, une action concrète</h3>
-                <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  L'ETU met également à la disposition du disciple des prières, des rituels, des textes sacrés pouvant l'aider dans la quête de son identité spirituelle.
-                </p>
-                <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  Par son action sociale, les membres de l'ETU rendent visite aux malades, aux prisonniers, aux enfants abandonnés et aux handicapés et leur offrent des présents.
-                </p>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  L'ETU formera finalement des groupes d'étudiants pour travailler à préparer et organiser le Monde de Demain, à travers son ordre initiatique et mystique. L'étudiant pourra faire partie de l'OMP-ETU après les premiers cours, soit après un an à partir de la date de son adhésion, s'il est régulier.
-                </p>
-              </div>
+        {/* ── BREAK CHARITÉ — IMAGE PLEINE LARGEUR ── */}
+        <section className="relative h-72 sm:h-96 overflow-hidden">
+          <img
+            src="/img_4.webp"
+            alt="Action caritative ETU Bénin"
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+          <div className="absolute inset-0 flex items-center px-8 sm:px-14 lg:px-20">
+            <div className="max-w-md">
+              <p className="text-xs font-serif uppercase tracking-widest text-rose-300 mb-3">Action Sociale</p>
+              <p className="text-2xl sm:text-3xl font-serif font-bold text-white leading-snug mb-5">
+                Au-delà des cours,<br />une présence sur le terrain.
+              </p>
+              <Link
+                href="/charite"
+                className="inline-flex items-center gap-2 bg-white/15 border border-white/30 backdrop-blur-sm text-white px-5 py-2.5 rounded-xl text-sm font-serif font-semibold hover:bg-white/25 transition-all"
+              >
+                <Heart className="w-4 h-4 text-rose-300" />
+                Découvrir nos actions
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* Appel à l'Action */}
-        <section className="py-16 sm:py-20 bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif mb-8">
+        {/* ── APPEL À L'ACTION ── */}
+        <section className="relative py-20 sm:py-28 overflow-hidden bg-stone-950">
+          {/* Fond texturé subtil */}
+          <div className="absolute inset-0 opacity-10"
+            style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, #a8a29e 0%, transparent 60%), radial-gradient(circle at 70% 50%, #78716c 0%, transparent 60%)' }} />
+          <div className="relative max-w-4xl mx-auto px-6 sm:px-10 text-center">
+            <p className="text-xs font-serif uppercase tracking-widest text-stone-400 mb-6">Rejoignez-nous</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white mb-8 leading-snug">
               Le monde a besoin de vous
             </h2>
-            <div className="max-w-4xl mx-auto">
-              <blockquote className="text-xl sm:text-2xl font-serif italic mb-8 leading-relaxed">
-                « Voilà cher Frère et chère Sœur, nous avons fait ce que l'on nous a demandé de faire. Si à travers ces lignes tu te sens appelé, alors ne perds pas une minute. Car si Dieu a créé le monde, ce sont les hommes qui le bâtissent et la qualité du monde dépendra de la qualité des hommes.
-              </blockquote>
-              <p className="text-lg sm:text-xl mb-8 leading-relaxed">
-                À nous, à qui le flambeau a été transmis, nous te tendons la main pour qu'ensemble nous semions à travers le monde les graines de l'AMOUR pour un avenir radieux pour notre planète bleue.
-              </p>
-              <p className="text-lg sm:text-xl mb-12 leading-relaxed font-semibold">
-                Quoi que tu veuilles faire, fais-le rapidement ! Ne remets pas à demain ce que tu peux faire aujourd'hui.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/inscription" className="bg-white text-gray-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                  <User className="w-5 h-5 inline mr-2" />
-                  S'inscrire maintenant
-                </Link>
-                <Link href="/faq" className="bg-transparent text-white px-8 py-4 rounded-lg border-2 border-white hover:bg-white hover:text-gray-900 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                  En savoir plus
-                </Link>
-                <button
-                  onClick={() => setDonModalOpen(true)}
-                  className="bg-rose-500/20 border-2 border-rose-300/60 text-white px-8 py-4 rounded-lg hover:bg-rose-500/30 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
-                >
-                  <Heart className="w-5 h-5 text-rose-300" />
-                  Faire un don
-                </button>
-              </div>
+            <blockquote className="text-lg sm:text-xl font-serif italic text-stone-300 leading-relaxed mb-6 max-w-3xl mx-auto">
+              « Si à travers ces lignes tu te sens appelé, alors ne perds pas une minute. Car si Dieu a créé le monde, ce sont les hommes qui le bâtissent. »
+            </blockquote>
+            <p className="text-base font-serif text-stone-400 leading-relaxed mb-12 max-w-2xl mx-auto">
+              Quoi que tu veuilles faire, fais-le rapidement. Ne remets pas à demain ce que tu peux faire aujourd'hui.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/inscription"
+                className="inline-flex items-center justify-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-xl text-base font-serif font-semibold hover:bg-stone-100 transition-all shadow-xl"
+              >
+                <User className="w-5 h-5" />
+                S'inscrire maintenant
+              </Link>
+              <button
+                onClick={() => setDonModalOpen(true)}
+                className="inline-flex items-center justify-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-xl text-base font-serif font-semibold hover:bg-white/15 transition-all"
+              >
+                <Heart className="w-5 h-5 text-rose-300" />
+                Faire un don
+              </button>
             </div>
           </div>
         </section>
