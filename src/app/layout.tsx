@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FAQ - École Transcendantaliste Universelle",
-  description: "Foire aux questions de l'École Transcendantaliste Universelle (ETU) Bénin - Formation spirituelle et initiatique.",
-  keywords: ["ETU", "École Transcendantaliste", "Formation spirituelle", "Initiation", "Kabbale", "FAQ"],
+  title: "ETU Bénin - École Transcendantaliste Universelle",
+  description: "Depuis 1977, l'École Transcendantaliste Universelle (ETU) transmet les enseignements initiatiques de la Kabbale, de l'Évangile ésotérique et de l'Astrologie sacrée. Formation spirituelle en ligne ou en présentiel au Bénin et en Afrique de l'Ouest.",
+  keywords: ["ETU", "École Transcendantaliste Universelle", "Kabbale", "Formation spirituelle", "Initiation", "Astrologie", "Ésotérisme", "Bénin", "Afrique", "Transcendantalisme"],
   authors: [{ name: "ETU Bénin" }],
   icons: {
     icon: '/favicon.svg',
