@@ -368,33 +368,13 @@ export default function InscriptionPage() {
                             {/* Content */}
                             <div className="px-6 py-5 overflow-y-auto flex-1">
                                 <div className="space-y-4 text-sm font-serif text-gray-700 leading-relaxed">
-                                    <p>
-                                        En soumettant ce formulaire d'inscription au programme Degré Explorateur de l'École Transcendantaliste Universelle (ETU) - OMP Bénin, vous acceptez les conditions suivantes :
-                                    </p>
-
                                     <div className="space-y-3">
                                         <p>
-                                            <strong className="text-gray-900">1. Durée et format :</strong> La formation dure 6 mois et peut être suivie en ligne ou en présentiel selon votre convenance.
+                                            <strong className="text-gray-900">1. Frais d'inscription :</strong> 12 000 FCFA, payables une seule fois.
                                         </p>
 
                                         <p>
-                                            <strong className="text-gray-900">2. Frais d'inscription :</strong> Les frais d'inscription s'élèvent à 12 000 FCFA, payables une seule fois lors de votre inscription.
-                                        </p>
-
-                                        <p>
-                                            <strong className="text-gray-900">3. Mensualité :</strong> Une contribution mensuelle de 10 000 FCFA est requise pendant toute la durée de la formation.
-                                        </p>
-
-                                        <p>
-                                            <strong className="text-gray-900">4. Discipline spirituelle :</strong> Vous vous engagez à maintenir une pratique de prière constante et régulière pendant 154 jours consécutifs, en utilisant le livre de prière officiel de l'ETU.
-                                        </p>
-
-                                        <p>
-                                            <strong className="text-gray-900">5. Modalités de paiement :</strong> Les paiements peuvent être effectués par Mobile Money (MoMo) au Bénin, ou par MoneyGram, Western Union ou virement bancaire pour les étudiants à l'étranger. Pour toute assistance, contactez le +229 67 15 39 74.
-                                        </p>
-
-                                        <p className="text-xs text-gray-600 pt-2 italic">
-                                            En cliquant sur le bouton ci-dessous, vous confirmez avoir lu et accepté ces conditions.
+                                            <strong className="text-gray-900">2. Engagement :</strong> Vous vous engagez à suivre la formation sur une durée de 6 mois, en pratiquant les prières et exercices spirituels qui vous seront recommandés.
                                         </p>
                                     </div>
                                 </div>
