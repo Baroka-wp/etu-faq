@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BookOpen, Filter, ShoppingCart, MessageCircle, ExternalLink } from 'lucide-react'
+import { BookOpen, Filter, ShoppingCart, MessageCircle, ExternalLink, Heart } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import DonModal from '@/components/DonModal'
 
 interface Book {
     id: string
@@ -24,6 +25,7 @@ export default function BibliothequePage() {
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState<'all' | 'etu' | 'recommended'>('all')
     const [searchTerm, setSearchTerm] = useState('')
+    const [donModalOpen, setDonModalOpen] = useState(false)
 
     useEffect(() => {
         fetchBooks()
@@ -257,7 +259,27 @@ export default function BibliothequePage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Appel au don */}
+                <div className="mt-8 rounded-xl border border-rose-100 bg-rose-50/60 p-6 flex flex-col sm:flex-row items-center gap-5">
+                    <div className="w-12 h-12 rounded-xl bg-white border border-rose-100 flex items-center justify-center flex-shrink-0">
+                        <Heart className="w-6 h-6 text-rose-400" />
+                    </div>
+                    <div className="flex-1 text-center sm:text-left">
+                        <p className="text-sm font-semibold text-gray-800 mb-1">Soutenir la diffusion des enseignements</p>
+                        <p className="text-xs text-gray-600">Votre don aide à étendre la bibliothèque de l'ETU et à diffuser ces enseignements dans de nouveaux lieux.</p>
+                    </div>
+                    <button
+                        onClick={() => setDonModalOpen(true)}
+                        className="flex-shrink-0 bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                        <Heart className="w-4 h-4 text-rose-300" />
+                        Faire un don
+                    </button>
+                </div>
             </div>
+
+            <DonModal open={donModalOpen} onClose={() => setDonModalOpen(false)} />
         </div>
     )
 }

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Play, Clock, ChevronLeft, MessageCircle, X, ChevronRight } from 'lucide-react'
+import { Play, Clock, ChevronLeft, MessageCircle, X, ChevronRight, Heart } from 'lucide-react'
 import Link from 'next/link'
 import { VideothequeCuratedSection } from '@/components/videotheque/VideothequeCuratedSection'
 import { isFeaturedKabbal2026Title } from '@/lib/isFeaturedKabbal2026Title'
+import DonModal from '@/components/DonModal'
 
 interface Course {
     id: string
@@ -23,6 +24,7 @@ export default function VideothequePage() {
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
     const [showWhatsappModal, setShowWhatsappModal] = useState(false)
     const [activeTab, setActiveTab] = useState<'resume' | 'question' | 'communaute'>('resume')
+    const [donModalOpen, setDonModalOpen] = useState(false)
 
     useEffect(() => {
         fetchCourses()
@@ -364,6 +366,28 @@ export default function VideothequePage() {
                     </div>
                 )}
             </div>
+
+            {/* Appel au don */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+                <div className="rounded-xl border border-rose-100 bg-rose-50/60 p-6 flex flex-col sm:flex-row items-center gap-5">
+                    <div className="w-12 h-12 rounded-xl bg-white border border-rose-100 flex items-center justify-center flex-shrink-0">
+                        <Heart className="w-6 h-6 text-rose-400" />
+                    </div>
+                    <div className="flex-1 text-center sm:text-left">
+                        <p className="text-sm font-semibold text-gray-800 mb-1">Soutenir la diffusion des enseignements</p>
+                        <p className="text-xs text-gray-600">Aidez l'ETU à produire et diffuser davantage d'enseignements vidéo dans le monde.</p>
+                    </div>
+                    <button
+                        onClick={() => setDonModalOpen(true)}
+                        className="flex-shrink-0 bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                        <Heart className="w-4 h-4 text-rose-300" />
+                        Faire un don
+                    </button>
+                </div>
+            </div>
+
+            <DonModal open={donModalOpen} onClose={() => setDonModalOpen(false)} />
 
             {/* Modale WhatsApp */}
             {showWhatsappModal && (

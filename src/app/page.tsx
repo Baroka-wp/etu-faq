@@ -1,14 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, Video } from 'lucide-react'
+import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, Video, Heart } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 import { HomeFeaturedKabbalVideo } from '@/components/home/HomeFeaturedKabbalVideo'
+import DonModal from '@/components/DonModal'
 
 export default function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
+  const [donModalOpen, setDonModalOpen] = useState(false)
 
   return (
     <ClientOnly fallback={
@@ -59,6 +61,13 @@ export default function HomePage() {
                   Vidéothèque
                 </Link>
                 <Link
+                  href="/charite"
+                  className="inline-flex shrink-0 items-center gap-1.5 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
+                >
+                  <Heart className="h-4 w-4 shrink-0" aria-hidden />
+                  Charité
+                </Link>
+                <Link
                   href="/inscription"
                   className="shrink-0 rounded-lg bg-gray-800 px-4 py-2 text-[15px] font-serif font-medium text-white transition-colors hover:bg-gray-900"
                 >
@@ -103,6 +112,14 @@ export default function HomePage() {
                   >
                     <Video className="h-4 w-4 shrink-0" aria-hidden />
                     Vidéothèque
+                  </Link>
+                  <Link
+                    href="/charite"
+                    className="flex items-center gap-2 rounded-md px-3 py-2.5 font-serif text-gray-800 hover:bg-stone-50"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Heart className="h-4 w-4 shrink-0" aria-hidden />
+                    Charité
                   </Link>
                   <Link
                     href="/inscription"
@@ -154,9 +171,13 @@ export default function HomePage() {
                   <Video className="w-5 h-5 inline mr-2" />
                   Vidéothèque
                 </Link>
-                <Link href="/faq" className="bg-white text-gray-800 px-8 py-4 rounded-lg border-2 border-gray-300 hover:border-gray-400 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                  En savoir plus
-                </Link>
+                <button
+                  onClick={() => setDonModalOpen(true)}
+                  className="bg-white text-gray-800 px-8 py-4 rounded-lg border-2 border-rose-200 hover:border-rose-300 hover:bg-rose-50 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                >
+                  <Heart className="w-5 h-5 text-rose-400" />
+                  Faire un don
+                </button>
               </div>
             </div>
           </div>
@@ -644,7 +665,50 @@ export default function HomePage() {
                 <Link href="/faq" className="bg-transparent text-white px-8 py-4 rounded-lg border-2 border-white hover:bg-white hover:text-gray-900 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                   En savoir plus
                 </Link>
+                <button
+                  onClick={() => setDonModalOpen(true)}
+                  className="bg-rose-500/20 border-2 border-rose-300/60 text-white px-8 py-4 rounded-lg hover:bg-rose-500/30 transition-colors text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                >
+                  <Heart className="w-5 h-5 text-rose-300" />
+                  Faire un don
+                </button>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section Charité & Don */}
+        <section className="py-16 sm:py-20 bg-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+                <Heart className="w-7 h-7 text-rose-400" />
+              </div>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-serif text-gray-900 mb-4">
+              Agir ensemble
+            </h2>
+            <div className="w-16 h-1 bg-rose-200 mx-auto mb-8"></div>
+            <p className="text-lg font-serif text-gray-600 leading-relaxed mb-6 max-w-2xl mx-auto">
+              L'ETU mène des actions concrètes auprès des plus vulnérables — enfants abandonnés, orphelins, femmes en maternité, malades — et œuvre à étendre la lumière de ses enseignements à travers le monde.
+            </p>
+            <p className="text-base font-serif text-gray-500 leading-relaxed mb-10 max-w-2xl mx-auto">
+              Votre soutien, quelle qu'en soit la forme, contribue directement à cette mission.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => setDonModalOpen(true)}
+                className="inline-flex items-center gap-2 bg-gray-900 hover:bg-black text-white px-8 py-4 rounded-xl text-base font-serif font-semibold transition-all shadow-lg hover:shadow-xl"
+              >
+                <Heart className="w-5 h-5 text-rose-300" />
+                Faire un don
+              </button>
+              <Link
+                href="/charite"
+                className="inline-flex items-center gap-2 bg-white text-gray-800 border-2 border-gray-200 hover:border-gray-400 px-8 py-4 rounded-xl text-base font-serif font-semibold transition-all shadow-lg hover:shadow-xl"
+              >
+                Nos activités caritatives
+              </Link>
             </div>
           </div>
         </section>
@@ -726,6 +790,8 @@ export default function HomePage() {
           </div>
         </footer>
       </div>
+
+      <DonModal open={donModalOpen} onClose={() => setDonModalOpen(false)} />
     </ClientOnly>
   )
 }
