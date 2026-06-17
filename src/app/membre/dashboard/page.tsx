@@ -58,7 +58,7 @@ export default function DashboardPage() {
           Bienvenue, {membre?.nomSacre || membre?.prenoms}
         </h1>
         <p className="text-lg text-gray-600 font-serif">
-          {membre?.grade} — Équipage {membre?.equipage}
+          {membre?.grade} ; Équipage {membre?.equipage}
         </p>
         {memberSince && (
           <p className="text-sm text-gray-500 font-serif mt-1">

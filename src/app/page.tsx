@@ -21,7 +21,7 @@ export default function HomePage() {
       </div>
     }>
       <div className="min-h-screen bg-white">
-        {/* Navigation — pages distinctes uniquement (pas d’ancres single-page) */}
+        {/* Navigation ; pages distinctes uniquement (pas d’ancres single-page) */}
         <nav className="sticky top-0 z-50 border-b border-stone-200/80 bg-white/90 shadow-sm backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16 gap-4">
@@ -656,7 +656,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── BREAK CHARITÉ — IMAGE PLEINE LARGEUR ── */}
+        {/* ── BREAK CHARITÉ ; IMAGE PLEINE LARGEUR ── */}
         <section className="relative h-72 sm:h-96 overflow-hidden">
           <img
             src="/img_4.webp"
@@ -730,7 +730,7 @@ export default function HomePage() {
             </h2>
             <div className="w-16 h-1 bg-rose-200 mx-auto mb-8"></div>
             <p className="text-lg font-serif text-gray-600 leading-relaxed mb-6 max-w-2xl mx-auto">
-              L'ETU mène des actions concrètes auprès des plus vulnérables — enfants abandonnés, orphelins, femmes en maternité, malades — et œuvre à étendre la lumière de ses enseignements à travers le monde.
+              L'ETU mène des actions concrètes auprès des plus vulnérables ; enfants abandonnés, orphelins, femmes en maternité, malades ; et œuvre à étendre la lumière de ses enseignements à travers le monde.
             </p>
             <p className="text-base font-serif text-gray-500 leading-relaxed mb-10 max-w-2xl mx-auto">
               Votre soutien, quelle qu'en soit la forme, contribue directement à cette mission.

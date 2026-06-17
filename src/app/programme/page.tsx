@@ -167,7 +167,7 @@ function joinFrenchList(items: string[]): string {
     return `${items.slice(0, -1).join(', ')} et ${items[items.length - 1]}`
 }
 
-/** Ex. « Tous les vendredis à 21h » — déduit des occurrences d'une série */
+/** Ex. « Tous les vendredis à 21h » ; déduit des occurrences d'une série */
 function formatSerieSchedule(occurrences: { date: string }[]): string {
     if (occurrences.length === 0) return ''
     if (occurrences.length === 1) {
@@ -312,7 +312,7 @@ function downloadICS(events: Evenement[], filename: string) {
             `DTSTAMP:${toICS(new Date().toISOString())}`,
             `DTSTART:${toICS(e.date)}`,
             `DTEND:${toICS(end)}`,
-            `SUMMARY:${e.type} — ${e.titre}`,
+            `SUMMARY:${e.type} ; ${e.titre}`,
             `DESCRIPTION:${desc}`,
             `LOCATION:${e.lieu}`,
             'END:VEVENT',

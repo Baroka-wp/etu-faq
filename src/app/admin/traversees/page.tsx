@@ -294,10 +294,10 @@ export default function PlanificationsPage() {
                         : (createdCount > 1 ? `${createdCount} occurrences créées` : 'Planification créée'),
                     message: isEdit
                         ? (data.updated > 1
-                            ? `"${formData.titre}" — ${data.updated} occurrences mises à jour`
+                            ? `"${formData.titre}" ; ${data.updated} occurrences mises à jour`
                             : `"${formData.titre}" a été modifiée avec succès`)
                         : (createdCount > 1
-                            ? `"${formData.titre}" — ${createdCount} dates générées`
+                            ? `"${formData.titre}" ; ${createdCount} dates générées`
                             : `"${formData.titre}" a été créée avec succès`)
                 })
                 setShowAddModal(false)
@@ -398,8 +398,8 @@ export default function PlanificationsPage() {
         const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
         switch (filterPeriod) {
             case 'upcoming':  return 'Événements à venir'
-            case 'thisMonth': return `Programme — ${fmt(now)}`
-            case 'lastMonth': return `Programme — ${fmt(lastMonth)}`
+            case 'thisMonth': return `Programme ; ${fmt(now)}`
+            case 'lastMonth': return `Programme ; ${fmt(lastMonth)}`
             case 'past':      return 'Événements passés'
             default:          return 'Tous les événements'
         }
@@ -426,7 +426,7 @@ export default function PlanificationsPage() {
                 `DTSTAMP:${toICSDate(new Date().toISOString())}`,
                 `DTSTART:${start}`,
                 `DTEND:${end}`,
-                `SUMMARY:${p.type} — ${p.titre}`,
+                `SUMMARY:${p.type} ; ${p.titre}`,
                 `DESCRIPTION:${desc}`,
                 `LOCATION:${p.lieu}`,
                 'END:VEVENT',
@@ -512,7 +512,7 @@ export default function PlanificationsPage() {
         content += `${'-'.repeat(120)}\n`
         inscrits.forEach((item, index) => {
             const { nom, prenoms, nomSacre, telephoneWhatsapp, grade } = item.membre
-            content += `${index + 1}\t${nom}\t\t${prenoms}\t\t${nomSacre || '—'}\t\t${telephoneWhatsapp}\t\t${grade}\t\t\n`
+            content += `${index + 1}\t${nom}\t\t${prenoms}\t\t${nomSacre || ';'}\t\t${telephoneWhatsapp}\t\t${grade}\t\t\n`
         })
         const blob = new Blob([content], { type: 'text/plain; charset=utf-8' })
         const url = window.URL.createObjectURL(blob)
@@ -539,7 +539,7 @@ export default function PlanificationsPage() {
         pdf.text(`${selected.titre}`, margin, 28)
         pdf.setFontSize(9)
         pdf.setTextColor(100, 100, 100)
-        pdf.text(`${selected.type}  ·  ${formatDate(selected.date)}  —  ${selected.lieu}`, margin, 34)
+        pdf.text(`${selected.type}  ·  ${formatDate(selected.date)}  ;  ${selected.lieu}`, margin, 34)
 
         pdf.setDrawColor(180, 180, 180)
         pdf.line(margin, 39, pageW - margin, 39)
@@ -572,7 +572,7 @@ export default function PlanificationsPage() {
                 String(index + 1),
                 nom,
                 prenoms,
-                nomSacre || '—',
+                nomSacre || ';',
                 telephoneWhatsapp,
                 grade,
                 '',
@@ -681,8 +681,8 @@ export default function PlanificationsPage() {
                     </div>
                     <p className="text-xs text-gray-400 mt-1">
                         Lettres minuscules, chiffres et tirets uniquement
-                        {!isEdit && recurrenceEnabled && ' — chaque occurrence sera suffixée par sa date'}
-                        {isEdit && applyToSeries && selected?.serieId && ' — suffixe de date ajouté automatiquement pour chaque séance'}
+                        {!isEdit && recurrenceEnabled && ' ; chaque occurrence sera suffixée par sa date'}
+                        {isEdit && applyToSeries && selected?.serieId && ' ; suffixe de date ajouté automatiquement pour chaque séance'}
                     </p>
                 </div>
 
@@ -848,7 +848,7 @@ export default function PlanificationsPage() {
                                     }
                                     const occ = generateOccurrences(recurrence, parseAppDatetimeLocal(formData.date))
                                     if (occ.length === 0) {
-                                        return <p className="text-xs text-amber-600">Aucune occurrence — vérifie la règle.</p>
+                                        return <p className="text-xs text-amber-600">Aucune occurrence ; vérifie la règle.</p>
                                     }
                                     const preview = occ.slice(0, 8)
                                     return (
@@ -1230,7 +1230,7 @@ export default function PlanificationsPage() {
                         <DialogTitle className="flex items-center justify-between gap-3">
                             <span className="flex items-center gap-2">
                             <Users className="w-5 h-5" />
-                            Inscrits — {selected?.titre}
+                            Inscrits ; {selected?.titre}
                             </span>
                             <button
                                 type="button"
@@ -1316,7 +1316,7 @@ export default function PlanificationsPage() {
                                             <TableCell className="text-gray-500 text-sm">{index + 1}</TableCell>
                                             <TableCell className="font-medium">{item.membre.nom}</TableCell>
                                             <TableCell>{item.membre.prenoms}</TableCell>
-                                            <TableCell className="text-sm text-gray-600">{item.membre.nomSacre || '—'}</TableCell>
+                                            <TableCell className="text-sm text-gray-600">{item.membre.nomSacre || ';'}</TableCell>
                                             <TableCell className="text-sm text-gray-600">{item.membre.telephoneWhatsapp}</TableCell>
                                             <TableCell>
                                                 <Badge className={`text-xs ${GRADE_COLORS[item.membre.grade] || 'bg-gray-100 text-gray-700'}`}>

@@ -25,7 +25,7 @@ export function VideothequeCuratedSection() {
               Sélection
             </p>
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-gray-900">
-              Résumés des vidéos — Hippolite Fatoumbi / Au cœur du mystère
+              Résumés des vidéos ; Hippolite Fatoumbi / Au cœur du mystère
             </h2>
             <p className="mt-2 text-gray-600 max-w-2xl text-sm sm:text-base">
               Neuf conférences et entretiens avec des résumés pour orienter votre écoute. Les liens
@@ -138,10 +138,10 @@ export function VideothequeCuratedSection() {
                             <ExternalLink className="w-3.5 h-3.5" aria-hidden />
                           </a>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-400">;</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{row.duration ?? '—'}</td>
+                      <td className="px-4 py-3 text-gray-600">{row.duration ?? ';'}</td>
                     </tr>
                   ))}
                 </tbody>

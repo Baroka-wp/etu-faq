@@ -52,7 +52,7 @@ export function HomeFeaturedKabbalVideo() {
 
   const embed = getVideoEmbedUrl(course.videoUrl)
 
-  /** Titres affichés sur l’accueil (français soigné) — le cours en base peut garder d’autres variantes. */
+  /** Titres affichés sur l’accueil (français soigné) ; le cours en base peut garder d’autres variantes. */
   const displayTitle = 'Pourquoi étudier la Kabbale en 2026'
   const displaySubtitle =
     'Nous vous présentons pourquoi il est important d’apprendre la kabbale.'

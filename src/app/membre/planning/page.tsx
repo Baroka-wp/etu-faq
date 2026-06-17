@@ -199,7 +199,7 @@ export default function PlanningMembrePage() {
     const fmt = (d: Date) => d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
     switch (filterPeriod) {
       case 'upcoming':  return 'Événements à venir'
-      case 'thisMonth': return `Programme — ${fmt(now)}`
+      case 'thisMonth': return `Programme ; ${fmt(now)}`
       case 'inscrit':   return 'Mes inscriptions'
       default:          return 'Tous les événements'
     }
@@ -226,7 +226,7 @@ export default function PlanningMembrePage() {
         `DTSTAMP:${toICSDate(new Date().toISOString())}`,
         `DTSTART:${start}`,
         `DTEND:${end}`,
-        `SUMMARY:${e.type} — ${e.titre}`,
+        `SUMMARY:${e.type} ; ${e.titre}`,
         `DESCRIPTION:${desc}`,
         `LOCATION:${e.lieu}`,
         'END:VEVENT',

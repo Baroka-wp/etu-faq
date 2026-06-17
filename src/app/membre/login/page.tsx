@@ -170,7 +170,7 @@ export default function MembreLoginPage() {
               </div>
             )}
 
-            {/* Info inscription TIGM — affiché quand le nom sacré n'est pas trouvé */}
+            {/* Info inscription TIGM ; affiché quand le nom sacré n'est pas trouvé */}
             {error && (error.includes('incorrect') || error.includes('inactif')) && (
               <div className="bg-gray-50 border border-gray-200 text-gray-700 px-4 py-4 rounded-lg text-sm font-serif mb-6">
                 <p className="mb-3">

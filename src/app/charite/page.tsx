@@ -52,7 +52,7 @@ export default function CharitePage() {
           </Link>
         </div>
 
-        {/* Contenu hero — ancré à gauche */}
+        {/* Contenu hero ; ancré à gauche */}
         <div className="absolute inset-0 flex items-end pb-16 sm:pb-20 px-6 sm:px-14 lg:px-20">
           <div className="max-w-lg">
             {/* Tag */}
@@ -120,7 +120,7 @@ export default function CharitePage() {
         </div>
       </section>
 
-      {/* ── ACTIVITÉS — GRILLE PHOTO ── */}
+      {/* ── ACTIVITÉS ; GRILLE PHOTO ── */}
       <section className="py-20 lg:py-28 bg-stone-50">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12">
@@ -140,7 +140,7 @@ export default function CharitePage() {
           {/* Grille asymétrique 3 colonnes */}
           <div className="grid grid-cols-3 gap-3 sm:gap-4">
 
-            {/* Colonne gauche — grande carte portrait */}
+            {/* Colonne gauche ; grande carte portrait */}
             <div
               className="col-span-1 relative rounded-2xl overflow-hidden cursor-pointer group h-[480px] sm:h-[560px]"
               onClick={() => setDonModalOpen(true)}
@@ -155,7 +155,7 @@ export default function CharitePage() {
               </div>
             </div>
 
-            {/* Colonne centrale — 2 cartes empilées */}
+            {/* Colonne centrale ; 2 cartes empilées */}
             <div className="col-span-1 flex flex-col gap-3 sm:gap-4">
               {[activites[1], activites[2]].map(({ titre, image }) => (
                 <div
@@ -173,7 +173,7 @@ export default function CharitePage() {
               ))}
             </div>
 
-            {/* Colonne droite — grande carte portrait + badge don */}
+            {/* Colonne droite ; grande carte portrait + badge don */}
             <div
               className="col-span-1 relative rounded-2xl overflow-hidden cursor-pointer group h-[480px] sm:h-[560px]"
               onClick={() => setDonModalOpen(true)}
@@ -196,7 +196,7 @@ export default function CharitePage() {
       <section className="relative h-64 sm:h-80 lg:h-96 overflow-hidden">
         <img
           src="/img_3.webp"
-          alt="Clinique communautaire l'Espoir — ETU Bénin"
+          alt="Clinique communautaire l'Espoir ; ETU Bénin"
           className="w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
@@ -210,10 +210,10 @@ export default function CharitePage() {
         </div>
       </section>
 
-      {/* ── SECTION DON — SPLIT ASYMÉTRIQUE ── */}
+      {/* ── SECTION DON ; SPLIT ASYMÉTRIQUE ── */}
       <section className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 py-20 lg:py-28">
         <div className="grid lg:grid-cols-5 gap-12 items-center">
-          {/* Image — 3 colonnes, décalée */}
+          {/* Image ; 3 colonnes, décalée */}
           <div className="lg:col-span-3 relative">
             <div className="rounded-2xl overflow-hidden shadow-2xl">
               <img
@@ -232,7 +232,7 @@ export default function CharitePage() {
             </div>
           </div>
 
-          {/* Texte + CTA — 2 colonnes */}
+          {/* Texte + CTA ; 2 colonnes */}
           <div className="lg:col-span-2 lg:pl-6 pt-8 lg:pt-0">
             <p className="text-xs font-serif uppercase tracking-widest text-rose-400 mb-4">Agir ensemble</p>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 leading-snug mb-5">

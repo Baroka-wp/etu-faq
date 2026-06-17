@@ -347,7 +347,7 @@ export default function InscriptionPage() {
                 {/* Footer */}
                 <footer className="px-6 py-6 text-center">
                     <p className="text-xs text-gray-500 font-serif">
-                        ETU Bénin — École Transcendantaliste Universelle — Depuis 1977
+                        ETU Bénin ; École Transcendantaliste Universelle ; Depuis 1977
                     </p>
                 </footer>
 

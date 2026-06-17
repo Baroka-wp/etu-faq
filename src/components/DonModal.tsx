@@ -29,7 +29,7 @@ export default function DonModal({ open, onClose }: DonModalProps) {
             </div>
             <div>
               <h2 className="text-base font-serif font-bold text-gray-900">Faire un don</h2>
-              <p className="text-xs font-serif text-gray-400">ETU Bénin — OMP</p>
+              <p className="text-xs font-serif text-gray-400">ETU Bénin ; OMP</p>
             </div>
           </div>
           <button
@@ -47,12 +47,12 @@ export default function DonModal({ open, onClose }: DonModalProps) {
           </p>
           <div className="space-y-3">
             <div className="rounded-xl bg-stone-50 border border-stone-200 px-4 py-3">
-              <p className="text-xs font-serif font-semibold text-gray-800 mb-0.5">Mobile Money (MoMo) — Bénin</p>
+              <p className="text-xs font-serif font-semibold text-gray-800 mb-0.5">Mobile Money (MoMo) ; Bénin</p>
               <p className="text-sm font-serif font-bold text-gray-900 tracking-wide">+229 01 67 15 39 74</p>
             </div>
             <div className="rounded-xl bg-stone-50 border border-stone-200 px-4 py-3">
               <p className="text-xs font-serif font-semibold text-gray-800 mb-0.5">Depuis l'étranger</p>
-              <p className="text-xs font-serif text-gray-600">MoneyGram, Western Union ou virement bancaire — nous contacter pour les détails.</p>
+              <p className="text-xs font-serif text-gray-600">MoneyGram, Western Union ou virement bancaire ; nous contacter pour les détails.</p>
             </div>
           </div>
           <p className="text-xs font-serif text-gray-400 mt-3 italic">

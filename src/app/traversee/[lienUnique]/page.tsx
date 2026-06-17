@@ -287,7 +287,7 @@ export default function TraverseePage() {
             `DTSTAMP:${toICS(new Date().toISOString())}`,
             `DTSTART:${toICS(traversee.date)}`,
             `DTEND:${toICS(end)}`,
-            `SUMMARY:${traversee.type} — ${traversee.titre}`,
+            `SUMMARY:${traversee.type} ; ${traversee.titre}`,
             `DESCRIPTION:${desc}`,
             `LOCATION:${traversee.lieu}`,
             'END:VEVENT', 'END:VCALENDAR',
