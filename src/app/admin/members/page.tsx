@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, Search, Filter, Eye, Edit, Trash2, Shield, MapPin, Phone, Calendar, Briefcase, UserCheck, AlertCircle, Download, FileText, User, X } from 'lucide-react'
+import { Users, Search, Filter, Eye, Edit, Trash2, Shield, MapPin, Phone, Calendar, Briefcase, UserCheck, AlertCircle, Download, FileText, User, X, KeyRound } from 'lucide-react'
 import jsPDF from 'jspdf'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
@@ -70,6 +70,10 @@ export default function MembersPage() {
     const [itemsPerPage] = useState(10)
     const [showDuplicates, setShowDuplicates] = useState(false)
     const [duplicates, setDuplicates] = useState<Record<string, Membre[]>>({})
+    const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
+    const [newPassword, setNewPassword] = useState('')
+    const [resetPasswordError, setResetPasswordError] = useState('')
+    const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
@@ -363,6 +367,45 @@ export default function MembersPage() {
                 return 'default' as const
             default:
                 return 'secondary' as const
+        }
+    }
+
+    const handleResetPassword = (membre: Membre) => {
+        setSelectedMembre(membre)
+        setNewPassword('')
+        setResetPasswordError('')
+        setResetPasswordSuccess(false)
+        setResetPasswordDialogOpen(true)
+    }
+
+    const handleConfirmResetPassword = async () => {
+        if (!selectedMembre) return
+
+        if (newPassword.length < 6) {
+            setResetPasswordError('Le mot de passe doit contenir au moins 6 caractères')
+            return
+        }
+
+        setSubmitting(true)
+        setResetPasswordError('')
+        try {
+            const response = await fetch(`/api/admin/members/${selectedMembre.id}/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ motDePasse: newPassword })
+            })
+
+            if (response.ok) {
+                setResetPasswordSuccess(true)
+                setNewPassword('')
+            } else {
+                const data = await response.json()
+                setResetPasswordError(data.error || 'Erreur lors de la réinitialisation')
+            }
+        } catch (error) {
+            setResetPasswordError('Erreur de connexion au serveur')
+        } finally {
+            setSubmitting(false)
         }
     }
 
@@ -734,6 +777,14 @@ export default function MembersPage() {
                                                                 title="Modifier"
                                                             >
                                                                 <Edit className="w-4 h-4 text-blue-600" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleResetPassword(membre)}
+                                                                title="Réinitialiser le mot de passe"
+                                                            >
+                                                                <KeyRound className="w-4 h-4 text-amber-600" />
                                                             </Button>
                                                             <Button
                                                                 variant="ghost"
@@ -1115,6 +1166,90 @@ export default function MembersPage() {
                                     {submitting ? 'Suppression...' : 'Supprimer'}
                                 </Button>
                             </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Reset Password Dialog */}
+            <Dialog open={resetPasswordDialogOpen} onOpenChange={(open) => {
+                setResetPasswordDialogOpen(open)
+                if (!open) {
+                    setNewPassword('')
+                    setResetPasswordError('')
+                    setResetPasswordSuccess(false)
+                }
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <KeyRound className="w-5 h-5 text-amber-600" />
+                            Réinitialiser le mot de passe
+                        </DialogTitle>
+                    </DialogHeader>
+                    {selectedMembre && (
+                        <div className="space-y-4">
+                            <p className="text-sm text-gray-600">
+                                Définir un nouveau mot de passe pour <strong>{selectedMembre.nom} {selectedMembre.prenoms}</strong>
+                                {selectedMembre.nomSacre && <span className="text-gray-500"> ({selectedMembre.nomSacre})</span>}.
+                            </p>
+
+                            {resetPasswordSuccess ? (
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <p className="text-sm text-green-700 font-medium">
+                                        Mot de passe réinitialisé avec succès.
+                                    </p>
+                                    <p className="text-xs text-green-600 mt-1">
+                                        Le membre peut maintenant se connecter avec le nouveau mot de passe.
+                                    </p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Nouveau mot de passe
+                                        </label>
+                                        <Input
+                                            type="password"
+                                            placeholder="Au moins 6 caractères"
+                                            value={newPassword}
+                                            onChange={(e) => {
+                                                setNewPassword(e.target.value)
+                                                setResetPasswordError('')
+                                            }}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleConfirmResetPassword()}
+                                        />
+                                        {resetPasswordError && (
+                                            <p className="text-sm text-red-600 mt-1">{resetPasswordError}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex justify-end space-x-2 pt-2">
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setResetPasswordDialogOpen(false)}
+                                            disabled={submitting}
+                                        >
+                                            Annuler
+                                        </Button>
+                                        <Button
+                                            onClick={handleConfirmResetPassword}
+                                            disabled={submitting || newPassword.length < 6}
+                                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                                        >
+                                            {submitting ? 'Enregistrement...' : 'Définir le mot de passe'}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+
+                            {resetPasswordSuccess && (
+                                <div className="flex justify-end">
+                                    <Button onClick={() => setResetPasswordDialogOpen(false)}>
+                                        Fermer
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </DialogContent>

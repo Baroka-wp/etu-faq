@@ -1,0 +1,91 @@
+OFFRE TECHNIQUE ET FINANCIERE
+Carte d'identité digitale — OMP-ETU
+Juridiction de Langue Française
+----------------------------------------
+Prestataire : IROTORI BAROKA (PHALATIAH)
+Date : 16 juin 2026
+Validité : 15 jours
+
+
+1. DESCRIPTION DU PROJET
+
+Développement d'une application web autonome permettant à chaque membre de l'OMP-ETU de générer et télécharger sa carte d'identité digitale personnalisée.
+
+
+2. USER STORY
+
+L'utilisateur accède à une page web et saisit son nom sacré.
+Si le nom est trouvé dans la base de données, une carte d'identité au format image (PNG) est générée automatiquement avec ses informations et un QR code unique.
+L'utilisateur télécharge la carte sur son téléphone et la présente à l'entrée du temple.
+L'administrateur scanne le QR code et accède instantanément aux informations du membre avec la mention VALIDE ou NON VALIDE selon l'état de ses cotisations.
+
+
+3. FONCTIONNALITES
+
+Page de génération de carte
+- Champ de saisie du nom sacré
+- Génération automatique de la carte à l'image
+- Téléchargement en un clic (PNG)
+
+Carte générée
+- Nom sacré, grade, équipage, pays, photo du membre
+- Badge de statut : VALIDE (vert) ou NON VALIDE (rouge)
+- QR code unique par membre
+
+Page de vérification (scan QR)
+- Page publique accessible par scan du QR code
+- Affichage des informations du membre en temps réel
+- Statut des cotisations mis à jour à chaque scan
+
+
+4. GESTION DES DONNEES
+
+Source : fichier Excel fourni par l'administrateur
+Colonnes requises : nom sacré, grade, équipage, pays, lien photo (Cloudinary), statut cotisation
+
+Mise à jour : l'administrateur modifie l'Excel et le redépose sur le serveur.
+Les photos sont hébergées sur Cloudinary (upload manuel par l'administrateur).
+
+
+5. STACK TECHNIQUE
+
+- Framework : Next.js (TypeScript)
+- Génération d'image : Sharp
+- Lecture Excel : bibliothèque xlsx
+- QR code : bibliothèque qrcode
+- Stockage photos : Cloudinary
+- Déploiement : VPS dédié / Vercel
+
+Note d'évolutivité : la stack retenue est identique à celle du projet site internet OMP-ETU (Lot 1). Ce projet de carte digitale est conçu comme un module autonome mais directement réintégrable dans le site principal sans réécriture. La base de données Excel sera remplacée par la base PostgreSQL du site lors de l'intégration au Lot 1, et les pages de génération et de vérification seront simplement déplacées dans l'espace membre existant.
+
+
+6. PLANNING
+
+Durée : 2 semaines
+
+Semaine 1 : Design de la carte, page de génération, génération PNG, QR code, page de vérification
+Semaine 2 : Tests utilisateurs, ajustements visuels et fonctionnels, recette finale et déploiement
+
+
+7. PROPOSITION FINANCIERE
+
+Développement complet .................. 400 000 FCFA
+
+Modalités de paiement :
+- 50 % à la signature .................. 200 000 FCFA
+- 50 % à la livraison .................. 200 000 FCFA
+
+Note : Hébergement et nom de domaine non inclus.
+Si déployé sur le VPS du projet OMP-ETU principal, aucun frais supplémentaire d'infrastructure.
+
+
+8. LIVRABLES
+
+- Application web déployée et fonctionnelle
+- Code source remis au commanditaire
+- Guide d'utilisation (mise à jour de l'Excel, upload photos Cloudinary)
+
+
+Fait à Calavi, le 16 juin 2026
+
+IROTORI BAROKA (PHALATIAH)
