@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Marck Script';
+  src: url('/fonts/marck-script.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.font-parchemin {
+  font-family: 'Marck Script', 'Brush Script MT', cursive;
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 0 0% 3.9%;

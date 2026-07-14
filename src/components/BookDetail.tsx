@@ -76,7 +76,7 @@ export default function BookDetail({ book }: BookDetailProps) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-center">
                         <Image
-                            src="/logo.svg"
+                            src="/logo-etu.png"
                             alt="ETU-Bénin Logo"
                             width={32}
                             height={32}

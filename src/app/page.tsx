@@ -30,7 +30,7 @@ export default function HomePage() {
                 className="flex min-w-0 shrink-0 items-center gap-3 rounded-lg outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2"
               >
                 <img
-                  src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
+                  src="/logo-etu.png"
                   alt="Logo ETU"
                   className="h-10 w-10 shrink-0"
                 />
@@ -45,6 +45,12 @@ export default function HomePage() {
                   className="shrink-0 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
                 >
                   FAQ
+                </Link>
+                <Link
+                  href="/programme"
+                  className="shrink-0 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
+                >
+                  Programme
                 </Link>
                 <Link
                   href="/bibliotheque"
@@ -96,6 +102,13 @@ export default function HomePage() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     FAQ
+                  </Link>
+                  <Link
+                    href="/programme"
+                    className="block rounded-md px-3 py-2.5 font-serif text-gray-800 hover:bg-stone-50"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Programme du mois
                   </Link>
                   <Link
                     href="/bibliotheque"
@@ -195,7 +208,7 @@ export default function HomePage() {
               <div>
                 <p className="text-xs font-serif uppercase tracking-widest text-stone-400 mb-4">Notre Histoire</p>
                 <div className="flex items-center gap-4 mb-6">
-                  <img src="/logo.svg" alt="Logo ETU" className="h-14 w-14 shrink-0" />
+                  <img src="/logo-etu.png" alt="Logo ETU" className="h-14 w-14 shrink-0" />
                   <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 leading-snug">
                     L'Origine de l'École
                   </h2>
@@ -760,7 +773,7 @@ export default function HomePage() {
               <div>
                 <div className="flex items-center mb-4">
                   <img
-                    src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
+                    src="/logo-etu.png"
                     alt="Logo ETU"
                     className="h-10 w-10 mr-3"
                   />
@@ -777,6 +790,11 @@ export default function HomePage() {
                   <li>
                     <Link href="/faq" className="text-gray-600 hover:text-gray-900 font-serif">
                       FAQ
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/programme" className="text-gray-600 hover:text-gray-900 font-serif">
+                      Programme du mois
                     </Link>
                   </li>
                   <li>

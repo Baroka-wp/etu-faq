@@ -786,7 +786,7 @@ function SiteNav() {
                 <div className="flex justify-between items-center h-16">
                     <Link href="/" className="flex items-center">
                         <img
-                            src="/logo.svg"
+                            src="/logo-etu.png"
                             alt="Logo ETU"
                             className="h-10 w-10 mr-3"
                         />

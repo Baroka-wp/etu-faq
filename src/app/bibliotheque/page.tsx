@@ -97,7 +97,7 @@ export default function BibliothequePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-center mb-3">
                         <Image
-                            src="/logo.svg"
+                            src="/logo-etu.png"
                             alt="ETU-Bénin Logo"
                             width={36}
                             height={36}

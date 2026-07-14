@@ -147,22 +147,25 @@ model Membre {
 }
 
 model Traversee {
-  id               String   @id @default(cuid())
-  type             String   @default("Traversée Grand Navire")
-  titre            String
-  description      String
-  date             DateTime
-  lieu             String
-  lienUnique       String   @unique
-  gradesAutorises  String[]
-  serieId          String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  type                String   @default("Traversée Grand Navire")
+  titre               String
+  description         String
+  date                DateTime
+  lieu                String
+  lienUnique          String   @unique
+  gradesAutorises     String[]
+  serieId             String?
+  activiteProgrammeId String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  inscriptions InscriptionTraversee[]
+  inscriptions     InscriptionTraversee[]
+  activiteProgramme ActiviteProgramme? @relation(fields: [activiteProgrammeId], references: [id], onDelete: SetNull)
 
   @@index([lienUnique])
   @@index([serieId])
+  @@index([activiteProgrammeId, date])
 }
 
 model InscriptionTraversee {
@@ -177,4 +180,37 @@ model InscriptionTraversee {
   @@unique([traverseeId, membreId])
   @@index([traverseeId])
   @@index([membreId])
+}
+
+model ActiviteProgramme {
+  id        String   @id @default(cuid())
+  categorie String
+  titre     String
+  heures    String
+  lieu      String
+  ordre     Int      @default(0)
+  actif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  programmations ProgrammationMensuelle[]
+  evenements     Traversee[]
+
+  @@unique([categorie, titre])
+  @@index([categorie, actif])
+}
+
+model ProgrammationMensuelle {
+  id         String   @id @default(cuid())
+  activiteId String
+  annee      Int
+  mois       Int
+  jours      Int[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  activite ActiviteProgramme @relation(fields: [activiteId], references: [id], onDelete: Cascade)
+
+  @@unique([activiteId, annee, mois])
+  @@index([annee, mois])
 }

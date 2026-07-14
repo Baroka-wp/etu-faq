@@ -7,7 +7,10 @@ export const metadata: Metadata = {
   keywords: ["ETU", "École Transcendantaliste Universelle", "Kabbale", "Formation spirituelle", "Initiation", "Astrologie", "Ésotérisme", "Bénin", "Afrique", "Transcendantalisme"],
   authors: [{ name: "ETU Bénin" }],
   icons: {
-    icon: '/favicon.svg',
+    icon: [
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
+    ],
     apple: '/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',

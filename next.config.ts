@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Configuration des images
   images: {
-    domains: ['z-cdn-media.chatglm.cn'],
     formats: ['image/webp', 'image/avif'],
   },
   async redirects() {

@@ -26,7 +26,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mb-6">
                         <img
-                            src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
+                            src="/logo-etu.png"
                             alt="Logo ETU"
                             className="w-16 h-16"
                         />

@@ -131,7 +131,7 @@ export default function FAQPage() {
                             <div className="flex items-center">
                                 <Link href="/" className="flex items-center">
                                     <img
-                                        src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
+                                        src="/logo-etu.png"
                                         alt="Logo ETU"
                                         className="h-10 w-10 mr-3"
                                     />
@@ -190,7 +190,7 @@ export default function FAQPage() {
 
                         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-8">
                             <img
-                                src="https://z-cdn-media.chatglm.cn/files/68e00202-7aa7-4b85-a148-a40fdb4ac3f7_logo.png?auth_key=1791497410-4f07e789ecd94c959d996139b8c142b3-0-310a7d57abdef550ba4f1b3ace27306a"
+                                src="/logo-etu.png"
                                 alt="Logo ETU - École Transcendantaliste Universelle"
                                 className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40"
                             />
