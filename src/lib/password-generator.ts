@@ -1,21 +1,23 @@
-export function generatePassword(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let password = ''
-  
-  for (let i = 0; i < 8; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length))
+const ALPHANUMERIC = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'
+
+function securePassword(length: number): string {
+  const output: string[] = []
+  const max = Math.floor(256 / ALPHANUMERIC.length) * ALPHANUMERIC.length
+  while (output.length < length) {
+    const bytes = crypto.getRandomValues(new Uint8Array(length * 2))
+    for (const byte of bytes) {
+      if (byte >= max) continue
+      output.push(ALPHANUMERIC[byte % ALPHANUMERIC.length])
+      if (output.length === length) break
+    }
   }
-  
-  return password
+  return output.join('')
+}
+
+export function generatePassword(): string {
+  return securePassword(14)
 }
 
 export function generateUserPassword(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let password = ''
-  
-  for (let i = 0; i < 10; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  
-  return password
+  return securePassword(16)
 }

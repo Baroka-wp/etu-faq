@@ -7,7 +7,8 @@ export async function POST() {
   })
 
   // Supprimer le cookie de session
-  response.cookies.delete('membre-session')
+  response.cookies.set('membre-session', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 0, path: '/' })
+  response.cookies.set('admin-session', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 0, path: '/' })
 
   return response
 }

@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { createSessionToken } from '@/lib/security/session'
+import { rateLimit, safeJson, secureCookieOptions } from '@/lib/security/http'
 
 const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, 'membre-login', 8, 15 * 60 * 1000)
+  if (limited) return limited
   try {
-    const body = await request.json()
+    const body = await safeJson<{ nomSacre?: unknown; motDePasse?: unknown }>(request, 4_096)
     const { nomSacre, motDePasse } = body
 
     // Validation des champs requis
-    if (!nomSacre || !motDePasse) {
+    if (typeof nomSacre !== 'string' || typeof motDePasse !== 'string' || !nomSacre.trim() || !motDePasse) {
       return NextResponse.json(
         { error: 'Le nom sacré et le mot de passe sont requis' },
         { status: 400 }
@@ -62,6 +66,7 @@ export async function POST(request: NextRequest) {
       data: { derniereConnexion: new Date() }
     })
 
+    const role = membre.role === 'ADMIN' ? 'ADMIN' : 'MEMBRE'
     // Créer la session
     const response = NextResponse.json({
       success: true,
@@ -74,18 +79,22 @@ export async function POST(request: NextRequest) {
         grade: membre.grade,
         equipage: membre.equipage,
         email: membre.email,
-        imageUrl: membre.imageUrl
-      }
+        imageUrl: membre.imageUrl,
+        role,
+      },
+      role,
+      destination: role === 'ADMIN' ? '/admin/dashboard' : '/membre/dashboard',
     })
 
     // Définir le cookie de session (30 jours)
-    response.cookies.set('membre-session', membre.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 jours
-      path: '/'
-    })
+    const maxAge = 60 * 60 * 24 * 7
+    response.cookies.set('membre-session', await createSessionToken('membre', membre.id, maxAge), secureCookieOptions(maxAge))
+    if (role === 'ADMIN') {
+      const adminMaxAge = 60 * 60 * 8
+      response.cookies.set('admin-session', await createSessionToken('admin', membre.id, adminMaxAge), secureCookieOptions(adminMaxAge))
+    } else {
+      response.cookies.set('admin-session', '', { ...secureCookieOptions(0), maxAge: 0 })
+    }
 
     return response
 

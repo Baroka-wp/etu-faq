@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getSession, safeJson } from '@/lib/security/http'
 
 // Singleton Prisma - réutilisé entre les requêtes
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
@@ -8,15 +9,15 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 export async function POST(request: NextRequest) {
   try {
-    const membreId = request.cookies.get('membre-session')?.value
+    const membreId = (await getSession(request, 'membre'))?.sub
 
     if (!membreId) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    const { traverseeId } = await request.json()
+    const { traverseeId } = await safeJson<{ traverseeId?: unknown }>(request, 4_096)
 
-    if (!traverseeId) {
+    if (typeof traverseeId !== 'string' || !traverseeId) {
       return NextResponse.json({ error: 'ID de traversée requis' }, { status: 400 })
     }
 

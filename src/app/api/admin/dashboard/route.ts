@@ -1,63 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { db } from '@/lib/db'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
 
 export async function GET(request: NextRequest) {
+  if (!(await getAuthorizedAdmin(request))) {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  }
+
   try {
-    // Vérifier l'authentification admin
-    const adminSession = request.cookies.get('admin-session')?.value
-    if (adminSession !== 'authenticated') {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      )
-    }
+    const now = new Date()
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
 
-    // Récupérer les statistiques
-    const totalInscriptions = await (prisma as any).inscription.count()
-    const totalMembers = await (prisma as any).membre.count({
-      where: {
-        statut: 'actif'
-      }
-    })
-    const pendingApprovals = await (prisma as any).inscription.count({
-      where: {
-        statut: 'En attente'
-      }
-    })
-
-    // Récupérer les inscriptions récentes
-    const recentInscriptions = await (prisma as any).inscription.findMany({
-      take: 5,
-      orderBy: {
-        createdAt: 'desc'
-      },
-      select: {
-        id: true,
-        nom: true,
-        prenom: true,
-        telephone: true,
-        statut: true,
-        createdAt: true
-      }
-    })
+    const [activeMembers, monthEvents, pendingAspirants, books, upcomingEvents] = await Promise.all([
+      db.membre.count({ where: { statut: 'actif' } }),
+      db.traversee.count({ where: { date: { gte: monthStart, lt: nextMonth } } }),
+      db.inscription.count({ where: { statut: 'En attente' } }),
+      db.book.count(),
+      db.traversee.findMany({
+        where: { date: { gte: now } },
+        orderBy: { date: 'asc' },
+        take: 5,
+        select: {
+          id: true,
+          titre: true,
+          date: true,
+          lieu: true,
+          _count: { select: { inscriptions: true } },
+        },
+      }),
+    ])
 
     return NextResponse.json({
-      totalInscriptions,
-      totalMembers,
-      pendingApprovals,
-      recentInscriptions
+      activeMembers,
+      monthEvents,
+      pendingAspirants,
+      books,
+      upcomingEvents: upcomingEvents.map(({ _count, ...event }) => ({
+        ...event,
+        inscriptions: _count.inscriptions,
+      })),
     })
-
-  } catch (error: any) {
-    console.error('Erreur lors de la récupération des données du dashboard:', error)
-    
-    return NextResponse.json(
-      { error: 'Une erreur est survenue lors de la récupération des données' },
-      { status: 500 }
-    )
-  } finally {
-    await prisma.$disconnect()
+  } catch {
+    return NextResponse.json({ error: 'Chargement du tableau de bord impossible' }, { status: 500 })
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getSession } from '@/lib/security/http'
 
 // Singleton Prisma - réutilisé entre les requêtes
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
@@ -17,7 +18,7 @@ function gradeAutorise(membreGrade: string, gradesAutorises: string[]): boolean 
 
 export async function GET(request: NextRequest) {
   try {
-    const membreId = request.cookies.get('membre-session')?.value
+    const membreId = (await getSession(request, 'membre'))?.sub
 
     if (!membreId) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })

@@ -37,6 +37,7 @@ export default function MemberInscriptionPage() {
     const [uploadingPhoto, setUploadingPhoto] = useState(false)
     const [photoUploaded, setPhotoUploaded] = useState(false)
     const [selectedMemberId, setSelectedMemberId] = useState<string>('')
+    const [uploadToken, setUploadToken] = useState<string>('')
     const [formData, setFormData] = useState<MemberFormData>({
         nom: '',
         prenoms: '',
@@ -57,12 +58,7 @@ export default function MemberInscriptionPage() {
 
     useEffect(() => {
         // Vérifier l'autorisation d'accès
-        const authStatus = sessionStorage.getItem('memberFormAuth')
-        if (authStatus !== 'true') {
-            router.push('/members/login')
-        } else {
-            setIsAuthorized(true)
-        }
+        setIsAuthorized(true)
         setIsLoading(false)
     }, [])
 
@@ -95,6 +91,7 @@ export default function MemberInscriptionPage() {
             if (response.ok) {
                 const result = await response.json()
                 setSelectedMemberId(result.id)
+                setUploadToken(result.uploadToken)
                 setShowPhotoModal(true)
             } else {
                 const errorData = await response.json()
@@ -117,6 +114,7 @@ export default function MemberInscriptionPage() {
             const formDataUpload = new FormData()
             formDataUpload.append('file', file)
             formDataUpload.append('memberId', selectedMemberId)
+            formDataUpload.append('uploadToken', uploadToken)
 
             const response = await fetch('/api/members/upload-photo', {
                 method: 'POST',

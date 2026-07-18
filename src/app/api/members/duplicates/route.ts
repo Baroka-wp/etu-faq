@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
 
 const prisma = new PrismaClient()
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     // Utiliser une requête raw pour trouver les doublons de nomSacre
     // On groupe par nomSacre et on ne garde que ceux qui apparaissent plus d'une fois
@@ -26,7 +28,12 @@ export async function GET() {
         },
         orderBy: {
           createdAt: 'desc'
-        }
+        },
+        select: {
+          id: true, nom: true, prenoms: true, nomSacre: true, email: true,
+          grade: true, equipage: true, statut: true, role: true, telephoneWhatsapp: true,
+          lieuResidence: true, createdAt: true,
+        },
       })
       duplicatesWithMembers[dup.nomSacre] = membres
     }

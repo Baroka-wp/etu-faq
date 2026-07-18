@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Calendar, Star, BookOpen, User, LogOut, Menu, X } from 'lucide-react'
+import { Home, Calendar, BookOpen, User, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
 interface MembreSidebarProps {
@@ -40,7 +40,6 @@ export default function MembreSidebar({ membre }: MembreSidebarProps) {
   const menuItems = [
     { href: '/membre/dashboard', icon: Home, label: 'Tableau de bord' },
     { href: '/membre/planning', icon: Calendar, label: 'Planning' },
-    { href: '/membre/carte-du-ciel', icon: Star, label: 'Thème Astral' },
     { href: '/membre/bibliotheque', icon: BookOpen, label: 'Bibliothèque' },
     { href: '/membre/profil', icon: User, label: 'Mon profil' },
   ]

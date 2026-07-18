@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import crypto from 'crypto'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
 
 const prisma = new PrismaClient()
 
 // Vérifier que Prisma est correctement configuré
-console.log('Prisma client initialisé:', !!prisma)
-console.log('Méthodes disponibles:', Object.getOwnPropertyNames(prisma))
 
 export async function POST(
   request: NextRequest,
@@ -14,8 +13,8 @@ export async function POST(
 ) {
   try {
     // Vérifier l'authentification admin
-    const adminSession = request.cookies.get('admin-session')?.value
-    if (adminSession !== 'authenticated') {
+    const adminSession = await getAuthorizedAdmin(request)
+    if (!adminSession) {
       return NextResponse.json(
         { error: 'Non autorisé' },
         { status: 401 }
@@ -23,31 +22,28 @@ export async function POST(
     }
 
     const { id } = await params
-    console.log('Génération de lien pour l\'inscription:', id)
     
     let duration = 24
     try {
       const body = await request.json()
-      duration = body.duration || 24
+      const requestedDuration = Number(body.duration)
+      duration = Number.isInteger(requestedDuration) && requestedDuration >= 1 && requestedDuration <= 168 ? requestedDuration : 24
     } catch (e) {
       console.log('Utilisation de la durée par défaut (24h)')
     }
 
     // Vérifier si l'inscription existe
-    console.log('Recherche de l\'inscription avec l\'ID:', id)
     const inscription = await prisma.inscription.findUnique({
       where: { id }
     })
 
     if (!inscription) {
-      console.log('Inscription non trouvée pour l\'ID:', id)
       return NextResponse.json(
         { error: 'Inscription non trouvée' },
         { status: 404 }
       )
     }
     
-    console.log('Inscription trouvée:', inscription.prenom, inscription.nom, inscription.grade)
 
     // Générer un token unique
     const token = crypto.randomBytes(32).toString('hex')
@@ -68,7 +64,6 @@ export async function POST(
     const pdfPath = gradeToPdfMap[inscription.grade] || 'cours_explorateur_yod.pdf'
 
     // Désactiver les anciens liens pour cette inscription
-    console.log('Tentative de désactivation des anciens liens...')
     try {
       await prisma.uniqueLink.updateMany({
         where: { 
@@ -77,9 +72,8 @@ export async function POST(
         },
         data: { isActive: false }
       })
-      console.log('Anciens liens désactivés avec succès')
     } catch (updateError) {
-      console.log('Aucun ancien lien à désactiver ou erreur:', updateError)
+      console.error('Impossible de désactiver les anciens liens:', updateError)
       // Continuer même si la désactivation échoue
     }
 
@@ -107,14 +101,9 @@ export async function POST(
 
   } catch (error) {
     console.error('Erreur lors de la génération du lien:', error)
-    console.error('Détails de l\'erreur:', {
-      message: error instanceof Error ? error.message : 'Erreur inconnue',
-      stack: error instanceof Error ? error.stack : undefined
-    })
     return NextResponse.json(
       { 
-        error: 'Erreur interne du serveur',
-        details: error instanceof Error ? error.message : 'Erreur inconnue'
+        error: 'Erreur interne du serveur'
       },
       { status: 500 }
     )

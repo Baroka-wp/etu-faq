@@ -272,10 +272,14 @@ async function main() {
   console.log('')
 
   console.log('🔐 Connexion admin...')
+  const adminPassword = process.env.ADMIN_PASSWORD
+  if (!adminPassword) {
+    throw new Error('ADMIN_PASSWORD est requis')
+  }
   const loginRes = await fetch(`${BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: process.env.ADMIN_PASSWORD || 'etu2024' })
+    body: JSON.stringify({ password: adminPassword })
   })
 
   if (!loginRes.ok) {

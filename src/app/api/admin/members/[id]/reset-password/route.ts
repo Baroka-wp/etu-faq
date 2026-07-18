@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
 
 const prisma = new PrismaClient()
 
@@ -8,14 +9,15 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const { id } = await params
     const body = await request.json()
     const { motDePasse } = body
 
-    if (!motDePasse || motDePasse.length < 6) {
+    if (typeof motDePasse !== 'string' || motDePasse.length < 10 || motDePasse.length > 128) {
       return NextResponse.json(
-        { error: 'Le mot de passe doit contenir au moins 6 caractères' },
+        { error: 'Le mot de passe doit contenir entre 10 et 128 caractères' },
         { status: 400 }
       )
     }
@@ -31,8 +33,7 @@ export async function POST(
     await (prisma as any).membre.update({
       where: { id },
       data: {
-        motDePasse: hashedPassword,
-        derniereConnexion: null
+        motDePasse: hashedPassword
       }
     })
 

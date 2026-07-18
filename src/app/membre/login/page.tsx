@@ -34,11 +34,7 @@ export default function MembreLoginPage() {
       const data = await response.json()
 
       if (response.ok) {
-        if (data.premiereConnexion) {
-          setStep('premiereConnexion')
-        } else {
-          setStep('motDePasse')
-        }
+        setStep('motDePasse')
       } else {
         setError(data.error || 'Une erreur est survenue')
       }
@@ -79,7 +75,7 @@ export default function MembreLoginPage() {
 
       if (response.ok) {
         // Connexion automatique après création du mot de passe
-        router.push('/membre/dashboard')
+        router.push(data.destination || (data.role === 'ADMIN' ? '/admin/dashboard' : '/membre/dashboard'))
       } else {
         setError(data.error || 'Une erreur est survenue')
       }

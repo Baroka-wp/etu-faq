@@ -47,6 +47,7 @@ interface Membre {
     telephoneWhatsapp: string
     lieuResidence: string
     statut: string
+    role: 'MEMBRE' | 'ADMIN'
     createdAt: string
     updatedAt: string
     imageUrl: string | null
@@ -381,8 +382,8 @@ export default function MembersPage() {
     const handleConfirmResetPassword = async () => {
         if (!selectedMembre) return
 
-        if (newPassword.length < 6) {
-            setResetPasswordError('Le mot de passe doit contenir au moins 6 caractères')
+        if (newPassword.length < 10) {
+            setResetPasswordError('Le mot de passe doit contenir au moins 10 caractères')
             return
         }
 
@@ -865,6 +866,9 @@ export default function MembersPage() {
                                 <Badge variant={getGradeBadgeVariant(selectedMembre?.grade || 'Explorateur')} className="text-sm">
                                     {selectedMembre?.grade?.toUpperCase()}
                                 </Badge>
+                                <Badge className={selectedMembre?.role === 'ADMIN' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-gray-100 text-gray-700 border-gray-200'}>
+                                    {selectedMembre?.role === 'ADMIN' ? 'ADMINISTRATEUR' : 'MEMBRE'}
+                                </Badge>
                             </div>
                         </div>
                     </DialogHeader>
@@ -1115,6 +1119,23 @@ export default function MembersPage() {
                                 </Select>
                             </div>
 
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Rôle dans l’application</label>
+                                <Select
+                                    value={editFormData.role || 'MEMBRE'}
+                                    onValueChange={(value) => setEditFormData({ ...editFormData, role: value as 'MEMBRE' | 'ADMIN' })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="MEMBRE">Membre — espace personnel</SelectItem>
+                                        <SelectItem value="ADMIN">Administrateur — tableau de bord</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="mt-1 text-xs text-gray-500">Un administrateur se connecte avec son nom sacré et son mot de passe membre.</p>
+                            </div>
+
                             <div className="flex justify-end space-x-2 pt-4">
                                 <Button
                                     variant="outline"
@@ -1211,7 +1232,7 @@ export default function MembersPage() {
                                         </label>
                                         <Input
                                             type="password"
-                                            placeholder="Au moins 6 caractères"
+                                            placeholder="Au moins 10 caractères"
                                             value={newPassword}
                                             onChange={(e) => {
                                                 setNewPassword(e.target.value)
@@ -1234,7 +1255,7 @@ export default function MembersPage() {
                                         </Button>
                                         <Button
                                             onClick={handleConfirmResetPassword}
-                                            disabled={submitting || newPassword.length < 6}
+                                            disabled={submitting || newPassword.length < 10}
                                             className="bg-amber-600 hover:bg-amber-700 text-white"
                                         >
                                             {submitting ? 'Enregistrement...' : 'Définir le mot de passe'}

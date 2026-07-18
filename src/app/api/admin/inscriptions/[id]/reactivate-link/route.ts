@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import crypto from 'crypto'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
 
 const prisma = new PrismaClient()
 
@@ -8,9 +9,12 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const { id } = await params
-    const { duration = 24 } = await request.json() // Durée en heures
+    const body = await request.json()
+    const requestedDuration = Number(body.duration)
+    const duration = Number.isInteger(requestedDuration) && requestedDuration >= 1 && requestedDuration <= 168 ? requestedDuration : 24
 
     // Vérifier si l'inscription existe
     const inscription = await prisma.inscription.findUnique({

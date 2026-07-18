@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v2 as cloudinary } from 'cloudinary'
 import { PrismaClient } from '@prisma/client'
+import { getSession } from '@/lib/security/http'
+import { normalizeUploadedImage } from '@/lib/security/image'
 
 const prisma = new PrismaClient()
 
@@ -14,7 +16,7 @@ cloudinary.config({
 export async function POST(request: NextRequest) {
   try {
     // Récupérer l'ID du membre depuis le cookie
-    const membreId = request.cookies.get('membre-session')?.value
+    const membreId = (await getSession(request, 'membre'))?.sub
 
     if (!membreId) {
       return NextResponse.json(
@@ -52,21 +54,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Vérifier le type de fichier
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json(
-        { error: 'Le fichier doit être une image' },
-        { status: 400 }
-      )
-    }
-
-    // Vérifier la taille (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: 'L\'image est trop volumineuse (max 5MB)' },
-        { status: 400 }
-      )
-    }
+    const buffer = await normalizeUploadedImage(file, { maxBytes: 5 * 1024 * 1024, width: 400, height: 400, fit: 'cover' })
 
     let imageUrl: string
 
@@ -76,19 +64,19 @@ export async function POST(request: NextRequest) {
     const apiSecret = process.env.CLOUDINARY_API_SECRET
 
     if (!cloudName || !apiKey || !apiSecret) {
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'Service de téléversement indisponible' }, { status: 503 })
+      }
       // Mode développement : retourner une URL placeholder
       imageUrl = 'https://via.placeholder.com/400x400/cccccc/666666?text=Photo+de+profil'
     } else {
-      // Convertir le fichier en buffer
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-
       // Upload vers Cloudinary
       const result = await new Promise<any>((resolve, reject) => {
         cloudinary.uploader.upload_stream(
           {
             folder: 'etu-membres',
             resource_type: 'image',
+            format: 'jpg',
             transformation: [
               { width: 400, height: 400, crop: 'fill', quality: 'auto' }
             ]

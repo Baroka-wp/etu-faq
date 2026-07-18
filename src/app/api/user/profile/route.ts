@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { cookies } from 'next/headers'
+import { getSession } from '@/lib/security/http'
 
 const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get('user-session')?.value
+    const session = await getSession(request, 'user')
+    const userId = session?.sub
 
     if (!userId) {
       return NextResponse.json(

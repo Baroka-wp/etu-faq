@@ -6,7 +6,7 @@ import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import {
   CalendarDays, ChevronLeft, ChevronRight, Clipboard, Download,
-  ExternalLink, FileImage, Link2, Loader2, Plus, Save, Trash2, Users, X,
+  ExternalLink, FileImage, Link2, Loader2, Plus, Save, Search, Trash2, UserPlus, Users, X,
 } from 'lucide-react'
 import AdminSidebar from '@/components/AdminSidebar'
 import ProgrammeCalendar from '@/components/programme/ProgrammeCalendar'
@@ -45,6 +45,14 @@ interface Inscrit {
   }
 }
 
+interface MembreCandidat {
+  id: string
+  nom: string
+  prenoms: string
+  nomSacre: string | null
+  grade: string
+}
+
 interface Selection {
   activiteId: string
   jour: number
@@ -77,6 +85,11 @@ export default function ProgrammesMensuelsPage() {
   const [grades, setGrades] = useState([...GRADES])
   const [inscrits, setInscrits] = useState<Inscrit[]>([])
   const [loadingInscrits, setLoadingInscrits] = useState(false)
+  const [rechercheMembre, setRechercheMembre] = useState('')
+  const [membresTrouves, setMembresTrouves] = useState<MembreCandidat[]>([])
+  const [rechercheEnCours, setRechercheEnCours] = useState(false)
+  const [inscriptionEnCours, setInscriptionEnCours] = useState<string | null>(null)
+  const [retraitEnCours, setRetraitEnCours] = useState<string | null>(null)
 
   const annee = date.getFullYear()
   const mois = date.getMonth() + 1
@@ -241,8 +254,64 @@ export default function ProgrammesMensuelsPage() {
     }
   }
 
+  const rechercherMembre = async () => {
+    if (!evenementSelectionne || rechercheMembre.trim().length < 2) return
+    setRechercheEnCours(true)
+    try {
+      const response = await fetch(`/api/admin/traversees/${evenementSelectionne.id}/inscrits?q=${encodeURIComponent(rechercheMembre.trim())}`)
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      setMembresTrouves(data.data)
+    } catch (error) {
+      setMessage({ type: 'error', texte: error instanceof Error ? error.message : 'Recherche impossible' })
+    } finally {
+      setRechercheEnCours(false)
+    }
+  }
+
+  const inscrireMembre = async (membre: MembreCandidat) => {
+    if (!evenementSelectionne) return
+    setInscriptionEnCours(membre.id)
+    try {
+      const response = await fetch(`/api/admin/traversees/${evenementSelectionne.id}/inscrits`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ membreId: membre.id }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      setMembresTrouves((current) => current.filter((item) => item.id !== membre.id))
+      await Promise.all([chargerInscrits(), charger()])
+      setMessage({ type: 'success', texte: `${membre.prenoms} ${membre.nom} a été inscrit(e)` })
+    } catch (error) {
+      setMessage({ type: 'error', texte: error instanceof Error ? error.message : 'Inscription impossible' })
+    } finally {
+      setInscriptionEnCours(null)
+    }
+  }
+
+  const retirerInscription = async (inscription: Inscrit) => {
+    if (!evenementSelectionne) return
+    const nom = `${inscription.membre.prenoms} ${inscription.membre.nom}`
+    if (!window.confirm(`Retirer ${nom} de la liste des inscrits ?`)) return
+    setRetraitEnCours(inscription.id)
+    try {
+      const response = await fetch(`/api/admin/traversees/${evenementSelectionne.id}/inscrits?inscriptionId=${encodeURIComponent(inscription.id)}`, { method: 'DELETE' })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      await Promise.all([chargerInscrits(), charger()])
+      setMessage({ type: 'success', texte: `${nom} a été retiré(e) de cette liste` })
+    } catch (error) {
+      setMessage({ type: 'error', texte: error instanceof Error ? error.message : 'Retrait impossible' })
+    } finally {
+      setRetraitEnCours(null)
+    }
+  }
+
   useEffect(() => {
     setInscrits([])
+    setRechercheMembre('')
+    setMembresTrouves([])
     if (evenementSelectionne) chargerInscrits()
   }, [evenementSelectionne?.id])
 
@@ -341,7 +410,17 @@ export default function ProgrammesMensuelsPage() {
       </main>
 
       {selection && activiteSelectionnee && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4" onMouseDown={() => setSelection(null)}><div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl" onMouseDown={(e) => e.stopPropagation()}><div className="flex items-start justify-between border-b border-gray-200 p-6"><div><p className="text-sm text-gray-500">{selection.jour} {MOIS[mois - 1]} {annee} · {activiteSelectionnee.heures}</p><h2 className="mt-1 text-xl font-semibold text-gray-900">{activiteSelectionnee.titre}</h2><p className="mt-1 text-sm text-gray-500">{activiteSelectionnee.lieu}</p></div><button onClick={() => setSelection(null)} className="rounded-md p-2 text-gray-400 hover:bg-gray-100"><X className="h-5 w-5" /></button></div>
-        <div className="space-y-5 p-6">{!evenementSelectionne ? <><div><p className="mb-2 text-sm font-medium text-gray-700">Grades autorisés</p><div className="flex flex-wrap gap-2">{GRADES.map((grade) => <button key={grade} onClick={() => setGrades((current) => current.includes(grade) ? current.filter((item) => item !== grade) : [...current, grade])} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${grades.includes(grade) ? 'border-gray-800 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-600'}`}>{grades.includes(grade) ? '✓ ' : ''}{grade}</button>)}</div></div><div className="rounded-lg border border-gray-200 bg-gray-50 p-4"><h3 className="font-medium text-gray-900">Créer le lien d'inscription</h3><p className="mt-1 text-sm text-gray-600">Les membres pourront ouvrir le lien et s'inscrire avec leur nom sacré.</p><button onClick={creerLien} disabled={creatingLink || grades.length === 0} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-50">{creatingLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />} Créer le lien public</button></div><button onClick={retirerDate} className="inline-flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700"><Trash2 className="h-4 w-4" /> Retirer cette date du calendrier</button></> : <><div className="rounded-lg border border-gray-200 bg-gray-50 p-4"><p className="text-xs font-medium uppercase tracking-wide text-gray-500">Lien public</p><div className="mt-2 flex flex-col gap-2 sm:flex-row"><div className="min-w-0 flex-1 truncate rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700">{typeof window !== 'undefined' ? window.location.origin : ''}/traversee/{evenementSelectionne.lienUnique}</div><button onClick={copierLien} className="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"><Clipboard className="h-4 w-4" /> Copier</button><a href={`/traversee/${evenementSelectionne.lienUnique}`} target="_blank" className="inline-flex items-center justify-center gap-2 rounded-md bg-gray-800 px-3 py-2 text-sm text-white"><ExternalLink className="h-4 w-4" /> Ouvrir</a></div></div><div><div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div><h3 className="font-semibold text-gray-900">Membres inscrits</h3><p className="text-sm text-gray-500">{evenementSelectionne.inscrits} inscription(s)</p></div>{inscrits.length > 0 && <button onClick={exporterInscriptions} className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"><Download className="h-4 w-4" /> Exporter PDF</button>}</div>{loadingInscrits ? <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div> : inscrits.length === 0 ? <div className="rounded-lg border border-dashed border-gray-300 py-8 text-center"><Users className="mx-auto h-8 w-8 text-gray-300" /><p className="mt-2 text-sm text-gray-500">Aucun membre inscrit</p></div> : <div className="overflow-hidden rounded-lg border border-gray-200"><table className="w-full text-sm"><thead className="bg-gray-50 text-left text-gray-600"><tr><th className="px-3 py-2">Membre</th><th className="px-3 py-2">Nom sacré</th><th className="px-3 py-2">Grade</th><th className="px-3 py-2">Téléphone</th></tr></thead><tbody className="divide-y divide-gray-200">{inscrits.map((item) => <tr key={item.id}><td className="px-3 py-2 font-medium text-gray-900">{item.membre.prenoms} {item.membre.nom}</td><td className="px-3 py-2 text-gray-600">{item.membre.nomSacre || '—'}</td><td className="px-3 py-2 text-gray-600">{item.membre.grade}</td><td className="px-3 py-2 text-gray-600">{item.membre.telephoneWhatsapp}</td></tr>)}</tbody></table></div>}</div><button onClick={supprimerLien} className="inline-flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700"><Trash2 className="h-4 w-4" /> Supprimer le lien et ses inscriptions</button></>}</div></div></div>}
+        <div className="space-y-5 p-6">{!evenementSelectionne ? <><div><p className="mb-2 text-sm font-medium text-gray-700">Grades autorisés</p><div className="flex flex-wrap gap-2">{GRADES.map((grade) => <button key={grade} onClick={() => setGrades((current) => current.includes(grade) ? current.filter((item) => item !== grade) : [...current, grade])} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${grades.includes(grade) ? 'border-gray-800 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-600'}`}>{grades.includes(grade) ? '✓ ' : ''}{grade}</button>)}</div></div><div className="rounded-lg border border-gray-200 bg-gray-50 p-4"><h3 className="font-medium text-gray-900">Créer le lien d'inscription</h3><p className="mt-1 text-sm text-gray-600">Les membres pourront ouvrir le lien et s'inscrire avec leur nom sacré.</p><button onClick={creerLien} disabled={creatingLink || grades.length === 0} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-50">{creatingLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />} Créer le lien public</button></div><button onClick={retirerDate} className="inline-flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700"><Trash2 className="h-4 w-4" /> Retirer cette date du calendrier</button></> : <><div className="rounded-lg border border-gray-200 bg-gray-50 p-4"><p className="text-xs font-medium uppercase tracking-wide text-gray-500">Lien public</p><div className="mt-2 flex flex-col gap-2 sm:flex-row"><div className="min-w-0 flex-1 truncate rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700">{typeof window !== 'undefined' ? window.location.origin : ''}/traversee/{evenementSelectionne.lienUnique}</div><button onClick={copierLien} className="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"><Clipboard className="h-4 w-4" /> Copier</button><a href={`/traversee/${evenementSelectionne.lienUnique}`} target="_blank" className="inline-flex items-center justify-center gap-2 rounded-md bg-gray-800 px-3 py-2 text-sm text-white"><ExternalLink className="h-4 w-4" /> Ouvrir</a></div></div><div><div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div><h3 className="font-semibold text-gray-900">Membres inscrits</h3><p className="text-sm text-gray-500">{evenementSelectionne.inscrits} inscription(s)</p></div>{inscrits.length > 0 && <button onClick={exporterInscriptions} className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"><Download className="h-4 w-4" /> Exporter PDF</button>}</div>
+          <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <p className="text-sm font-medium text-gray-800">Inscrire un membre</p>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+              <input value={rechercheMembre} onChange={(event) => { setRechercheMembre(event.target.value); setMembresTrouves([]) }} onKeyDown={(event) => event.key === 'Enter' && rechercherMembre()} placeholder="Nom, prénom ou nom sacré" className="h-10 min-w-0 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-500" />
+              <button onClick={rechercherMembre} disabled={rechercheMembre.trim().length < 2 || rechercheEnCours} className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-gray-800 px-4 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-50">{rechercheEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} Rechercher</button>
+            </div>
+            {membresTrouves.length > 0 && <div className="mt-3 max-h-48 space-y-1.5 overflow-y-auto">{membresTrouves.map((membre) => <div key={membre.id} className="flex items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2"><div className="min-w-0"><p className="truncate text-sm font-medium text-gray-900">{membre.prenoms} {membre.nom} {membre.nomSacre ? `(${membre.nomSacre})` : ''}</p><p className="text-xs text-gray-500">{membre.grade}</p></div><button onClick={() => inscrireMembre(membre)} disabled={inscriptionEnCours === membre.id} className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-900 disabled:opacity-50">{inscriptionEnCours === membre.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserPlus className="h-3.5 w-3.5" />} Inscrire</button></div>)}</div>}
+            {!rechercheEnCours && rechercheMembre.trim().length >= 2 && membresTrouves.length === 0 && <p className="mt-3 text-xs text-gray-500">Lancez la recherche pour afficher les membres disponibles.</p>}
+          </div>
+          {loadingInscrits ? <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div> : inscrits.length === 0 ? <div className="rounded-lg border border-dashed border-gray-300 py-8 text-center"><Users className="mx-auto h-8 w-8 text-gray-300" /><p className="mt-2 text-sm text-gray-500">Aucun membre inscrit</p></div> : <div className="overflow-x-auto rounded-lg border border-gray-200"><table className="min-w-[700px] w-full text-sm"><thead className="bg-gray-50 text-left text-gray-600"><tr><th className="px-3 py-2">Membre</th><th className="px-3 py-2">Nom sacré</th><th className="px-3 py-2">Grade</th><th className="px-3 py-2">Téléphone</th><th className="px-3 py-2 text-right">Action</th></tr></thead><tbody className="divide-y divide-gray-200">{inscrits.map((item) => <tr key={item.id}><td className="px-3 py-2 font-medium text-gray-900">{item.membre.prenoms} {item.membre.nom}</td><td className="px-3 py-2 text-gray-600">{item.membre.nomSacre || '—'}</td><td className="px-3 py-2 text-gray-600">{item.membre.grade}</td><td className="px-3 py-2 text-gray-600">{item.membre.telephoneWhatsapp}</td><td className="px-3 py-2 text-right"><button onClick={() => retirerInscription(item)} disabled={retraitEnCours === item.id} className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50">{retraitEnCours === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} Retirer</button></td></tr>)}</tbody></table></div>}</div><button onClick={supprimerLien} className="inline-flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700"><Trash2 className="h-4 w-4" /> Supprimer le lien et ses inscriptions</button></>}</div></div></div>}
 
       {showAdd && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4" onMouseDown={() => setShowAdd(false)}><div className="w-full max-w-md rounded-lg bg-white shadow-xl" onMouseDown={(e) => e.stopPropagation()}><div className="flex items-start justify-between border-b border-gray-200 p-6"><div><p className="text-sm text-gray-500">{configuration.label}</p><h2 className="mt-1 text-xl font-semibold text-gray-900">Nouvelle activité</h2></div><button onClick={() => setShowAdd(false)} className="rounded-md p-2 text-gray-400 hover:bg-gray-100"><X className="h-5 w-5" /></button></div><form onSubmit={ajouterActivite} className="space-y-4 p-6"><label className="block text-sm font-medium text-gray-700">Activité<input required value={form.titre} onChange={(e) => setForm({ ...form, titre: e.target.value })} className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500" /></label><div className="grid grid-cols-2 gap-3"><label className="block text-sm font-medium text-gray-700">Heures<input required value={form.heures} onChange={(e) => setForm({ ...form, heures: e.target.value })} placeholder="19h-21h" className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500" /></label><label className="block text-sm font-medium text-gray-700">Lieu<input required value={form.lieu} onChange={(e) => setForm({ ...form, lieu: e.target.value })} placeholder={categorie === 'TEMPLE' ? 'Temple' : 'École'} className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500" /></label></div><button disabled={adding} className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-gray-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-50">{adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Ajouter l'activité</button></form></div></div>}
     </div>

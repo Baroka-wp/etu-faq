@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
+import { rateLimit, safeJson } from '@/lib/security/http'
 
 const prisma = new PrismaClient()
 
@@ -9,8 +8,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  const limited = rateLimit(request, 'download-metadata', 40, 15 * 60 * 1000)
+  if (limited) return limited
   try {
     const { token } = await params
+    if (!/^[a-f0-9]{64}$/i.test(token)) return NextResponse.json({ error: 'Lien invalide' }, { status: 404 })
 
     // Trouver le lien unique
     const uniqueLink = await prisma.uniqueLink.findUnique({
@@ -43,7 +45,6 @@ export async function GET(
 
     return NextResponse.json({
       id: uniqueLink.id,
-      token: uniqueLink.token,
       pdfPath: uniqueLink.pdfPath,
       isActive: uniqueLink.isActive,
       expiresAt: uniqueLink.expiresAt,
@@ -70,11 +71,12 @@ export async function PATCH(
 ) {
   try {
     const { token } = await params
-    const { downloaded } = await request.json()
+    if (!/^[a-f0-9]{64}$/i.test(token)) return NextResponse.json({ error: 'Lien invalide' }, { status: 404 })
+    const { downloaded } = await safeJson<{ downloaded?: unknown }>(request, 1_024)
 
     if (downloaded) {
-      await prisma.uniqueLink.update({
-        where: { token },
+      await prisma.uniqueLink.updateMany({
+        where: { token, isActive: true, expiresAt: { gt: new Date() } },
         data: { downloadedAt: new Date() }
       })
     }

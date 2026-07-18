@@ -6,8 +6,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ClientOnly from '@/components/ClientOnly'
 
-const MEMBER_ACCESS_PASSWORD = process.env.NEXT_PUBLIC_MEMBER_ACCESS_PASSWORD
-
 export default function MemberLoginPage() {
     const router = useRouter()
     const [password, setPassword] = useState('')
@@ -19,11 +17,17 @@ export default function MemberLoginPage() {
         setIsSubmitting(true)
         setError('')
 
-        if (password === MEMBER_ACCESS_PASSWORD) {
-            sessionStorage.setItem('memberFormAuth', 'true')
+        try {
+            const response = await fetch('/api/members/access', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password }),
+            })
+            const data = await response.json()
+            if (!response.ok) throw new Error(data.error || 'Accès refusé')
             router.push('/members/inscription')
-        } else {
-            setError('Mot de passe incorrect')
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Mot de passe incorrect')
             setIsSubmitting(false)
         }
     }

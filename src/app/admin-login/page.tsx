@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import ClientOnly from '@/components/ClientOnly'
 
 export default function AdminLoginPage() {
+    const [nomSacre, setNomSacre] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -19,16 +20,18 @@ export default function AdminLoginPage() {
         setError('')
 
         try {
-            const response = await fetch('/api/auth/login', {
+            const bootstrap = !nomSacre.trim()
+            const response = await fetch(bootstrap ? '/api/auth/login' : '/api/membre/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ password }),
+                body: JSON.stringify(bootstrap ? { password } : { nomSacre: nomSacre.trim(), motDePasse: password }),
             })
 
             if (response.ok) {
-                router.push('/admin/dashboard')
+                const data = await response.json()
+                router.push(data.destination || '/admin/dashboard')
             } else {
                 const data = await response.json()
                 setError(data.error || 'Mot de passe incorrect')
@@ -83,8 +86,25 @@ export default function AdminLoginPage() {
                             )}
 
                             <div>
+                                <label htmlFor="nomSacre" className="block text-sm font-medium text-gray-700 font-serif">
+                                    Nom sacré
+                                </label>
+                                <input
+                                    id="nomSacre"
+                                    name="nomSacre"
+                                    type="text"
+                                    value={nomSacre}
+                                    onChange={(e) => setNomSacre(e.target.value)}
+                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                                    placeholder="Votre nom sacré"
+                                    autoComplete="username"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">Laissez vide uniquement pour l’accès initial avant la désignation du premier administrateur.</p>
+                            </div>
+
+                            <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 font-serif">
-                                    Mot de passe administrateur
+                                    Mot de passe
                                 </label>
                                 <div className="mt-1 relative">
                                     <input
@@ -95,7 +115,7 @@ export default function AdminLoginPage() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-                                        placeholder="Entrez le mot de passe administrateur"
+                                        placeholder="Entrez votre mot de passe"
                                     />
                                     <button
                                         type="button"

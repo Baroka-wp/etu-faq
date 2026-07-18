@@ -1,83 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { createSessionToken } from '@/lib/security/session'
+import { rateLimit, safeJson, safeText } from '@/lib/security/http'
 
-function normalizeNomSacre(value: string): string {
-  return value
-    .trim()
-    .replace(/\s+/g, ' ')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
+function gradeAutorise(membreGrade: string, gradesAutorises: string[]) {
+  return membreGrade === 'Alchimiste' || gradesAutorises.length === 0 || gradesAutorises.includes(membreGrade)
 }
 
-function gradeAutorise(membreGrade: string, gradesAutorises: string[]): boolean {
-  if (membreGrade === 'Alchimiste') return true
-  if (gradesAutorises.length === 0) return true
-  return gradesAutorises.includes(membreGrade)
-}
-
-export async function GET(
+export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ lienUnique: string }> }
 ) {
+  const limited = rateLimit(request, 'event-member-verification', 8, 15 * 60 * 1000)
+  if (limited) return limited
+
   try {
     const { lienUnique } = await params
-    const nomSacre = request.nextUrl.searchParams.get('nomSacre')
+    const body = await safeJson<Record<string, unknown>>(request, 4_096)
+    const nomSacre = safeText(body.nomSacre, 120)
+    if (!nomSacre) return NextResponse.json({ error: 'Le nom sacré est requis' }, { status: 400 })
 
-    if (!nomSacre || !nomSacre.trim()) {
-      return NextResponse.json({ error: 'Le nom sacré est requis' }, { status: 400 })
-    }
-
-    const traversee = await db.traversee.findUnique({
-      where: { lienUnique },
-      select: { id: true, gradesAutorises: true }
-    })
-
-    if (!traversee) {
-      return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 })
-    }
-
-    const nomSacreNormalized = normalizeNomSacre(nomSacre)
-    const candidats = await db.membre.findMany({
-      where: {
-        nomSacre: { contains: nomSacre.trim(), mode: 'insensitive' },
-        statut: 'actif'
-      },
-      select: {
-        id: true,
-        nom: true,
-        prenoms: true,
-        nomSacre: true,
-        grade: true
-      }
-    })
-    const membre = candidats.find((item) =>
-      item.nomSacre && normalizeNomSacre(item.nomSacre) === nomSacreNormalized
-    )
+    const [traversee, membre] = await Promise.all([
+      db.traversee.findUnique({ where: { lienUnique }, select: { id: true, gradesAutorises: true } }),
+      db.membre.findFirst({
+        where: { nomSacre: { equals: nomSacre, mode: 'insensitive' }, statut: 'actif' },
+        select: { id: true, nom: true, prenoms: true, nomSacre: true, grade: true },
+      }),
+    ])
+    if (!traversee) return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 })
 
     if (!membre) {
       return NextResponse.json({ error: 'Aucun membre actif trouvé avec ce nom sacré' }, { status: 404 })
     }
-
-    // Vérification du grade
     if (!gradeAutorise(membre.grade, traversee.gradesAutorises)) {
-      return NextResponse.json(
-        { error: `Cet événement est réservé à certains grades. Votre grade (${membre.grade}) ne vous y autorise pas.` },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Votre grade ne permet pas cette inscription' }, { status: 403 })
     }
 
     const alreadyRegistered = await db.inscriptionTraversee.findUnique({
-      where: {
-        traverseeId_membreId: {
-          traverseeId: traversee.id,
-          membreId: membre.id
-        }
-      }
+      where: { traverseeId_membreId: { traverseeId: traversee.id, membreId: membre.id } },
+      select: { id: true },
     })
-
-    return NextResponse.json({ success: true, data: membre, dejaInscrit: !!alreadyRegistered })
+    return NextResponse.json({
+      success: true,
+      data: membre,
+      dejaInscrit: Boolean(alreadyRegistered),
+      eventToken: await createSessionToken('event', `${membre.id}:${traversee.id}`, 5 * 60),
+    })
   } catch {
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Requête invalide' }, { status: 400 })
   }
 }
