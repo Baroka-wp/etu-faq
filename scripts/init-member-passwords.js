@@ -93,7 +93,6 @@ Bienvenue sur votre dashboard personnel OMP-ETU Bénin !
 Dans votre dashboard, vous pourrez:
 ✓ Consulter votre planning personnel
 ✓ Vous inscrire aux traversées
-✓ Voir votre Theme astral
 ✓ Accéder à la bibliothèque
 ✓ Modifier vos informations
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { formatAppDateYMD, parseAppDatetimeLocal } from '@/lib/datetime'
 import { slugify } from '@/lib/utils'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
 
 const CATEGORIES = ['TEMPLE', 'ECOLE'] as const
 type Categorie = (typeof CATEGORIES)[number]
@@ -25,8 +26,8 @@ const ACTIVITES_PAR_DEFAUT = [
 
 const TOUS_LES_GRADES = ['Explorateur', 'Constructeur', 'Navigateur', 'Alchimiste']
 
-function isAdmin(request: NextRequest) {
-  return request.cookies.get('admin-session')?.value === 'authenticated'
+async function isAdmin(request: NextRequest) {
+  return Boolean(await getAuthorizedAdmin(request))
 }
 
 function moisValide(annee: number, mois: number) {
@@ -61,7 +62,7 @@ async function slugDisponible(base: string) {
 }
 
 export async function GET(request: NextRequest) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  if (!(await isAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const annee = Number(request.nextUrl.searchParams.get('annee'))
   const mois = Number(request.nextUrl.searchParams.get('mois'))
@@ -112,7 +113,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  if (!(await isAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   try {
     const body = await request.json()
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  if (!(await isAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   try {
     const body = await request.json()
@@ -211,7 +212,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  if (!(await isAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const evenementId = request.nextUrl.searchParams.get('evenementId')
   const activiteId = request.nextUrl.searchParams.get('activiteId')

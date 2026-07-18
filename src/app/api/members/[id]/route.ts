@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
 
 const prisma = new PrismaClient()
 
@@ -13,6 +14,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const { id } = await params
     const body = await request.json()
@@ -26,10 +28,12 @@ export async function PUT(
       lieuResidence,
       grade,
       equipage,
-      statut
+      statut,
+      role
     } = body
 
     const cleanNomSacre = sanitizeNomSacre(nomSacre)
+    const cleanRole = role === 'ADMIN' ? 'ADMIN' : 'MEMBRE'
 
     // Mise à jour du membre
     const membre = await (prisma as any).membre.update({
@@ -43,14 +47,16 @@ export async function PUT(
         lieuResidence,
         grade,
         equipage,
-        statut
+        statut,
+        role: cleanRole
       }
     })
 
+    const { motDePasse: _motDePasse, ...safeMembre } = membre
     return NextResponse.json({
       success: true,
       message: 'Membre mis à jour avec succès',
-      data: membre
+      data: safeMembre
     })
 
   } catch (error: any) {
@@ -76,6 +82,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const { id } = await params
 
@@ -112,6 +119,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const { id } = await params
 
@@ -127,9 +135,10 @@ export async function GET(
       )
     }
 
+    const { motDePasse: _motDePasse, ...safeMembre } = membre
     return NextResponse.json({
       success: true,
-      data: membre
+      data: safeMembre
     })
 
   } catch (error: any) {

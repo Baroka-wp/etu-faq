@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
+import { revealCredential } from '@/lib/security/credential'
 
 const prisma = new PrismaClient()
 
@@ -11,8 +13,8 @@ export async function GET(
     const { id } = await params
 
     // Vérifier l'authentification admin
-    const adminSession = request.cookies.get('admin-session')?.value
-    if (adminSession !== 'authenticated') {
+    const adminSession = await getAuthorizedAdmin(request)
+    if (!adminSession) {
       return NextResponse.json(
         { error: 'Non autorisé' },
         { status: 401 }
@@ -31,7 +33,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(inscription, { status: 200 })
+    return NextResponse.json({ ...inscription, motDePasse: await revealCredential(inscription.motDePasse) }, { status: 200 })
   } catch (error) {
     console.error('Erreur lors de la récupération de l\'inscription:', error)
     return NextResponse.json(
@@ -45,6 +47,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const { id } = await params
 
@@ -82,6 +85,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const { id } = await params
     const body = await request.json()
@@ -105,7 +109,7 @@ export async function PATCH(
       data: { statut }
     })
 
-    return NextResponse.json(updatedInscription, { status: 200 })
+    return NextResponse.json({ ...updatedInscription, motDePasse: await revealCredential(updatedInscription.motDePasse) }, { status: 200 })
   } catch (error) {
     console.error('Erreur lors de la mise à jour:', error)
     return NextResponse.json(
@@ -119,6 +123,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const { id } = await params
     const body = await request.json()
@@ -151,7 +156,7 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json(updatedInscription, { status: 200 })
+    return NextResponse.json({ ...updatedInscription, motDePasse: await revealCredential(updatedInscription.motDePasse) }, { status: 200 })
   } catch (error) {
     console.error('Erreur lors de la mise à jour:', error)
     return NextResponse.json(

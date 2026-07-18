@@ -134,6 +134,7 @@ model Membre {
   telephoneWhatsapp     String
   lieuResidence         String
   statut                String   @default("actif") // actif | suspendu
+  role                  String   @default("MEMBRE") // MEMBRE | ADMIN
   imageUrl              String?
   derniereConnexion     DateTime? // Première connexion si null
   createdAt             DateTime @default(now())
@@ -144,6 +145,7 @@ model Membre {
   @@index([statut])
   @@index([grade])
   @@index([nomSacre])
+  @@index([role, statut])
 }
 
 model Traversee {

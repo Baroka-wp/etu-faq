@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { rateLimit, safeJson } from '@/lib/security/http'
+import { verifySessionToken } from '@/lib/security/session'
 
 function normalizeNomSacre(value: string): string {
   return value
@@ -20,13 +22,13 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ lienUnique: string }> }
 ) {
+  const limited = rateLimit(request, 'event-registration', 10, 15 * 60 * 1000)
+  if (limited) return limited
   try {
     const { lienUnique } = await params
-    const { nomSacre } = await request.json()
-
-    if (!nomSacre || !nomSacre.trim()) {
-      return NextResponse.json({ error: 'Le nom sacré est requis' }, { status: 400 })
-    }
+    const { eventToken } = await safeJson<{ eventToken?: unknown }>(request, 4_096)
+    const eventSession = await verifySessionToken(typeof eventToken === 'string' ? eventToken : undefined, 'event')
+    if (!eventSession) return NextResponse.json({ error: 'Vérification expirée. Recommencez.' }, { status: 401 })
 
     const traversee = await db.traversee.findUnique({
       where: { lienUnique },
@@ -36,17 +38,14 @@ export async function POST(
       return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 })
     }
 
-    const nomSacreNormalized = normalizeNomSacre(nomSacre)
-    const candidats = await db.membre.findMany({
-      where: {
-        nomSacre: { contains: nomSacre.trim(), mode: 'insensitive' },
-        statut: 'actif'
-      },
-      select: { id: true, nom: true, prenoms: true, nomSacre: true, grade: true }
+    const [membreId, authorizedEventId] = eventSession.sub.split(':')
+    if (!membreId || authorizedEventId !== traversee.id) {
+      return NextResponse.json({ error: 'Autorisation invalide pour cet événement' }, { status: 403 })
+    }
+    const membre = await db.membre.findFirst({
+      where: { id: membreId, statut: 'actif' },
+      select: { id: true, nom: true, prenoms: true, nomSacre: true, grade: true },
     })
-    const membre = candidats.find((item) =>
-      item.nomSacre && normalizeNomSacre(item.nomSacre) === nomSacreNormalized
-    )
 
     if (!membre) {
       return NextResponse.json({ error: 'Aucun membre actif trouvé avec ce nom sacré' }, { status: 404 })

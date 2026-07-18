@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, Video, Heart } from 'lucide-react'
+import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, Heart } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 import DonModal from '@/components/DonModal'
@@ -59,13 +59,6 @@ export default function HomePage() {
                   Bibliothèque
                 </Link>
                 <Link
-                  href="/videotheque"
-                  className="inline-flex shrink-0 items-center gap-1.5 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
-                >
-                  <Video className="h-4 w-4 shrink-0" aria-hidden />
-                  Vidéothèque
-                </Link>
-                <Link
                   href="/charite"
                   className="inline-flex shrink-0 items-center gap-1.5 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
                 >
@@ -116,14 +109,6 @@ export default function HomePage() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Bibliothèque
-                  </Link>
-                  <Link
-                    href="/videotheque"
-                    className="flex items-center gap-2 rounded-md px-3 py-2.5 font-serif text-gray-800 hover:bg-stone-50"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Video className="h-4 w-4 shrink-0" aria-hidden />
-                    Vidéothèque
                   </Link>
                   <Link
                     href="/charite"
@@ -181,13 +166,6 @@ export default function HomePage() {
                 >
                   <User className="w-4 h-4" />
                   S'inscrire maintenant
-                </Link>
-                <Link
-                  href="/videotheque"
-                  className="inline-flex items-center gap-2 bg-white/10 border border-white/30 backdrop-blur-sm text-white px-6 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-white/20 transition-all"
-                >
-                  <Video className="w-4 h-4" />
-                  Voir les cours
                 </Link>
                 <button
                   onClick={() => setDonModalOpen(true)}
@@ -800,11 +778,6 @@ export default function HomePage() {
                   <li>
                     <Link href="/bibliotheque" className="text-gray-600 hover:text-gray-900 font-serif">
                       Bibliothèque
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/videotheque" className="text-gray-600 hover:text-gray-900 font-serif">
-                      Vidéothèque
                     </Link>
                   </li>
                   <li>

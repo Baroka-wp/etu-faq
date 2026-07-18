@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getSession } from '@/lib/security/http'
 
 const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
     // Récupérer l'ID du membre depuis le cookie
-    const membreId = request.cookies.get('membre-session')?.value
+    const membreId = (await getSession(request, 'membre'))?.sub
 
     if (!membreId) {
       return NextResponse.json(

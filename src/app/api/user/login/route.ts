@@ -1,21 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { cookies } from 'next/headers'
+import { createSessionToken } from '@/lib/security/session'
+import { rateLimit, safeJson, secureCookieOptions } from '@/lib/security/http'
+import { isProtectedCredential, protectCredential } from '@/lib/security/credential'
 
 const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, 'user-login', 8, 15 * 60 * 1000)
+  if (limited) return limited
   try {
-    const { password } = await request.json()
+    const { password } = await safeJson<{ password?: unknown }>(request, 2_048)
+    if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+      return NextResponse.json({ error: 'Identifiants invalides' }, { status: 400 })
+    }
 
     // Rechercher l'utilisateur par mot de passe
+    const protectedPassword = await protectCredential(password)
     const user = await (prisma as any).inscription.findFirst({
       where: {
-        motDePasse: password
+        motDePasse: { in: [password, protectedPassword] }
       }
     })
 
     if (user) {
+      if (!isProtectedCredential(user.motDePasse)) {
+        await (prisma as any).inscription.update({ where: { id: user.id }, data: { motDePasse: protectedPassword } })
+      }
       // Créer un cookie de session utilisateur
       const response = NextResponse.json({
         success: true,
@@ -37,12 +48,8 @@ export async function POST(request: NextRequest) {
         }
       })
       
-      response.cookies.set('user-session', user.id, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 60 * 60 * 24 * 30 // 30 jours
-      })
+      const maxAge = 60 * 60 * 24 * 7
+      response.cookies.set('user-session', await createSessionToken('user', user.id, maxAge), secureCookieOptions(maxAge))
 
       return response
     } else {

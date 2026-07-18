@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { createSessionToken } from '@/lib/security/session'
+import { getSession, rateLimit, safeJson, safeText } from '@/lib/security/http'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
 
 const prisma = new PrismaClient()
 
@@ -10,8 +13,13 @@ function sanitizeNomSacre(value: unknown): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  if (!(await getSession(request, 'registration'))) {
+    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+  }
+  const limited = rateLimit(request, 'member-registration', 4, 60 * 60 * 1000)
+  if (limited) return limited
   try {
-    const body = await request.json()
+    const body = await safeJson<Record<string, unknown>>(request, 24_000)
 
     const {
       nom,
@@ -25,18 +33,19 @@ export async function POST(request: NextRequest) {
       religionPratique,
       appartientAutreOrdre,
       precisionOrdre,
-      grade,
-      equipage,
       telephoneWhatsapp,
       lieuResidence,
-      statut,
-      imageUrl
     } = body
 
-    // Validation des champs requis
-    if (!nom || !prenoms || !email || !dateNaissance || !lieuNaissance || !religionPratique || !telephoneWhatsapp || !lieuResidence) {
+    const fields = {
+      nom: safeText(nom, 100), prenoms: safeText(prenoms, 150), email: safeText(email, 254),
+      dateNaissance: safeText(dateNaissance, 10), lieuNaissance: safeText(lieuNaissance, 150),
+      religionPratique: safeText(religionPratique, 100), telephoneWhatsapp: safeText(telephoneWhatsapp, 30),
+      lieuResidence: safeText(lieuResidence, 200),
+    }
+    if (Object.values(fields).some((value) => !value) || !/^\S+@\S+\.\S+$/.test(fields.email!)) {
       return NextResponse.json(
-        { error: 'Tous les champs marqués d\'un astérisque sont obligatoires' },
+        { error: 'Les champs obligatoires sont invalides' },
         { status: 400 }
       )
     }
@@ -46,30 +55,31 @@ export async function POST(request: NextRequest) {
     // Enregistrement dans la base de données
     const membre = await (prisma as any).membre.create({
       data: {
-        nom,
-        prenoms,
+        nom: fields.nom!,
+        prenoms: fields.prenoms!,
         nomSacre: cleanNomSacre,
-        profession: profession || null,
-        email,
-        dateNaissance,
-        heureNaissance: heureNaissance || null,
-        lieuNaissance,
-        religionPratique,
-        appartientAutreOrdre: appartientAutreOrdre || false,
-        precisionOrdre: precisionOrdre || null,
-        grade: grade || 'Explorateur',
-        equipage: equipage || 'ALEPH',
-        telephoneWhatsapp,
-        lieuResidence,
-        statut: statut || 'actif',
-        imageUrl: imageUrl || null
+        profession: safeText(profession, 150),
+        email: fields.email!,
+        dateNaissance: fields.dateNaissance!,
+        heureNaissance: safeText(heureNaissance, 5),
+        lieuNaissance: fields.lieuNaissance!,
+        religionPratique: fields.religionPratique!,
+        appartientAutreOrdre: appartientAutreOrdre === true,
+        precisionOrdre: safeText(precisionOrdre, 250),
+        grade: 'Explorateur',
+        equipage: 'ALEPH',
+        telephoneWhatsapp: fields.telephoneWhatsapp!,
+        lieuResidence: fields.lieuResidence!,
+        statut: 'actif',
+        imageUrl: null
       }
     })
 
     return NextResponse.json({
       success: true,
       message: 'Membre enregistré avec succès',
-      id: membre.id
+      id: membre.id,
+      uploadToken: await createSessionToken('upload', membre.id, 10 * 60),
     })
 
   } catch (error: any) {
@@ -85,6 +95,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  if (!(await getAuthorizedAdmin(request))) {
+    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+  }
   try {
     const searchParams = request.nextUrl.searchParams
     const statut = searchParams.get('statut')
@@ -104,6 +117,13 @@ export async function GET(request: NextRequest) {
       where,
       orderBy: {
         createdAt: 'desc'
+      },
+      select: {
+        id: true, nom: true, prenoms: true, nomSacre: true, profession: true, email: true,
+        dateNaissance: true, heureNaissance: true, lieuNaissance: true, religionPratique: true,
+        appartientAutreOrdre: true, precisionOrdre: true, grade: true, equipage: true,
+        telephoneWhatsapp: true, lieuResidence: true, statut: true, role: true, imageUrl: true,
+        derniereConnexion: true, createdAt: true, updatedAt: true,
       }
     })
 

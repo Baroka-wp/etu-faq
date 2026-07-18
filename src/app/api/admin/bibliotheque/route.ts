@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
 
 const prisma = new PrismaClient()
 
 // GET - Récupérer tous les livres
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const books = await prisma.book.findMany({
       orderBy: {
@@ -26,6 +28,7 @@ export async function GET() {
 
 // POST - Créer un nouveau livre
 export async function POST(request: NextRequest) {
+  if (!(await getAuthorizedAdmin(request))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   try {
     const body = await request.json()
 

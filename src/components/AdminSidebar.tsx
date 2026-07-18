@@ -3,17 +3,11 @@
 import { useState } from 'react'
 import {
     Users,
-    BarChart3,
-    Settings,
     LogOut,
     Menu,
     X,
     UserPlus,
-    FileText,
-    Shield,
     BookOpen,
-    Sparkles,
-    Video,
     Compass
 } from 'lucide-react'
 import Link from 'next/link'
@@ -30,10 +24,10 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
 
     const menuItems = [
         {
-            id: 'dashboard',
-            label: 'Tableau de bord',
-            icon: BarChart3,
-            href: '/admin/dashboard'
+            id: 'programmes',
+            label: 'Planifications',
+            icon: Compass,
+            href: '/admin/programmes'
         },
         {
             id: 'members',
@@ -42,34 +36,16 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             href: '/admin/members'
         },
         {
-            id: 'programmes',
-            label: 'Planifications',
-            icon: Compass,
-            href: '/admin/programmes'
-        },
-        {
             id: 'prospects',
             label: 'Aspirants Explorateurs',
             icon: Users,
             href: '/admin/inscriptions'
         },
         {
-            id: 'cours',
-            label: 'Vidéothèque',
-            icon: Video,
-            href: '/admin/cours'
-        },
-        {
             id: 'bibliotheque',
             label: 'Bibliothèque',
             icon: BookOpen,
             href: '/admin/bibliotheque'
-        },
-        {
-            id: 'carte-du-ciel',
-            label: 'Thème Astral',
-            icon: Sparkles,
-            href: '/admin/carte-du-ciel'
         }
     ]
 
@@ -93,7 +69,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
       `}>
                 <div className="flex flex-col h-full overflow-y-auto">
                     {/* Logo */}
-                    <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
+                    <Link href="/admin/dashboard" className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
                         <div className="flex items-center space-x-3">
                             <img
                                 src="/logo-etu.png"
@@ -101,11 +77,11 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
                                 className="w-8 h-8"
                             />
                             <div>
-                                <h1 className="text-lg font-bold text-gray-900">ETU Admin</h1>
-                                <p className="text-xs text-gray-500">Dashboard</p>
+                                <h1 className="text-lg font-bold text-gray-900">OMP Admin</h1>
+                                <p className="text-xs text-gray-500">Gestion des membres</p>
                             </div>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Navigation */}
                     <nav className="flex-1 px-4 py-6 space-y-1">

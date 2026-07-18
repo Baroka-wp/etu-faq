@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Calendar, BookOpen, Star, Users } from 'lucide-react'
+import { Calendar, BookOpen, Users } from 'lucide-react'
 import Link from 'next/link'
 
 interface Membre {
@@ -72,7 +72,7 @@ export default function DashboardPage() {
         {/* Planning - grand bloc en haut à gauche */}
         <Link
           href="/membre/planning"
-          className="md:col-span-7 bg-white border-b-2 md:border-b-0 md:border-r-2 border-black p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
+          className="md:col-span-8 bg-white border-b-2 md:border-r-2 border-black p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
         >
           <div className="flex items-start justify-between mb-6">
             <Calendar className="w-10 h-10 text-gray-900 group-hover:text-white transition-colors" strokeWidth={1.5} />
@@ -86,31 +86,14 @@ export default function DashboardPage() {
           </p>
         </Link>
 
-        {/* Thème astral - bloc à droite */}
-        <Link
-          href="/membre/carte-du-ciel"
-          className="md:col-span-5 bg-gray-50 border-b-2 border-black p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
-        >
-          <div className="flex items-start justify-between mb-6">
-            <Star className="w-10 h-10 text-gray-900 group-hover:text-white transition-colors" strokeWidth={1.5} />
-            <span className="text-5xl lg:text-6xl font-serif font-bold text-gray-200 group-hover:text-gray-700 transition-colors">02</span>
-          </div>
-          <h3 className="text-2xl lg:text-3xl font-bold font-serif mb-2 text-gray-900 group-hover:text-white transition-colors">
-            Thème astral
-          </h3>
-          <p className="text-gray-600 font-serif group-hover:text-gray-300 transition-colors">
-            Thème astral et positions planétaires
-          </p>
-        </Link>
-
-        {/* Bibliothèque - bloc en bas à gauche */}
+        {/* Bibliothèque */}
         <Link
           href="/membre/bibliotheque"
-          className="md:col-span-5 bg-white border-b-2 md:border-b-0 md:border-r-2 border-black p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
+          className="md:col-span-4 bg-gray-50 border-b-2 border-black p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
         >
           <div className="flex items-start justify-between mb-6">
             <BookOpen className="w-10 h-10 text-gray-900 group-hover:text-white transition-colors" strokeWidth={1.5} />
-            <span className="text-5xl lg:text-6xl font-serif font-bold text-gray-200 group-hover:text-gray-700 transition-colors">03</span>
+            <span className="text-5xl lg:text-6xl font-serif font-bold text-gray-200 group-hover:text-gray-700 transition-colors">02</span>
           </div>
           <h3 className="text-2xl lg:text-3xl font-bold font-serif mb-2 text-gray-900 group-hover:text-white transition-colors">
             Bibliothèque
@@ -120,14 +103,14 @@ export default function DashboardPage() {
           </p>
         </Link>
 
-        {/* Profil - bloc en bas à droite */}
+        {/* Profil */}
         <Link
           href="/membre/profil"
-          className="md:col-span-7 bg-gray-50 p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
+          className="md:col-span-12 bg-white p-8 lg:p-12 hover:bg-gray-900 group transition-colors"
         >
           <div className="flex items-start justify-between mb-6">
             <Users className="w-10 h-10 text-gray-900 group-hover:text-white transition-colors" strokeWidth={1.5} />
-            <span className="text-5xl lg:text-6xl font-serif font-bold text-gray-200 group-hover:text-gray-700 transition-colors">04</span>
+            <span className="text-5xl lg:text-6xl font-serif font-bold text-gray-200 group-hover:text-gray-700 transition-colors">03</span>
           </div>
           <h3 className="text-2xl lg:text-3xl font-bold font-serif mb-2 text-gray-900 group-hover:text-white transition-colors">
             Mon profil

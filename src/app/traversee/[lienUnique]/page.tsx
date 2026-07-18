@@ -1,799 +1,589 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
-    Calendar, MapPin, Users, CheckCircle, AlertCircle, Search,
-    ArrowLeft, Loader2, CalendarPlus, BookOpen, List
+  AlertCircle,
+  ArrowLeft,
+  Calendar,
+  CalendarPlus,
+  CheckCircle,
+  Loader2,
+  MapPin,
+  Search,
+  Users,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import {
-    Dialog, DialogContent, DialogHeader, DialogTitle
-} from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import { formatAppDate, formatAppTime } from '@/lib/datetime'
 
-// ── Interfaces ────────────────────────────────────────────────────────────────
 interface TraverseeData {
-    id: string
-    type: string
-    titre: string
-    description: string
-    date: string
-    lieu: string
-    lienUnique: string
-    gradesAutorises: string[]
-    _count: { inscriptions: number }
+  id: string
+  type: string
+  titre: string
+  description: string
+  date: string
+  lieu: string
+  lienUnique: string
+  gradesAutorises: string[]
+  _count: { inscriptions: number }
 }
 
 interface MembreFound {
-    id: string
-    nom: string
-    prenoms: string
-    nomSacre: string | null
-    grade: string
+  id: string
+  nom: string
+  prenoms: string
+  nomSacre: string | null
+  grade: string
 }
 
-type ModalStep = 'confirm-saved' | 'search' | 'confirm' | 'success' | 'error'
-
-const LS_NOM_SACRE_KEY = 'etu-traversee-nom-sacre'
-
-function getStoredNomSacre(): string | null {
-    if (typeof window === 'undefined') return null
-    try {
-        const v = localStorage.getItem(LS_NOM_SACRE_KEY)
-        return v && v.trim() ? v.trim() : null
-    } catch {
-        return null
-    }
+interface Inscrit {
+  id: string
+  nom: string
+  prenoms: string
+  nomSacre: string | null
 }
 
-function setStoredNomSacre(value: string) {
-    try {
-        localStorage.setItem(LS_NOM_SACRE_KEY, value.trim())
-    } catch {
-        /* ignore */
-    }
-}
+type ModalStep = 'search' | 'confirm' | 'success' | 'error'
 
-function clearStoredNomSacre() {
-    try {
-        localStorage.removeItem(LS_NOM_SACRE_KEY)
-    } catch {
-        /* ignore */
-    }
-}
+const STORAGE_KEY = 'etu-traversee-nom-sacre'
 
-type ListePhase = 'confirm-storage' | 'input' | 'loading' | 'result' | 'error'
-
-interface InscritListeItem {
-    nom: string
-    prenoms: string
-    nomSacre?: string | null
-}
-
-// ── Couleurs ──────────────────────────────────────────────────────────────────
 const TYPE_BADGE: Record<string, string> = {
-    'Traversée Grand Navire':   'bg-blue-100 text-blue-800',
-    'Traversée Équipage':       'bg-sky-100 text-sky-800',
-    "Traversée d'Initiation":   'bg-emerald-100 text-emerald-800',
-    'Cours de Grade':           'bg-purple-100 text-purple-800',
-    'Cours':                    'bg-indigo-100 text-indigo-800',
-    'Agape':                    'bg-orange-100 text-orange-800',
-    'Rencontre':                'bg-pink-100 text-pink-800',
+  'Traversée Grand Navire': 'bg-blue-50 text-blue-800',
+  'Traversée Équipage': 'bg-sky-50 text-sky-800',
+  "Traversée d'Initiation": 'bg-emerald-50 text-emerald-800',
+  'Cours de Grade': 'bg-purple-50 text-purple-800',
+  Cours: 'bg-indigo-50 text-indigo-800',
+  Agape: 'bg-orange-50 text-orange-800',
+  Rencontre: 'bg-pink-50 text-pink-800',
 }
 
 const GRADE_COLORS: Record<string, string> = {
-    Explorateur:  'bg-green-100 text-green-800 border-green-200',
-    Constructeur: 'bg-blue-100 text-blue-800 border-blue-200',
-    Navigateur:   'bg-purple-100 text-purple-800 border-purple-200',
-    Alchimiste:   'bg-yellow-100 text-yellow-800 border-yellow-200',
+  Explorateur: 'bg-green-50 text-green-800 border-green-200',
+  Constructeur: 'bg-blue-50 text-blue-800 border-blue-200',
+  Navigateur: 'bg-purple-50 text-purple-800 border-purple-200',
+  Alchimiste: 'bg-amber-50 text-amber-800 border-amber-200',
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function formatDate(dateStr: string) {
-    return formatAppDate(dateStr, {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-    })
+function storedNomSacre() {
+  if (typeof window === 'undefined') return ''
+  try {
+    return localStorage.getItem(STORAGE_KEY)?.trim() || ''
+  } catch {
+    return ''
+  }
 }
 
-function formatTime(dateStr: string) {
-    const time = formatAppTime(dateStr)
-    return time !== '00:00' ? time : null
+function rememberNomSacre(value: string) {
+  try {
+    localStorage.setItem(STORAGE_KEY, value.trim())
+  } catch {
+    // La mémorisation locale reste facultative.
+  }
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+function formatDate(date: string) {
+  return formatAppDate(date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function formatTime(date: string) {
+  const time = formatAppTime(date)
+  return time === '00:00' ? null : time
+}
+
 export default function TraverseePage() {
-    const params = useParams()
-    const lienUnique = params.lienUnique as string
+  const { lienUnique } = useParams<{ lienUnique: string }>()
+  const [traversee, setTraversee] = useState<TraverseeData | null>(null)
+  const [inscrits, setInscrits] = useState<Inscrit[]>([])
+  const [loading, setLoading] = useState(true)
+  const [listLoading, setListLoading] = useState(false)
+  const [listUnlocked, setListUnlocked] = useState(false)
+  const [listNomSacre, setListNomSacre] = useState('')
+  const [listError, setListError] = useState('')
+  const [directRegistering, setDirectRegistering] = useState(false)
+  const [directMessage, setDirectMessage] = useState('')
+  const [directMessageType, setDirectMessageType] = useState<'success' | 'error'>('success')
+  const [notFound, setNotFound] = useState(false)
 
-    const [traversee, setTraversee] = useState<TraverseeData | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [notFound, setNotFound] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [step, setStep] = useState<ModalStep>('search')
+  const [nomSacreInput, setNomSacreInput] = useState('')
+  const [eventToken, setEventToken] = useState('')
+  const [membreFound, setMembreFound] = useState<MembreFound | null>(null)
+  const [dejaInscrit, setDejaInscrit] = useState(false)
+  const [searching, setSearching] = useState(false)
+  const [registering, setRegistering] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-    const [showModal, setShowModal] = useState(false)
-    const [step, setStep] = useState<ModalStep>('search')
-    const [nomSacreInput, setNomSacreInput] = useState('')
-    const [membreFound, setMembreFound] = useState<MembreFound | null>(null)
-    const [dejaInscrit, setDejaInscrit] = useState(false)
-    const [searching, setSearching] = useState(false)
-    const [registering, setRegistering] = useState(false)
-    const [errorMessage, setErrorMessage] = useState('')
-
-    const [showListeModal, setShowListeModal] = useState(false)
-    const [listePhase, setListePhase] = useState<ListePhase>('input')
-    const [listeNomInput, setListeNomInput] = useState('')
-    const [listeInscrits, setListeInscrits] = useState<InscritListeItem[]>([])
-    const [listeError, setListeError] = useState('')
-    const [verifiedListeNomSacre, setVerifiedListeNomSacre] = useState('')
-    const [listeStoredNomPreview, setListeStoredNomPreview] = useState<string | null>(null)
-
-    const fetchTraversee = useCallback(async () => {
-        try {
-            const res = await fetch(`/api/traversees/${lienUnique}`)
-            if (!res.ok) { setNotFound(true); return }
-            const data = await res.json()
-            if (data.success) setTraversee(data.data)
-            else setNotFound(true)
-        } catch {
-            setNotFound(true)
-        } finally {
-            setLoading(false)
-        }
-    }, [lienUnique])
-
-    useEffect(() => { fetchTraversee() }, [fetchTraversee])
-
-    const runSearchInscription = useCallback(async (nomSacre: string) => {
-        const trimmed = nomSacre.trim()
-        if (!trimmed) return
-        setSearching(true)
-        setErrorMessage('')
-        try {
-            const res = await fetch(
-                `/api/traversees/${lienUnique}/rechercher?nomSacre=${encodeURIComponent(trimmed)}`
-            )
-            const data = await res.json()
-            if (!res.ok) {
-                setErrorMessage(data.error || 'Aucun membre trouvé')
-                setStep('error')
-            } else {
-                setMembreFound(data.data)
-                setDejaInscrit(data.dejaInscrit)
-                setStep('confirm')
-            }
-        } catch {
-            setErrorMessage('Une erreur est survenue. Veuillez réessayer.')
-            setStep('error')
-        } finally {
-            setSearching(false)
-        }
-    }, [lienUnique])
-
-    const openModal = () => {
-        setMembreFound(null)
-        setDejaInscrit(false)
-        setErrorMessage('')
-        const stored = getStoredNomSacre()
-        if (stored) {
-            setNomSacreInput(stored)
-            setStep('confirm-saved')
-        } else {
-            setNomSacreInput('')
-            setStep('search')
-        }
-        setShowModal(true)
+  const fetchTraversee = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/traversees/${lienUnique}`)
+      const body = await response.json()
+      if (!response.ok || !body.success) {
+        setNotFound(true)
+        return
+      }
+      setTraversee(body.data)
+    } catch {
+      setNotFound(true)
+    } finally {
+      setLoading(false)
     }
+  }, [lienUnique])
 
-    const handleSearch = () => {
-        void runSearchInscription(nomSacreInput)
+  const fetchInscrits = useCallback(async (nomSacre: string) => {
+    const value = nomSacre.trim()
+    if (!value) return
+    setListLoading(true)
+    setListError('')
+    try {
+      const response = await fetch(`/api/traversees/${lienUnique}/liste-inscrits`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nomSacre: value }),
+      })
+      const body = await response.json()
+      if (!response.ok || !body.success) {
+        setListError(body.error || 'Impossible d’afficher la liste.')
+        setListUnlocked(false)
+        return
+      }
+      setInscrits(body.data)
+      setListUnlocked(true)
+      rememberNomSacre(value)
+      setDirectMessage('')
+    } catch {
+      setListError('La vérification est momentanément indisponible.')
+      setListUnlocked(false)
+    } finally {
+      setListLoading(false)
     }
+  }, [lienUnique])
 
-    const openListeModal = () => {
-        setListeInscrits([])
-        setListeError('')
-        setVerifiedListeNomSacre('')
-        setListeNomInput('')
-        const stored = getStoredNomSacre()
-        if (stored) {
-            setListeStoredNomPreview(stored)
-            setListePhase('confirm-storage')
-        } else {
-            setListeStoredNomPreview(null)
-            setListePhase('input')
-        }
-        setShowListeModal(true)
+  const registerVerifiedMember = async () => {
+    const nomSacre = listNomSacre.trim()
+    if (!nomSacre) return
+    setDirectRegistering(true)
+    setDirectMessage('')
+    try {
+      const searchResponse = await fetch(`/api/traversees/${lienUnique}/rechercher`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nomSacre }),
+      })
+      const searchBody = await searchResponse.json()
+      if (!searchResponse.ok) {
+        setDirectMessageType('error')
+        setDirectMessage(searchBody.error || "L'inscription n'a pas pu être effectuée.")
+        return
+      }
+      if (searchBody.dejaInscrit) {
+        setDirectMessageType('success')
+        setDirectMessage('Ce membre est déjà inscrit à cet événement.')
+        return
+      }
+
+      const registrationResponse = await fetch(`/api/traversees/${lienUnique}/inscrire`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventToken: searchBody.eventToken }),
+      })
+      const registrationBody = await registrationResponse.json()
+      if (!registrationResponse.ok) {
+        setDirectMessageType('error')
+        setDirectMessage(registrationBody.error || "L'inscription n'a pas pu être enregistrée.")
+        return
+      }
+
+      rememberNomSacre(nomSacre)
+      await Promise.all([fetchTraversee(), fetchInscrits(nomSacre)])
+      setDirectMessageType('success')
+      setDirectMessage('Inscription confirmée. La liste a été actualisée.')
+    } catch {
+      setDirectMessageType('error')
+      setDirectMessage("L'inscription est momentanément indisponible. Veuillez réessayer.")
+    } finally {
+      setDirectRegistering(false)
     }
+  }
 
-    const fetchListeInscrits = async (nomSacre: string) => {
-        const trimmed = nomSacre.trim()
-        if (!trimmed) return
-        setListePhase('loading')
-        setListeError('')
-        try {
-            const res = await fetch(`/api/traversees/${lienUnique}/liste-inscrits`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nomSacre: trimmed })
-            })
-            const data = await res.json()
-            if (!res.ok) {
-                setListeError(data.error || 'Impossible d’afficher la liste')
-                setListePhase('error')
-                return
-            }
-            setListeInscrits(data.data || [])
-            setVerifiedListeNomSacre(trimmed)
-            setStoredNomSacre(trimmed)
-            setListePhase('result')
-        } catch {
-            setListeError('Une erreur est survenue. Veuillez réessayer.')
-            setListePhase('error')
-        }
+  useEffect(() => {
+    void fetchTraversee()
+  }, [fetchTraversee])
+
+  useEffect(() => {
+    setListNomSacre(storedNomSacre())
+  }, [])
+
+  const openRegistration = () => {
+    setNomSacreInput(storedNomSacre())
+    setMembreFound(null)
+    setEventToken('')
+    setDejaInscrit(false)
+    setErrorMessage('')
+    setStep('search')
+    setShowModal(true)
+  }
+
+  const searchMember = async () => {
+    const nomSacre = nomSacreInput.trim()
+    if (!nomSacre) return
+    setSearching(true)
+    setErrorMessage('')
+    try {
+      const response = await fetch(`/api/traversees/${lienUnique}/rechercher`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nomSacre }),
+      })
+      const body = await response.json()
+      if (!response.ok) {
+        setErrorMessage(body.error || 'Aucun membre trouvé avec ce nom sacré.')
+        setStep('error')
+        return
+      }
+      setMembreFound(body.data)
+      setDejaInscrit(body.dejaInscrit)
+      setEventToken(body.eventToken)
+      setStep('confirm')
+    } catch {
+      setErrorMessage('La recherche est momentanément indisponible. Veuillez réessayer.')
+      setStep('error')
+    } finally {
+      setSearching(false)
     }
+  }
 
-    const handleListeValiderInput = () => {
-        void fetchListeInscrits(listeNomInput)
+  const confirmRegistration = async () => {
+    setRegistering(true)
+    try {
+      const response = await fetch(`/api/traversees/${lienUnique}/inscrire`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventToken }),
+      })
+      const body = await response.json()
+      if (!response.ok) {
+        setErrorMessage(body.error || "L'inscription n'a pas pu être enregistrée.")
+        setStep('error')
+        return
+      }
+      rememberNomSacre(nomSacreInput)
+      setStep('success')
+      await fetchTraversee()
+      if (listUnlocked) await fetchInscrits(listNomSacre)
+    } catch {
+      setErrorMessage("L'inscription n'a pas pu être enregistrée. Veuillez réessayer.")
+      setStep('error')
+    } finally {
+      setRegistering(false)
     }
+  }
 
-    const openInscriptionFromListe = () => {
-        setShowListeModal(false)
-        setNomSacreInput(verifiedListeNomSacre)
-        setMembreFound(null)
-        setDejaInscrit(false)
-        setErrorMessage('')
-        setStep('search')
-        setShowModal(true)
-        void runSearchInscription(verifiedListeNomSacre)
-    }
+  const downloadICS = () => {
+    if (!traversee) return
+    const toICS = (date: string) => new Date(date).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+    const end = new Date(new Date(traversee.date).getTime() + 2 * 60 * 60 * 1000).toISOString()
+    const description = traversee.description.replace(/\n/g, '\\n').replace(/,/g, '\\,')
+    const content = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ETU//Evenement//FR',
+      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+      `UID:${traversee.id}@etufaq`, `DTSTAMP:${toICS(new Date().toISOString())}`,
+      `DTSTART:${toICS(traversee.date)}`, `DTEND:${toICS(end)}`,
+      `SUMMARY:${traversee.type} ; ${traversee.titre}`,
+      `DESCRIPTION:${description}`, `LOCATION:${traversee.lieu}`,
+      'END:VEVENT', 'END:VCALENDAR',
+    ].join('\r\n')
+    const url = URL.createObjectURL(new Blob([content], { type: 'text/calendar; charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `evenement-${traversee.lienUnique}.ics`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+  }
 
-    const handleConfirm = async () => {
-        setRegistering(true)
-        try {
-            const res = await fetch(`/api/traversees/${lienUnique}/inscrire`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nomSacre: nomSacreInput.trim() })
-            })
-            const data = await res.json()
-            if (res.ok) {
-                setStoredNomSacre(nomSacreInput.trim())
-                setStep('success')
-                fetchTraversee()
-            } else {
-                setErrorMessage(data.error || 'Une erreur est survenue')
-                setStep('error')
-            }
-        } catch {
-            setErrorMessage('Une erreur est survenue. Veuillez réessayer.')
-            setStep('error')
-        } finally {
-            setRegistering(false)
-        }
-    }
-
-    const downloadICS = () => {
-        if (!traversee) return
-        const toICS = (d: string) => new Date(d).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-        const end = new Date(new Date(traversee.date).getTime() + 2 * 60 * 60 * 1000).toISOString()
-        const desc = traversee.description.replace(/\n/g, '\\n').replace(/,/g, '\\,')
-        const lines = [
-            'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ETU//Traversee//FR',
-            'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
-            'BEGIN:VEVENT',
-            `UID:${traversee.id}@etufaq`,
-            `DTSTAMP:${toICS(new Date().toISOString())}`,
-            `DTSTART:${toICS(traversee.date)}`,
-            `DTEND:${toICS(end)}`,
-            `SUMMARY:${traversee.type} ; ${traversee.titre}`,
-            `DESCRIPTION:${desc}`,
-            `LOCATION:${traversee.lieu}`,
-            'END:VEVENT', 'END:VCALENDAR',
-        ]
-        const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar; charset=utf-8' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url; a.download = `traversee-${traversee.lienUnique}.ics`
-        document.body.appendChild(a); a.click()
-        document.body.removeChild(a); URL.revokeObjectURL(url)
-    }
-
-    // ── États de chargement / not found ──────────────────────────────────────
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto" />
-                    <p className="mt-4 text-gray-600 font-serif">Chargement…</p>
-                </div>
-            </div>
-        )
-    }
-
-    if (notFound || !traversee) {
-        return (
-            <div className="min-h-screen bg-white">
-                <SiteNav />
-                <div className="flex flex-col items-center justify-center py-32 text-center px-4">
-                    <AlertCircle className="w-16 h-16 text-gray-300 mb-4" />
-                    <h1 className="text-2xl font-serif font-bold text-gray-800 mb-2">Événement introuvable</h1>
-                    <p className="text-gray-500 font-serif">Ce lien ne correspond à aucune planification active.</p>
-                    <Link href="/" className="mt-6 inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-serif">
-                        <ArrowLeft className="w-4 h-4" /> Retour à l'accueil
-                    </Link>
-                </div>
-            </div>
-        )
-    }
-
-    const timeStr = formatTime(traversee.date)
-    const isRestricted = traversee.gradesAutorises.length > 0 && traversee.gradesAutorises.length < 4
-
+  if (loading) {
     return (
-        <div className="min-h-screen bg-white">
-            <SiteNav />
-
-            {/* ── Hero / Bannière ── */}
-            <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 sm:py-16">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6">
-                    {/* Type badge */}
-                    <div className="mb-4">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium font-serif ${TYPE_BADGE[traversee.type] || 'bg-gray-100 text-gray-700'}`}>
-                            {traversee.type}
-                        </span>
-                    </div>
-
-                    {/* Titre */}
-                    <h1 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 leading-tight mb-6">
-                        {traversee.titre}
-                    </h1>
-
-                    {/* Méta */}
-                    <div className="flex flex-wrap gap-5 text-gray-600 mb-4">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-5 h-5 text-indigo-400" />
-                            <span className="font-serif capitalize">
-                                {formatDate(traversee.date)}
-                                {timeStr && <span className="text-gray-400 ml-1">· {timeStr}</span>}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-indigo-400" />
-                            <span className="font-serif">{traversee.lieu}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Users className="w-5 h-5 text-indigo-400" />
-                            <span className="font-serif">{traversee._count.inscriptions} inscrit(s)</span>
-                        </div>
-                    </div>
-
-                    {/* Grades autorisés */}
-                    {isRestricted && (
-                        <div className="flex flex-wrap gap-2 mt-4">
-                            <span className="text-sm text-gray-500 font-serif mr-1 self-center">Réservé aux grades :</span>
-                            {traversee.gradesAutorises.map(g => (
-                                <span key={g} className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${GRADE_COLORS[g] || 'bg-gray-100 text-gray-700'}`}>
-                                    {g}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-
-                    <div className="mt-6 flex justify-center">
-                        <Button
-                            type="button"
-                            onClick={openListeModal}
-                            className="bg-gray-800 text-white px-8 py-4 rounded-lg hover:bg-gray-900 transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-serif"
-                        >
-                            <List className="w-5 h-5 mr-2" />
-                            Voir la liste des inscrits
-                        </Button>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── Corps ── */}
-            <section className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
-                    <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest font-serif mb-4">
-                        Description
-                    </h2>
-                    <p className="text-gray-700 font-serif leading-relaxed whitespace-pre-line text-lg">
-                        {traversee.description}
-                    </p>
-                </div>
-
-                {/* CTA inscription */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 text-center border border-indigo-100">
-                    <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">
-                        Participer à cet événement
-                    </h3>
-                    <p className="text-gray-500 font-serif text-sm mb-6">
-                        {isRestricted
-                            ? `Réservé aux membres : ${traversee.gradesAutorises.join(', ')}`
-                            : 'Ouvert à tous les membres actifs de l\'ordre'
-                        }
-                    </p>
-                    <button
-                        onClick={openModal}
-                        className="w-full sm:w-auto bg-gray-800 text-white px-8 py-4 rounded-lg hover:bg-gray-900 transition-colors text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-serif"
-                    >
-                        S'inscrire à cet événement
-                    </button>
-                    <div className="mt-4">
-                        <button
-                            onClick={downloadICS}
-                            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors font-serif"
-                        >
-                            <CalendarPlus className="w-4 h-4" />
-                            Ajouter à mon calendrier
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── Modal d'inscription ── */}
-            <Dialog
-                open={showModal}
-                onOpenChange={(open) => {
-                    if (!open && (step === 'search' || step === 'error' || step === 'confirm-saved')) setShowModal(false)
-                    else if (open) setShowModal(true)
-                }}
-            >
-                <DialogContent className="w-[94vw] sm:max-w-md top-[6%] translate-y-0 max-h-[88dvh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 font-serif">
-                            {step === 'success' ? (
-                                <><CheckCircle className="w-5 h-5 text-green-500" /> Inscription confirmée</>
-                            ) : step === 'error' ? (
-                                <><AlertCircle className="w-5 h-5 text-red-500" /> Impossible de procéder</>
-                            ) : (
-                                <>S'inscrire à l'événement</>
-                            )}
-                        </DialogTitle>
-                    </DialogHeader>
-
-                    {/* Étape : nom sacré mémorisé sur l’appareil */}
-                    {step === 'confirm-saved' && (
-                        <div className="space-y-4 py-2">
-                            <p className="text-sm text-gray-600 font-serif">
-                                Un nom sacré est mémorisé sur cet appareil pour les inscriptions aux traversées.
-                                Est-ce toujours vous ?
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 font-serif text-center bg-gray-50 rounded-lg py-2 px-3 border border-gray-100">
-                                « {nomSacreInput} »
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <Button
-                                    className="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-serif"
-                                    onClick={() => void runSearchInscription(nomSacreInput)}
-                                    disabled={searching}
-                                >
-                                    {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Oui, c’est moi'}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="flex-1 font-serif"
-                                    onClick={() => {
-                                        clearStoredNomSacre()
-                                        setNomSacreInput('')
-                                        setStep('search')
-                                    }}
-                                >
-                                    Non, autre nom
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Étape : recherche */}
-                    {step === 'search' && (
-                        <div className="space-y-4 py-2">
-                            <p className="text-sm text-gray-600 font-serif">
-                                Saisissez votre nom sacré pour vous inscrire.
-                            </p>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700 font-serif">Nom sacré</label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={nomSacreInput}
-                                        onChange={e => setNomSacreInput(e.target.value)}
-                                        onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                                        placeholder="Entrez votre nom sacré…"
-                                        autoFocus
-                                    />
-                                    <Button
-                                        onClick={handleSearch}
-                                        disabled={!nomSacreInput.trim() || searching}
-                                        className="bg-gray-800 hover:bg-gray-900 text-white gap-2 whitespace-nowrap"
-                                    >
-                                        {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                                        Rechercher
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Étape : confirmation */}
-                    {step === 'confirm' && membreFound && (
-                        <div className="space-y-4 py-2">
-                            {dejaInscrit ? (
-                                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                                    <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                                    <p className="font-semibold text-gray-800 font-serif">Déjà inscrit</p>
-                                    <p className="text-sm text-gray-600 mt-1 font-serif">
-                                        <strong>{membreFound.nom} {membreFound.prenoms}</strong> est déjà inscrit(e) à cet événement.
-                                    </p>
-                                </div>
-                            ) : (
-                                <>
-                                    <p className="text-sm text-gray-600 font-serif">Nous avons trouvé ce membre. Est-ce bien vous ?</p>
-                                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-100 rounded-xl p-4">
-                                        <div className="flex items-start gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-gray-900 text-white flex items-center justify-center font-bold text-lg flex-shrink-0 font-serif">
-                                                {membreFound.nom.charAt(0)}{membreFound.prenoms.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-gray-900 text-lg font-serif">
-                                                    {membreFound.nom} {membreFound.prenoms}
-                                                </p>
-                                                {membreFound.nomSacre && (
-                                                    <p className="text-sm text-gray-500 italic font-serif">"{membreFound.nomSacre}"</p>
-                                                )}
-                                                <Badge className={`mt-2 text-xs border ${GRADE_COLORS[membreFound.grade] || 'bg-gray-100 text-gray-700'}`}>
-                                                    {membreFound.grade}
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-3 pt-2">
-                                        <Button variant="outline" onClick={() => setStep('search')} className="flex-1 font-serif">
-                                            <ArrowLeft className="w-4 h-4 mr-2" />
-                                            Ce n'est pas moi
-                                        </Button>
-                                        <Button
-                                            onClick={handleConfirm}
-                                            disabled={registering}
-                                            className="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-serif"
-                                        >
-                                            {registering
-                                                ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Inscription…</>
-                                                : <><CheckCircle className="w-4 h-4 mr-2" />Confirmer</>
-                                            }
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                            {dejaInscrit && (
-                                <Button variant="outline" onClick={() => setShowModal(false)} className="w-full font-serif">
-                                    Fermer
-                                </Button>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Étape : succès */}
-                    {step === 'success' && membreFound && traversee && (
-                        <div className="space-y-4 py-2 text-center">
-                            <div className="flex justify-center">
-                                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                                    <CheckCircle className="w-9 h-9 text-green-500" />
-                                </div>
-                            </div>
-                            <div>
-                                <p className="font-bold text-gray-900 text-lg font-serif">Inscription réussie !</p>
-                                <p className="text-sm text-gray-600 mt-1 font-serif">
-                                    <strong>{membreFound.nom} {membreFound.prenoms}</strong> est bien inscrit(e) à<br />
-                                    <span className="font-medium text-gray-800">{traversee.titre}</span>
-                                </p>
-                            </div>
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-3 text-sm text-gray-600 font-serif">
-                                <Calendar className="w-4 h-4 inline mr-1 text-indigo-400" />
-                                {formatDate(traversee.date)}
-                                <span className="mx-2">·</span>
-                                <MapPin className="w-4 h-4 inline mr-1 text-indigo-400" />
-                                {traversee.lieu}
-                            </div>
-                            <Button
-                                onClick={downloadICS}
-                                variant="outline"
-                                className="w-full gap-2 font-serif"
-                            >
-                                <CalendarPlus className="w-4 h-4" />
-                                Ajouter à mon calendrier
-                            </Button>
-                            <Button
-                                onClick={() => setShowModal(false)}
-                                className="w-full bg-gray-800 text-white hover:bg-gray-900 font-serif"
-                            >
-                                Fermer
-                            </Button>
-                        </div>
-                    )}
-
-                    {/* Étape : erreur */}
-                    {step === 'error' && (
-                        <div className="space-y-4 py-2 text-center">
-                            <div className="flex justify-center">
-                                <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-                                    <AlertCircle className="w-9 h-9 text-red-500" />
-                                </div>
-                            </div>
-                            <div>
-                                <p className="font-bold text-gray-900 font-serif">Impossible de procéder</p>
-                                <p className="text-sm text-gray-600 mt-1 font-serif">{errorMessage}</p>
-                            </div>
-                            <Button variant="outline" onClick={() => setStep('search')} className="w-full font-serif">
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Réessayer
-                            </Button>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
-
-            {/* Modal : liste des inscrits (après vérification nom sacré) */}
-            <Dialog
-                open={showListeModal}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setShowListeModal(false)
-                        setListePhase('input')
-                        setListeNomInput('')
-                        setListeInscrits([])
-                        setListeError('')
-                        setListeStoredNomPreview(null)
-                    } else {
-                        setShowListeModal(true)
-                    }
-                }}
-            >
-                <DialogContent className="w-[98vw] max-w-[98vw] top-[2%] translate-y-0 h-auto max-h-[94dvh] overflow-y-auto font-serif p-4 sm:p-6">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 font-serif">
-                            <List className="w-5 h-5" />
-                            Liste des inscrits
-                        </DialogTitle>
-                    </DialogHeader>
-
-                    {listePhase === 'confirm-storage' && (
-                        <div className="pt-1">
-                            <div className="max-w-2xl rounded-xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
-                                <p className="text-sm text-gray-600 leading-relaxed">
-                                    Un nom sacré est déjà enregistré sur cet appareil. Voulez-vous l’utiliser pour afficher la liste des inscrits ?
-                                </p>
-                                <p className="mt-3 text-base font-semibold text-gray-900 bg-gray-50 rounded-lg py-2 px-3 border border-gray-100">
-                                    {listeStoredNomPreview}
-                                </p>
-                                <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                                    <Button
-                                        className="flex-1 bg-gray-800 hover:bg-gray-900 text-white"
-                                        onClick={() => {
-                                            if (listeStoredNomPreview) void fetchListeInscrits(listeStoredNomPreview)
-                                        }}
-                                    >
-                                        Afficher la liste
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        className="flex-1"
-                                        onClick={() => {
-                                            clearStoredNomSacre()
-                                            setListeNomInput('')
-                                            setListePhase('input')
-                                        }}
-                                    >
-                                        Utiliser un autre nom
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {listePhase === 'input' && (
-                        <div className="pt-1">
-                            <div className="max-w-2xl rounded-xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
-                                <p className="text-sm text-gray-600 leading-relaxed">
-                                    Saisissez votre nom sacré pour afficher la liste des inscrits.
-                                </p>
-
-                                <div className="mt-4 space-y-2">
-                                    <label className="block text-sm font-semibold text-gray-800">Nom sacré</label>
-                                    <div className="flex flex-col sm:flex-row gap-3 items-stretch">
-                                        <Input
-                                            value={listeNomInput}
-                                            onChange={e => setListeNomInput(e.target.value)}
-                                            onKeyDown={e => e.key === 'Enter' && handleListeValiderInput()}
-                                            placeholder="Votre nom sacré..."
-                                            autoFocus
-                                            className="h-11 text-base bg-white border-gray-200"
-                                        />
-                                        <Button
-                                            onClick={handleListeValiderInput}
-                                            disabled={!listeNomInput.trim()}
-                                            className="h-11 px-6 bg-gray-800 hover:bg-gray-900 text-white gap-2 whitespace-nowrap"
-                                        >
-                                            <Search className="w-4 h-4" />
-                                            Valider
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {listePhase === 'loading' && (
-                        <div className="flex flex-col items-center justify-center py-10 gap-3">
-                            <Loader2 className="w-8 h-8 animate-spin text-gray-700" />
-                            <p className="text-sm text-gray-600">Vérification…</p>
-                        </div>
-                    )}
-
-                    {listePhase === 'error' && (
-                        <div className="space-y-4 py-2 text-center">
-                            <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-                            <p className="text-sm text-gray-600">{listeError}</p>
-                            <Button variant="outline" className="w-full" onClick={() => setListePhase('input')}>
-                                Réessayer
-                            </Button>
-                        </div>
-                    )}
-
-                    {listePhase === 'result' && (
-                        <div className="space-y-4 py-2">
-                            <p className="text-sm text-gray-600">
-                                {listeInscrits.length} personne{listeInscrits.length > 1 ? 's' : ''} inscrite{listeInscrits.length > 1 ? 's' : ''}.
-                            </p>
-                            <ul className="max-h-56 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-100 bg-gray-50/50">
-                                {listeInscrits.map((row, i) => (
-                                    <li key={`${row.nom}-${row.prenoms}-${i}`} className="px-3 py-2 text-sm text-gray-800">
-                                        <span className="font-medium">{row.nom}</span>
-                                        {' '}
-                                        <span className="text-gray-600">
-                                            {row.prenoms}
-                                            {row.nomSacre ? ` (${row.nomSacre})` : ''}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="flex flex-col gap-2">
-                                <Button
-                                    className="w-full bg-gray-800 hover:bg-gray-900 text-white"
-                                    onClick={openInscriptionFromListe}
-                                >
-                                    S’inscrire à cet événement
-                                </Button>
-                                <Button variant="outline" className="w-full" onClick={() => setShowListeModal(false)}>
-                                    Fermer
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-[#faf9f6]">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" aria-label="Chargement" />
+      </div>
     )
+  }
+
+  if (notFound || !traversee) {
+    return (
+      <div className="min-h-screen bg-[#faf9f6]">
+        <SiteNav />
+        <main className="mx-auto flex max-w-lg flex-col items-center px-5 py-24 text-center">
+          <AlertCircle className="mb-5 h-12 w-12 text-gray-300" />
+          <h1 className="text-2xl font-semibold text-gray-900">Événement introuvable</h1>
+          <p className="mt-2 font-serif text-gray-600">Ce lien ne correspond à aucune planification active.</p>
+          <Link href="/" className="mt-7 inline-flex items-center gap-2 text-sm text-gray-700">
+            <ArrowLeft className="h-4 w-4" /> Retour à l’accueil
+          </Link>
+        </main>
+      </div>
+    )
+  }
+
+  const time = formatTime(traversee.date)
+  const restricted = traversee.gradesAutorises.length > 0 && traversee.gradesAutorises.length < 4
+  const count = traversee._count.inscriptions
+
+  return (
+    <div className="min-h-screen bg-[#faf9f6] pb-24 text-[#282724] sm:pb-10">
+      <SiteNav />
+      <main className="mx-auto max-w-2xl px-4 py-5 sm:px-6 sm:py-10">
+        <Link href="/programme" className="mb-5 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
+          <ArrowLeft className="h-4 w-4" /> Programme du mois
+        </Link>
+
+        <article className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-[0_16px_50px_rgba(45,40,32,0.06)]">
+          <div className="p-5 sm:p-8">
+            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${TYPE_BADGE[traversee.type] || 'bg-stone-100 text-stone-700'}`}>
+              {traversee.type}
+            </span>
+            <h1 className="mt-4 text-2xl font-semibold leading-tight tracking-tight text-gray-950 sm:text-4xl">
+              {traversee.titre}
+            </h1>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-3 rounded-2xl bg-stone-50 p-4">
+                <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+                <div>
+                  <p className="text-sm font-medium capitalize text-gray-900">{formatDate(traversee.date)}</p>
+                  {time && <p className="mt-0.5 text-sm text-gray-500">à {time}</p>}
+                </div>
+              </div>
+              <div className="flex items-start gap-3 rounded-2xl bg-stone-50 p-4">
+                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-gray-400">Lieu</p>
+                  <p className="mt-0.5 text-sm font-medium text-gray-900">{traversee.lieu}</p>
+                </div>
+              </div>
+            </div>
+
+            {restricted && (
+              <div className="mt-5 flex flex-wrap items-center gap-2">
+                <span className="mr-1 text-xs text-gray-500">Grades autorisés</span>
+                {traversee.gradesAutorises.map((grade) => (
+                  <span key={grade} className={`rounded-full border px-2.5 py-1 text-xs ${GRADE_COLORS[grade] || 'border-stone-200 bg-stone-50 text-stone-700'}`}>
+                    {grade}
+                  </span>
+                ))}
+              </div>
+            )}
+
+          </div>
+
+          <section className="border-t border-stone-200 bg-[#fffdfa] p-5 sm:p-8" aria-labelledby="inscrits-title">
+            <div>
+              <h2 id="inscrits-title" className="flex items-center gap-2.5 text-lg font-semibold text-gray-950">
+                <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-gray-900 px-2.5 text-base font-bold text-white shadow-sm">
+                  {count}
+                </span>
+                <span>personne{count > 1 ? 's' : ''} inscrite{count > 1 ? 's' : ''}</span>
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">Saisissez un nom sacré valide pour consulter la liste.</p>
+            </div>
+
+            {!listUnlocked ? (
+              <div className="mt-5 rounded-2xl border border-stone-200 bg-white p-4 sm:p-5">
+                <label htmlFor="liste-nom-sacre" className="text-sm font-medium text-gray-800">Votre nom sacré</label>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    id="liste-nom-sacre"
+                    value={listNomSacre}
+                    onChange={(event) => {
+                      setListNomSacre(event.target.value)
+                      setListError('')
+                      setDirectMessage('')
+                    }}
+                    onKeyDown={(event) => event.key === 'Enter' && void fetchInscrits(listNomSacre)}
+                    placeholder="Nom sacré"
+                    autoComplete="off"
+                    className="h-11 rounded-xl text-base"
+                  />
+                  <Button
+                    onClick={() => void fetchInscrits(listNomSacre)}
+                    disabled={!listNomSacre.trim() || listLoading}
+                    className="h-11 shrink-0 bg-gray-900 px-5 text-white hover:bg-gray-800"
+                  >
+                    {listLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+                    Voir la liste
+                  </Button>
+                </div>
+                {listError && <p className="mt-3 text-sm text-red-600" role="alert">{listError}</p>}
+              </div>
+            ) : listLoading ? (
+              <div className="flex items-center gap-2 py-8 text-sm text-gray-500">
+                <Loader2 className="h-4 w-4 animate-spin" /> Chargement de la liste…
+              </div>
+            ) : inscrits.length === 0 ? (
+              <div className="mt-5 rounded-2xl border border-dashed border-stone-300 px-4 py-8 text-center">
+                <Users className="mx-auto h-7 w-7 text-stone-300" />
+                <p className="mt-2 text-sm font-medium text-gray-700">Aucune inscription pour le moment</p>
+                <p className="mt-1 text-xs text-gray-500">Vous pouvez être la première personne inscrite.</p>
+              </div>
+            ) : (
+              <ol className="mt-5 grid max-h-72 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2" aria-label="Liste des personnes inscrites">
+                {inscrits.map((inscrit, index) => (
+                  <li key={inscrit.id} className="flex min-w-0 items-center gap-2.5 rounded-xl border border-stone-200 bg-white px-2.5 py-2">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-stone-100 text-[11px] font-semibold text-stone-500">
+                      {index + 1}
+                    </span>
+                    <span className="min-w-0 font-serif text-[13px] leading-5 text-gray-800">
+                      {inscrit.nom} {inscrit.prenoms}{inscrit.nomSacre ? ` (${inscrit.nomSacre})` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+
+            {listUnlocked ? (
+              <Button
+                onClick={() => void registerVerifiedMember()}
+                disabled={directRegistering}
+                className="mt-6 h-12 w-full bg-gray-900 text-white hover:bg-gray-800"
+              >
+                {directRegistering && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                S’inscrire
+              </Button>
+            ) : (
+              <Button onClick={openRegistration} className="mt-6 hidden h-12 w-full bg-gray-900 text-white hover:bg-gray-800 sm:flex">
+                S’inscrire à cet événement
+              </Button>
+            )}
+            {directMessage && (
+              <p className={`mt-3 text-center text-sm ${directMessageType === 'success' ? 'text-emerald-700' : 'text-red-600'}`} role="status">
+                {directMessage}
+              </p>
+            )}
+            <button onClick={downloadICS} className="mx-auto mt-3 flex items-center justify-center gap-1.5 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-700">
+              <CalendarPlus className="h-4 w-4" /> Ajouter à mon calendrier
+            </button>
+          </section>
+        </article>
+      </main>
+
+      {!listUnlocked && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:hidden">
+          <div className="mx-auto flex max-w-2xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-gray-500">{count} inscrit{count > 1 ? 's' : ''}</p>
+              <p className="truncate text-sm font-medium text-gray-900">{traversee.titre}</p>
+            </div>
+            <Button onClick={openRegistration} className="shrink-0 bg-gray-900 px-5 text-white hover:bg-gray-800">
+              S’inscrire
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="w-[calc(100%-1.5rem)] max-h-[90dvh] overflow-y-auto rounded-3xl p-5 sm:max-w-md sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="text-left text-xl">
+              {step === 'success' ? 'Inscription confirmée' : step === 'error' ? 'Impossible de procéder' : 'Inscription'}
+            </DialogTitle>
+          </DialogHeader>
+
+          {step === 'search' && (
+            <div className="space-y-5 pt-1">
+              <p className="font-serif text-sm leading-6 text-gray-600">
+                Saisissez simplement le nom sacré du membre à inscrire. Aucun mot de passe n’est demandé.
+              </p>
+              <div className="space-y-2">
+                <label htmlFor="nom-sacre" className="text-sm font-medium text-gray-800">Nom sacré</label>
+                <Input
+                  id="nom-sacre"
+                  value={nomSacreInput}
+                  onChange={(event) => setNomSacreInput(event.target.value)}
+                  onKeyDown={(event) => event.key === 'Enter' && void searchMember()}
+                  placeholder="Nom sacré"
+                  autoComplete="off"
+                  autoFocus
+                  className="h-12 rounded-xl text-base"
+                />
+              </div>
+              <Button onClick={() => void searchMember()} disabled={!nomSacreInput.trim() || searching} className="h-12 w-full bg-gray-900 text-white hover:bg-gray-800">
+                {searching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+                Continuer
+              </Button>
+            </div>
+          )}
+
+          {step === 'confirm' && membreFound && (
+            <div className="space-y-5 pt-1">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                <p className="text-lg font-semibold text-gray-950">{membreFound.nomSacre || `${membreFound.nom} ${membreFound.prenoms}`}</p>
+                <p className="mt-1 text-sm text-gray-600">{membreFound.nom} {membreFound.prenoms}</p>
+                <span className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-xs ${GRADE_COLORS[membreFound.grade] || 'border-stone-200 bg-white text-stone-700'}`}>
+                  {membreFound.grade}
+                </span>
+              </div>
+              {dejaInscrit ? (
+                <>
+                  <div className="flex items-start gap-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" /> Ce membre figure déjà dans la liste des inscrits.
+                  </div>
+                  <Button variant="outline" onClick={() => setShowModal(false)} className="h-11 w-full">Fermer</Button>
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Button variant="outline" onClick={() => setStep('search')} className="h-11">Modifier</Button>
+                  <Button onClick={() => void confirmRegistration()} disabled={registering} className="h-11 bg-gray-900 text-white hover:bg-gray-800">
+                    {registering && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Confirmer
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 'success' && (
+            <div className="space-y-5 pt-1 text-center">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
+                <CheckCircle className="h-7 w-7 text-emerald-600" />
+              </span>
+              <div>
+                <p className="font-semibold text-gray-950">Le membre est bien inscrit.</p>
+                <p className="mt-1 font-serif text-sm text-gray-600">La liste visible sur cette page vient d’être actualisée.</p>
+              </div>
+              <Button onClick={() => setShowModal(false)} className="h-11 w-full bg-gray-900 text-white hover:bg-gray-800">Terminer</Button>
+            </div>
+          )}
+
+          {step === 'error' && (
+            <div className="space-y-5 pt-1 text-center">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
+                <AlertCircle className="h-7 w-7 text-red-600" />
+              </span>
+              <p className="font-serif text-sm leading-6 text-gray-600">{errorMessage}</p>
+              <Button variant="outline" onClick={() => setStep('search')} className="h-11 w-full">Réessayer</Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
 }
 
-// ── Barre de navigation commune ───────────────────────────────────────────────
 function SiteNav() {
-    return (
-        <nav className="bg-white shadow-lg sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    <Link href="/" className="flex items-center">
-                        <img
-                            src="/logo-etu.png"
-                            alt="Logo ETU"
-                            className="h-10 w-10 mr-3"
-                        />
-                        <span className="text-xl font-serif font-bold text-gray-900">ETU Bénin</span>
-                    </Link>
-                </div>
-            </div>
-        </nav>
-    )
+  return (
+    <nav className="sticky top-0 z-30 border-b border-stone-200/80 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex h-15 max-w-2xl items-center justify-between px-4 sm:px-6">
+        <Link href="/" className="flex items-center gap-2.5">
+          <img src="/logo-etu.png" alt="Logo ETU" className="h-9 w-9 object-contain" />
+          <span className="text-sm font-semibold tracking-wide text-gray-900">ETU Bénin</span>
+        </Link>
+        <Link href="/programme" className="text-sm text-gray-500 hover:text-gray-900">Programme</Link>
+      </div>
+    </nav>
+  )
 }

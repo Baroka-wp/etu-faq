@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getAuthorizedAdmin } from '@/lib/security/admin'
+import { revealCredential } from '@/lib/security/credential'
 
 const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
     // Vérifier l'authentification admin
-    const adminSession = request.cookies.get('admin-session')?.value
-    if (adminSession !== 'authenticated') {
+    const adminSession = await getAuthorizedAdmin(request)
+    if (!adminSession) {
       return NextResponse.json(
         { error: 'Non autorisé' },
         { status: 401 }
@@ -20,7 +22,10 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(inscriptions)
+    return NextResponse.json(await Promise.all(inscriptions.map(async (inscription: { motDePasse: string }) => ({
+      ...inscription,
+      motDePasse: await revealCredential(inscription.motDePasse),
+    }))))
 
   } catch (error: any) {
     console.error('Erreur lors de la récupération des inscriptions:', error)

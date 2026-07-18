@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getSession, safeJson, safeText } from '@/lib/security/http'
 
 const prisma = new PrismaClient()
 
 export async function PUT(request: NextRequest) {
   try {
     // Récupérer l'ID du membre depuis le cookie
-    const membreId = request.cookies.get('membre-session')?.value
+    const membreId = (await getSession(request, 'membre'))?.sub
 
     if (!membreId) {
       return NextResponse.json(
@@ -35,7 +36,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Récupérer les données du body
-    const body = await request.json()
+    const body = await safeJson<Record<string, unknown>>(request, 16_384)
 
     // Champs autorisés à la mise à jour
     const champsAutorises = [
@@ -51,15 +52,23 @@ export async function PUT(request: NextRequest) {
       'religionPratique',
       'appartientAutreOrdre',
       'precisionOrdre',
-      'telephoneWhatsapp',
-      'imageUrl'
+      'telephoneWhatsapp'
     ]
 
     // Construire les données de mise à jour uniquement avec les champs autorisés
     const donneesMiseAJour: Record<string, any> = {}
     for (const champ of champsAutorises) {
       if (body[champ] !== undefined) {
-        donneesMiseAJour[champ] = body[champ]
+        if (champ === 'appartientAutreOrdre') {
+          donneesMiseAJour[champ] = body[champ] === true
+        } else {
+          const maxLength = champ === 'email' ? 254 : champ === 'precisionOrdre' ? 250 : 150
+          const value = safeText(body[champ], maxLength)
+          if (value === null && body[champ] !== '') {
+            return NextResponse.json({ error: `Champ ${champ} invalide` }, { status: 400 })
+          }
+          donneesMiseAJour[champ] = value
+        }
       }
     }
 
