@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { db } from '@/lib/db'
+import { findActiveMemberBySacredName } from '@/lib/sacred-name'
 import { createSessionToken } from '@/lib/security/session'
 import { rateLimit, safeJson, secureCookieOptions } from '@/lib/security/http'
-
-const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   const limited = rateLimit(request, 'membre-login', 8, 15 * 60 * 1000)
@@ -22,15 +21,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Rechercher le membre par nom sacré (insensible à la casse et aux espaces)
-    const membre = await (prisma as any).membre.findFirst({
-      where: {
-        nomSacre: {
-          mode: 'insensitive',
-          equals: nomSacre.trim()
-        },
-        statut: 'actif' // Seulement les membres actifs peuvent se connecter
-      }
-    })
+    const memberMatch = await findActiveMemberBySacredName(nomSacre)
+    const membre = memberMatch
+      ? await db.membre.findUnique({ where: { id: memberMatch.id } })
+      : null
 
     if (!membre) {
       return NextResponse.json(
@@ -61,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Mettre à jour la date de dernière connexion
-    await (prisma as any).membre.update({
+    await db.membre.update({
       where: { id: membre.id },
       data: { derniereConnexion: new Date() }
     })
@@ -75,7 +69,7 @@ export async function POST(request: NextRequest) {
         id: membre.id,
         nom: membre.nom,
         prenoms: membre.prenoms,
-        nomSacre: membre.nomSacre,
+        nomSacre: membre.nomSacre?.trim() ?? null,
         grade: membre.grade,
         equipage: membre.equipage,
         email: membre.email,
@@ -104,7 +98,5 @@ export async function POST(request: NextRequest) {
       { error: 'Une erreur est survenue lors de la connexion' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { rateLimit, safeJson, safeText } from '@/lib/security/http'
+import { findActiveMemberBySacredName } from '@/lib/sacred-name'
 
 export async function POST(
   request: NextRequest,
@@ -17,10 +18,7 @@ export async function POST(
 
     const [traversee, membre] = await Promise.all([
       db.traversee.findUnique({ where: { lienUnique }, select: { id: true } }),
-      db.membre.findFirst({
-        where: { nomSacre: { equals: nomSacre, mode: 'insensitive' }, statut: 'actif' },
-        select: { id: true },
-      }),
+      findActiveMemberBySacredName(nomSacre),
     ])
 
     if (!traversee) {
@@ -43,7 +41,7 @@ export async function POST(
       id: row.id,
       nom: row.membre.nom,
       prenoms: row.membre.prenoms,
-      nomSacre: row.membre.nomSacre,
+      nomSacre: row.membre.nomSacre?.trim() ?? null,
     }))
 
     return NextResponse.json({ success: true, data: inscrits })

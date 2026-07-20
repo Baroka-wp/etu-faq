@@ -3,14 +3,9 @@ import { PrismaClient } from '@prisma/client'
 import { createSessionToken } from '@/lib/security/session'
 import { getSession, rateLimit, safeJson, safeText } from '@/lib/security/http'
 import { getAuthorizedAdmin } from '@/lib/security/admin'
+import { cleanSacredNameForStorage } from '@/lib/sacred-name'
 
 const prisma = new PrismaClient()
-
-function sanitizeNomSacre(value: unknown): string | null {
-  if (typeof value !== 'string') return null
-  const trimmed = value.trim()
-  return trimmed.length > 0 ? trimmed : null
-}
 
 export async function POST(request: NextRequest) {
   if (!(await getSession(request, 'registration'))) {
@@ -50,7 +45,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const cleanNomSacre = sanitizeNomSacre(nomSacre)
+    const cleanNomSacre = cleanSacredNameForStorage(nomSacre)
 
     // Enregistrement dans la base de données
     const membre = await (prisma as any).membre.create({
