@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { createSessionToken } from '@/lib/security/session'
 import { rateLimit, safeJson, safeText } from '@/lib/security/http'
+import { findActiveMemberBySacredName } from '@/lib/sacred-name'
 
 function gradeAutorise(membreGrade: string, gradesAutorises: string[]) {
   return membreGrade === 'Alchimiste' || gradesAutorises.length === 0 || gradesAutorises.includes(membreGrade)
@@ -20,15 +21,18 @@ export async function POST(
     const nomSacre = safeText(body.nomSacre, 120)
     if (!nomSacre) return NextResponse.json({ error: 'Le nom sacré est requis' }, { status: 400 })
 
-    const [traversee, membre] = await Promise.all([
+    const [traversee, memberMatch] = await Promise.all([
       db.traversee.findUnique({ where: { lienUnique }, select: { id: true, gradesAutorises: true } }),
-      db.membre.findFirst({
-        where: { nomSacre: { equals: nomSacre, mode: 'insensitive' }, statut: 'actif' },
-        select: { id: true, nom: true, prenoms: true, nomSacre: true, grade: true },
-      }),
+      findActiveMemberBySacredName(nomSacre),
     ])
     if (!traversee) return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 })
 
+    const membre = memberMatch
+      ? await db.membre.findUnique({
+          where: { id: memberMatch.id },
+          select: { id: true, nom: true, prenoms: true, nomSacre: true, grade: true },
+        })
+      : null
     if (!membre) {
       return NextResponse.json({ error: 'Aucun membre actif trouvé avec ce nom sacré' }, { status: 404 })
     }
@@ -42,7 +46,7 @@ export async function POST(
     })
     return NextResponse.json({
       success: true,
-      data: membre,
+      data: { ...membre, nomSacre: membre.nomSacre?.trim() ?? null },
       dejaInscrit: Boolean(alreadyRegistered),
       eventToken: await createSessionToken('event', `${membre.id}:${traversee.id}`, 5 * 60),
     })

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { rateLimit, safeJson, safeText } from '@/lib/security/http'
-
-const prisma = new PrismaClient()
+import { findActiveMemberBySacredName } from '@/lib/sacred-name'
 
 export async function POST(request: NextRequest) {
   const limited = rateLimit(request, 'member-name-check', 8, 15 * 60 * 1000)
@@ -20,20 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rechercher le membre par nom sacré (insensible à la casse et aux espaces)
-    const membre = await (prisma as any).membre.findFirst({
-      where: {
-        nomSacre: {
-          mode: 'insensitive',
-            equals: nomSacre
-        },
-        statut: 'actif' // Seulement les membres actifs peuvent se connecter
-      },
-      select: {
-        id: true,
-        nomSacre: true,
-        derniereConnexion: true
-      }
-    })
+    const membre = await findActiveMemberBySacredName(nomSacre)
 
     if (!membre) {
       return NextResponse.json(
@@ -48,7 +33,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       premiereConnexion,
-      nomSacre: membre.nomSacre
+      nomSacre: membre.nomSacre?.trim() ?? null
     })
 
   } catch (error) {
@@ -57,7 +42,5 @@ export async function POST(request: NextRequest) {
       { error: 'Une erreur est survenue lors de la vérification' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

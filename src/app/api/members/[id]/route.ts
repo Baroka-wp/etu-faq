@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { getAuthorizedAdmin } from '@/lib/security/admin'
+import { cleanSacredNameForStorage } from '@/lib/sacred-name'
 
 const prisma = new PrismaClient()
-
-function sanitizeNomSacre(value: unknown): string | null {
-  if (typeof value !== 'string') return null
-  const trimmed = value.trim()
-  return trimmed.length > 0 ? trimmed : null
-}
 
 export async function PUT(
   request: NextRequest,
@@ -32,7 +27,7 @@ export async function PUT(
       role
     } = body
 
-    const cleanNomSacre = sanitizeNomSacre(nomSacre)
+    const cleanNomSacre = cleanSacredNameForStorage(nomSacre)
     const cleanRole = role === 'ADMIN' ? 'ADMIN' : 'MEMBRE'
 
     // Mise à jour du membre

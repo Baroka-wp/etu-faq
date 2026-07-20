@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { createSessionToken, verifySessionToken } from '../src/lib/security/session'
 import { protectCredential, revealCredential } from '../src/lib/security/credential'
+import { cleanSacredNameForStorage, normalizeSacredName } from '../src/lib/sacred-name'
 
 process.env.SESSION_SECRET = 'test-session-secret-with-more-than-thirty-two-characters'
 process.env.CREDENTIAL_SECRET = 'test-credential-secret-with-more-than-thirty-two-characters'
@@ -17,6 +18,10 @@ async function main() {
   assert.equal(await protectCredential(credential), protectedValue)
   assert.equal(await revealCredential(protectedValue), credential)
   assert.equal(await revealCredential('legacy-code'), 'legacy-code')
+
+  assert.equal(cleanSacredNameForStorage('  ALMERIAH  '), 'ALMERIAH')
+  assert.equal(cleanSacredNameForStorage('ALME\u200BRIAH'), 'ALMERIAH')
+  assert.equal(normalizeSacredName(' Almériah '), normalizeSacredName('ALMERIAH'))
 
   console.log('Security smoke tests: OK')
 }
