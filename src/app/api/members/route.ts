@@ -4,6 +4,7 @@ import { createSessionToken } from '@/lib/security/session'
 import { getSession, rateLimit, safeJson, safeText } from '@/lib/security/http'
 import { getAuthorizedAdmin } from '@/lib/security/admin'
 import { cleanSacredNameForStorage } from '@/lib/sacred-name'
+import { computeParticipation } from '@/lib/participation'
 
 const prisma = new PrismaClient()
 
@@ -122,9 +123,40 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Taux de participation aux traversées passées concernant chaque membre
+    const [traverseesPassees, inscriptions] = await Promise.all([
+      (prisma as any).traversee.findMany({
+        where: { date: { lt: new Date() } },
+        select: { id: true, date: true, gradesAutorises: true }
+      }),
+      (prisma as any).inscriptionTraversee.findMany({
+        select: { membreId: true, traverseeId: true }
+      })
+    ])
+
+    const inscriptionsParMembre = new Map<string, Set<string>>()
+    const inscritsParTraversee = new Map<string, number>()
+    for (const insc of inscriptions) {
+      if (!inscriptionsParMembre.has(insc.membreId)) {
+        inscriptionsParMembre.set(insc.membreId, new Set())
+      }
+      inscriptionsParMembre.get(insc.membreId)!.add(insc.traverseeId)
+      inscritsParTraversee.set(insc.traverseeId, (inscritsParTraversee.get(insc.traverseeId) ?? 0) + 1)
+    }
+
+    const data = membres.map((membre: any) => ({
+      ...membre,
+      participation: computeParticipation(
+        traverseesPassees,
+        membre,
+        inscriptionsParMembre.get(membre.id) ?? new Set(),
+        inscritsParTraversee
+      )
+    }))
+
     return NextResponse.json({
       success: true,
-      data: membres
+      data
     })
 
   } catch (error: any) {

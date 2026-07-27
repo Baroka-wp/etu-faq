@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { getSession } from '@/lib/security/http'
+import { computeParticipation, traverseeConcerneMembre } from '@/lib/participation'
 
 const prisma = new PrismaClient()
 
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     // Récupérer le membre
     const membre = await (prisma as any).membre.findUnique({
       where: { id: membreId },
-      select: { id: true, grade: true }
+      select: { id: true, grade: true, createdAt: true }
     })
 
     if (!membre) {
@@ -32,18 +33,40 @@ export async function GET(request: NextRequest) {
     })
 
     // Filtrer selon le grade
-    const traverseesAutorisees = traverseesAVenir.filter((t: any) => {
-      if (membre.grade === 'Alchimiste') return true
-      if (t.gradesAutorises.length === 0) return true
-      return t.gradesAutorises.includes(membre.grade)
-    })
+    const traverseesAutorisees = traverseesAVenir.filter((t: any) =>
+      traverseeConcerneMembre(t.gradesAutorises, membre.grade)
+    )
 
     const prochainEvents = traverseesAutorisees.length
 
-    // Compter le nombre total d'inscriptions du membre
-    const totalInscriptions = await (prisma as any).inscriptionTraversee.count({
-      where: { membreId: membre.id }
-    })
+    // Inscriptions du membre et traversées passées pour le taux de participation
+    const [inscriptions, traverseesPassees, comptagesInscrits] = await Promise.all([
+      (prisma as any).inscriptionTraversee.findMany({
+        where: { membreId: membre.id },
+        select: { traverseeId: true }
+      }),
+      (prisma as any).traversee.findMany({
+        where: { date: { lt: new Date() } },
+        select: { id: true, date: true, gradesAutorises: true }
+      }),
+      (prisma as any).inscriptionTraversee.groupBy({
+        by: ['traverseeId'],
+        _count: { _all: true }
+      })
+    ])
+
+    const totalInscriptions = inscriptions.length
+
+    const inscritsParTraversee = new Map<string, number>(
+      comptagesInscrits.map((c: any) => [c.traverseeId, c._count._all])
+    )
+
+    const participation = computeParticipation(
+      traverseesPassees,
+      membre,
+      new Set(inscriptions.map((i: any) => i.traverseeId)),
+      inscritsParTraversee
+    )
 
     // Compter le nombre total de livres
     const totalLivres = await (prisma as any).book.count()
@@ -53,7 +76,8 @@ export async function GET(request: NextRequest) {
       stats: {
         prochainEvents,
         totalInscriptions,
-        totalLivres
+        totalLivres,
+        participation
       }
     })
 

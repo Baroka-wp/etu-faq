@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Users, Search, Filter, Eye, Edit, Trash2, Shield, MapPin, Phone, Calendar, Briefcase, UserCheck, AlertCircle, Download, FileText, User, X, KeyRound } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Users, Search, Filter, Eye, Edit, Trash2, Shield, MapPin, Phone, Calendar, UserCheck, AlertCircle, Download, FileText, User, X, KeyRound, FileSpreadsheet, Loader2 } from 'lucide-react'
 import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 import { useRouter } from 'next/navigation'
 import AdminSidebar from '@/components/AdminSidebar'
 import {
@@ -29,6 +30,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import MemberIdentityCard from '@/components/admin/MemberIdentityCard'
 
 interface Membre {
     id: string
@@ -36,6 +38,7 @@ interface Membre {
     prenoms: string
     nomSacre: string | null
     profession: string | null
+    email: string
     dateNaissance: string
     heureNaissance: string | null
     lieuNaissance: string
@@ -51,6 +54,59 @@ interface Membre {
     createdAt: string
     updatedAt: string
     imageUrl: string | null
+    participation?: {
+        concernees: number
+        participations: number
+        taux: number | null
+    }
+}
+
+const CSV_FIELDS: Array<{
+    key: string
+    label: string
+    value: (membre: Membre) => string | number
+}> = [
+    { key: 'nom', label: 'Nom', value: (membre) => membre.nom },
+    { key: 'prenoms', label: 'Prénoms', value: (membre) => membre.prenoms },
+    { key: 'nomSacre', label: 'Nom sacré', value: (membre) => membre.nomSacre || '' },
+    { key: 'grade', label: 'Grade', value: (membre) => membre.grade },
+    { key: 'equipage', label: 'Équipage', value: (membre) => membre.equipage },
+    { key: 'statut', label: 'Statut', value: (membre) => membre.statut },
+    { key: 'role', label: 'Rôle', value: (membre) => membre.role },
+    { key: 'telephoneWhatsapp', label: 'Téléphone WhatsApp', value: (membre) => membre.telephoneWhatsapp },
+    { key: 'email', label: 'Email', value: (membre) => membre.email || '' },
+    { key: 'profession', label: 'Profession', value: (membre) => membre.profession || '' },
+    { key: 'dateNaissance', label: 'Date de naissance', value: (membre) => membre.dateNaissance },
+    { key: 'heureNaissance', label: 'Heure de naissance', value: (membre) => membre.heureNaissance || '' },
+    { key: 'lieuNaissance', label: 'Lieu de naissance', value: (membre) => membre.lieuNaissance },
+    { key: 'lieuResidence', label: 'Lieu de résidence', value: (membre) => membre.lieuResidence },
+    { key: 'religionPratique', label: 'Religion pratiquée', value: (membre) => membre.religionPratique },
+    {
+        key: 'appartientAutreOrdre',
+        label: 'Autre ordre',
+        value: (membre) => membre.appartientAutreOrdre ? 'Oui' : 'Non'
+    },
+    { key: 'precisionOrdre', label: 'Précision autre ordre', value: (membre) => membre.precisionOrdre || '' },
+    {
+        key: 'participation',
+        label: 'Taux de participation',
+        value: (membre) => membre.participation?.taux === null || membre.participation?.taux === undefined
+            ? ''
+            : `${membre.participation.taux}%`
+    },
+    {
+        key: 'createdAt',
+        label: "Date d'inscription",
+        value: (membre) => new Date(membre.createdAt).toLocaleDateString('fr-FR')
+    },
+]
+
+const DEFAULT_CSV_FIELDS = ['nom', 'prenoms', 'nomSacre', 'grade', 'equipage', 'statut', 'telephoneWhatsapp']
+
+function protectCsvCell(value: string | number) {
+    let text = String(value ?? '').replace(/\r?\n/g, ' ')
+    if (/^[=+\-@]/.test(text)) text = `'${text}`
+    return `"${text.replace(/"/g, '""')}"`
 }
 
 export default function MembersPage() {
@@ -75,6 +131,14 @@ export default function MembersPage() {
     const [newPassword, setNewPassword] = useState('')
     const [resetPasswordError, setResetPasswordError] = useState('')
     const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false)
+    const [exportDialogOpen, setExportDialogOpen] = useState(false)
+    const [selectedExportFields, setSelectedExportFields] = useState<string[]>(DEFAULT_CSV_FIELDS)
+    const [exportSearch, setExportSearch] = useState('')
+    const [exportStatut, setExportStatut] = useState('all')
+    const [exportGrade, setExportGrade] = useState('all')
+    const [exportEquipage, setExportEquipage] = useState('all')
+    const [exportingCard, setExportingCard] = useState(false)
+    const memberCardRef = useRef<HTMLDivElement>(null)
     const router = useRouter()
 
     useEffect(() => {
@@ -119,6 +183,20 @@ export default function MembersPage() {
         const matchesGrade = gradeFilter === 'all' || membre.grade === gradeFilter
         const matchesEquipage = equipageFilter === 'all' || membre.equipage === equipageFilter
 
+        return matchesSearch && matchesStatut && matchesGrade && matchesEquipage
+    })
+
+    const membersForExport = membres.filter((membre) => {
+        const search = exportSearch.trim().toLowerCase()
+        const matchesSearch = !search ||
+            membre.nom.toLowerCase().includes(search) ||
+            membre.prenoms.toLowerCase().includes(search) ||
+            membre.telephoneWhatsapp.toLowerCase().includes(search) ||
+            membre.email?.toLowerCase().includes(search) ||
+            membre.nomSacre?.toLowerCase().includes(search)
+        const matchesStatut = exportStatut === 'all' || membre.statut === exportStatut
+        const matchesGrade = exportGrade === 'all' || membre.grade === exportGrade
+        const matchesEquipage = exportEquipage === 'all' || membre.equipage === exportEquipage
         return matchesSearch && matchesStatut && matchesGrade && matchesEquipage
     })
 
@@ -345,6 +423,84 @@ export default function MembersPage() {
         window.URL.revokeObjectURL(url)
     }
 
+    const openCsvExport = () => {
+        setExportSearch(searchTerm)
+        setExportStatut(statutFilter)
+        setExportGrade(gradeFilter)
+        setExportEquipage(equipageFilter)
+        setExportDialogOpen(true)
+    }
+
+    const toggleExportField = (field: string) => {
+        setSelectedExportFields((current) =>
+            current.includes(field)
+                ? current.filter((item) => item !== field)
+                : [...current, field]
+        )
+    }
+
+    const exportToCsv = () => {
+        const fields = CSV_FIELDS.filter((field) => selectedExportFields.includes(field.key))
+        if (fields.length === 0 || membersForExport.length === 0) return
+
+        const rows = [
+            fields.map((field) => protectCsvCell(field.label)).join(';'),
+            ...membersForExport.map((membre) =>
+                fields.map((field) => protectCsvCell(field.value(membre))).join(';')
+            ),
+        ]
+        const blob = new Blob([`\uFEFF${rows.join('\r\n')}`], {
+            type: 'text/csv;charset=utf-8',
+        })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `membres-omp-${new Date().toISOString().slice(0, 10)}.csv`
+        link.click()
+        window.URL.revokeObjectURL(url)
+        setExportDialogOpen(false)
+    }
+
+    const exportMemberCardToJpeg = async () => {
+        if (!selectedMembre || !memberCardRef.current) return
+        setExportingCard(true)
+        try {
+            const card = memberCardRef.current
+            const images = Array.from(card.querySelectorAll('img'))
+            await Promise.all(images.map((image) => image.complete
+                ? Promise.resolve()
+                : new Promise<void>((resolve) => {
+                    image.addEventListener('load', () => resolve(), { once: true })
+                    image.addEventListener('error', () => resolve(), { once: true })
+                })
+            ))
+
+            const source = await html2canvas(card, {
+                backgroundColor: '#f8f5ea',
+                scale: 2,
+                useCORS: true,
+                logging: false,
+            })
+            const output = document.createElement('canvas')
+            output.width = 1011
+            output.height = 638
+            const context = output.getContext('2d')
+            if (!context) throw new Error('Export indisponible')
+            context.fillStyle = '#f8f5ea'
+            context.fillRect(0, 0, output.width, output.height)
+            context.drawImage(source, 0, 0, output.width, output.height)
+
+            const link = document.createElement('a')
+            const identity = selectedMembre.nomSacre || `${selectedMembre.prenoms}-${selectedMembre.nom}`
+            const safeIdentity = identity.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-')
+            link.download = `carte-membre-${safeIdentity.toLowerCase()}.jpg`
+            link.href = output.toDataURL('image/jpeg', 0.95)
+            link.click()
+        } finally {
+            setExportingCard(false)
+        }
+    }
+
     const getStatutBadgeVariant = (statut: string) => {
         switch (statut) {
             case 'actif':
@@ -369,6 +525,42 @@ export default function MembersPage() {
             default:
                 return 'secondary' as const
         }
+    }
+
+    const getParticipationColor = (taux: number) => {
+        if (taux >= 75) return 'text-green-700'
+        if (taux >= 50) return 'text-amber-600'
+        return 'text-red-600'
+    }
+
+    const getParticipationBarColor = (taux: number) => {
+        if (taux >= 75) return 'bg-green-500'
+        if (taux >= 50) return 'bg-amber-500'
+        return 'bg-red-500'
+    }
+
+    const renderParticipation = (participation?: Membre['participation']) => {
+        if (!participation || participation.taux === null) {
+            return <span className="text-gray-400 text-sm">-</span>
+        }
+        return (
+            <div className="w-28">
+                <div className="flex items-baseline justify-between mb-1">
+                    <span className={`text-sm font-semibold ${getParticipationColor(participation.taux)}`}>
+                        {participation.taux}%
+                    </span>
+                    <span className="text-xs text-gray-400">
+                        {participation.participations}/{participation.concernees}
+                    </span>
+                </div>
+                <div className="h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                    <div
+                        className={`h-full rounded-full ${getParticipationBarColor(participation.taux)}`}
+                        style={{ width: `${participation.taux}%` }}
+                    />
+                </div>
+            </div>
+        )
     }
 
     const handleResetPassword = (membre: Membre) => {
@@ -445,12 +637,12 @@ export default function MembersPage() {
                 {/* Header */}
                 <div className="sticky top-0 z-30 bg-white border-b border-gray-200 flex-shrink-0">
                     <div className="px-4 sm:px-6 lg:px-8 py-6">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900">Membres-OMP</h1>
                                 <p className="text-sm text-gray-600 mt-1">Gestion des membres de l'Ordre des Marins Pêcheurs</p>
                             </div>
-                            <div className="flex items-center space-x-3">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <Button
                                     onClick={() => setShowDuplicates(!showDuplicates)}
                                     variant={showDuplicates || Object.keys(duplicates).length > 0 ? 'destructive' : 'outline'}
@@ -473,6 +665,13 @@ export default function MembersPage() {
                                     Export TXT
                                 </Button>
                                 <Button
+                                    onClick={openCsvExport}
+                                    variant="outline"
+                                >
+                                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                                    Export CSV
+                                </Button>
+                                <Button
                                     onClick={() => router.push('/members/login')}
                                     variant="outline"
                                 >
@@ -487,56 +686,40 @@ export default function MembersPage() {
                 {/* Members Content */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden">
                     <div className="p-4 sm:p-6 lg:p-8">
-                        {/* Stats Cards - Réactives au filtrage */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <div className="flex items-center">
-                                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                        <Users className="w-6 h-6 text-blue-600" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-500">Total membres</p>
-                                        <p className="text-2xl font-bold text-gray-900">{filteredMembers.length}</p>
+                        {/* Barre de stats compacte - Réactive au filtrage */}
+                        {(() => {
+                            const avecTaux = filteredMembers.filter(m => m.participation && m.participation.taux !== null)
+                            const moyenne = avecTaux.length > 0
+                                ? Math.round(avecTaux.reduce((sum, m) => sum + (m.participation!.taux as number), 0) / avecTaux.length)
+                                : null
+                            return (
+                                <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 px-4 py-3">
+                                    <div className="flex flex-wrap items-center gap-x-8 gap-y-2 divide-x divide-gray-200 [&>div]:pl-8 [&>div:first-child]:pl-0">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="w-4 h-4 text-blue-600" />
+                                            <span className="text-sm text-gray-500">Membres</span>
+                                            <span className="text-lg font-bold text-gray-900">{filteredMembers.length}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="w-4 h-4 text-green-600" />
+                                            <span className="text-sm text-gray-500">Participation moy.</span>
+                                            <span className={`text-lg font-bold ${moyenne !== null ? getParticipationColor(moyenne) : 'text-gray-400'}`}>
+                                                {moyenne !== null ? `${moyenne}%` : '-'}
+                                            </span>
+                                        </div>
+                                        {['Explorateur', 'Constructeur', 'Navigateur', 'Alchimiste'].map((grade) => {
+                                            const count = filteredMembers.filter(m => m.grade === grade).length
+                                            return (
+                                                <div key={grade} className="flex items-center gap-2">
+                                                    <span className="text-sm text-gray-500">{grade}</span>
+                                                    <span className="text-lg font-bold text-gray-900">{count}</span>
+                                                </div>
+                                            )
+                                        })}
                                     </div>
                                 </div>
-                            </div>
-
-                            {['Constructeur', 'Navigateur', 'Alchimiste'].map((grade) => {
-                                const count = filteredMembers.filter(m => m.grade === grade).length
-                                const percentage = filteredMembers.length > 0
-                                    ? Math.round((count / filteredMembers.length) * 100)
-                                    : 0
-                                return (
-                                    <div key={grade} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                        <div className="flex flex-col items-center">
-                                            <p className="text-xs font-medium text-gray-500 text-center mb-2">{grade}</p>
-                                            <div className="w-16 h-16 relative mb-2">
-                                                <svg className="w-full h-full" viewBox="0 0 36 36">
-                                                    <path
-                                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                        fill="none"
-                                                        stroke="#e5e7eb"
-                                                        strokeWidth="3"
-                                                    />
-                                                    <path
-                                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                        fill="none"
-                                                        stroke="#eab308"
-                                                        strokeWidth="3"
-                                                        strokeDasharray={`${percentage}, 100`}
-                                                        className="transition-all duration-500"
-                                                    />
-                                                </svg>
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <span className="text-xs font-bold text-gray-900">{percentage}%</span>
-                                                </div>
-                                            </div>
-                                            <p className="text-xs font-medium text-gray-600 text-center">{count}</p>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
+                            )
+                        })()}
 
                         {/* Doublons Section */}
                         {showDuplicates && Object.keys(duplicates).length > 0 && (
@@ -620,29 +803,23 @@ export default function MembersPage() {
 
                         {/* Filters */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-                            <div className="p-4 sm:p-6">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            <Search className="w-4 h-4 inline mr-1" />
-                                            Rechercher
-                                        </label>
+                            <div className="p-4">
+                                <div className="flex flex-col lg:flex-row gap-3">
+                                    <div className="relative flex-1">
+                                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                         <Input
-                                            placeholder="Nom, prénom, téléphone..."
+                                            placeholder="Rechercher un nom, prénom, nom sacré, téléphone..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full"
+                                            className="w-full pl-9"
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            <Filter className="w-4 h-4 inline mr-1" />
-                                            Statut
-                                        </label>
+                                    <div className="flex flex-wrap gap-3">
                                         <Select value={statutFilter} onValueChange={setStatutFilter}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Tous les statuts" />
+                                            <SelectTrigger className="w-[150px]">
+                                                <Filter className="w-4 h-4 mr-1 text-gray-400" />
+                                                <SelectValue placeholder="Statut" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">Tous les statuts</SelectItem>
@@ -650,16 +827,11 @@ export default function MembersPage() {
                                                 <SelectItem value="suspendu">Suspendu</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                    </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            <Shield className="w-4 h-4 inline mr-1" />
-                                            Grade
-                                        </label>
                                         <Select value={gradeFilter} onValueChange={setGradeFilter}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Tous les grades" />
+                                            <SelectTrigger className="w-[160px]">
+                                                <Shield className="w-4 h-4 mr-1 text-gray-400" />
+                                                <SelectValue placeholder="Grade" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">Tous les grades</SelectItem>
@@ -669,16 +841,11 @@ export default function MembersPage() {
                                                 <SelectItem value="Alchimiste">Alchimiste</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                    </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            <Shield className="w-4 h-4 inline mr-1" />
-                                            Équipage
-                                        </label>
                                         <Select value={equipageFilter} onValueChange={setEquipageFilter}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Tous les équipages" />
+                                            <SelectTrigger className="w-[160px]">
+                                                <Shield className="w-4 h-4 mr-1 text-gray-400" />
+                                                <SelectValue placeholder="Équipage" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">Tous les équipages</SelectItem>
@@ -697,23 +864,19 @@ export default function MembersPage() {
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Photo</TableHead>
-                                            <TableHead>Nom</TableHead>
-                                            <TableHead>Prénoms</TableHead>
-                                            <TableHead>Nom Sacré</TableHead>
-                                            <TableHead>Grade</TableHead>
-                                            <TableHead>Équipage</TableHead>
-                                            <TableHead>Téléphone</TableHead>
-                                            <TableHead>Résidence</TableHead>
-                                            <TableHead>Statut</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                        <TableRow className="bg-gray-50">
+                                            <TableHead className="text-xs uppercase tracking-wide text-gray-500">Membre</TableHead>
+                                            <TableHead className="text-xs uppercase tracking-wide text-gray-500">Grade / Équipage</TableHead>
+                                            <TableHead className="text-xs uppercase tracking-wide text-gray-500">Contact</TableHead>
+                                            <TableHead className="text-xs uppercase tracking-wide text-gray-500">Participation</TableHead>
+                                            <TableHead className="text-xs uppercase tracking-wide text-gray-500">Statut</TableHead>
+                                            <TableHead className="text-xs uppercase tracking-wide text-gray-500 text-right">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {paginatedMembers.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={10} className="text-center py-8">
+                                                <TableCell colSpan={6} className="text-center py-8">
                                                     <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                                                     <p className="text-gray-500">Aucun membre trouvé</p>
                                                 </TableCell>
@@ -726,33 +889,43 @@ export default function MembersPage() {
                                                     onClick={() => handleViewMembre(membre)}
                                                 >
                                                     <TableCell>
-                                                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                                                            {membre.imageUrl ? (
-                                                                <img
-                                                                    src={membre.imageUrl}
-                                                                    alt={`${membre.nom} ${membre.prenoms}`}
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            ) : (
-                                                                <User className="w-6 h-6 text-gray-400" />
-                                                            )}
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                                                                {membre.imageUrl ? (
+                                                                    <img
+                                                                        src={membre.imageUrl}
+                                                                        alt={`${membre.nom} ${membre.prenoms}`}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <User className="w-6 h-6 text-gray-400" />
+                                                                )}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="font-medium text-gray-900 truncate">
+                                                                    {membre.nom} {membre.prenoms}
+                                                                </p>
+                                                                <p className="text-sm text-gray-500 truncate">
+                                                                    {membre.nomSacre || 'Sans nom sacré'}
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="font-medium">{membre.nom}</TableCell>
-                                                    <TableCell>{membre.prenoms}</TableCell>
-                                                    <TableCell>{membre.nomSacre || '-'}</TableCell>
                                                     <TableCell>
-                                                        <Badge variant={getGradeBadgeVariant(membre.grade)}>
-                                                            {membre.grade}
-                                                        </Badge>
+                                                        <div className="flex flex-col items-start gap-1">
+                                                            <Badge variant={getGradeBadgeVariant(membre.grade)}>
+                                                                {membre.grade}
+                                                            </Badge>
+                                                            <Badge variant="outline" className="text-xs">
+                                                                {membre.equipage}
+                                                            </Badge>
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge variant="outline">
-                                                            {membre.equipage}
-                                                        </Badge>
+                                                        <p className="text-sm text-gray-900">{membre.telephoneWhatsapp}</p>
+                                                        <p className="text-xs text-gray-500 truncate max-w-[160px]">{membre.lieuResidence}</p>
                                                     </TableCell>
-                                                    <TableCell>{membre.telephoneWhatsapp}</TableCell>
-                                                    <TableCell>{membre.lieuResidence}</TableCell>
+                                                    <TableCell>{renderParticipation(membre.participation)}</TableCell>
                                                     <TableCell>
                                                         <Badge variant={getStatutBadgeVariant(membre.statut)}>
                                                             {membre.statut}
@@ -852,82 +1025,54 @@ export default function MembersPage() {
 
             {/* View Dialog */}
             <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="w-[calc(100%-2rem)] max-h-[92vh] overflow-y-auto p-4 sm:max-w-4xl sm:p-6">
                     <DialogHeader>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <DialogTitle className="text-lg font-semibold">FICHE MEMBRE</DialogTitle>
-                                <p className="text-sm text-gray-500">Ordre des Marins Pêcheurs</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Badge variant={getStatutBadgeVariant(selectedMembre?.statut || 'actif')} className="text-sm">
-                                    {selectedMembre?.statut?.toUpperCase()}
-                                </Badge>
-                                <Badge variant={getGradeBadgeVariant(selectedMembre?.grade || 'Explorateur')} className="text-sm">
-                                    {selectedMembre?.grade?.toUpperCase()}
-                                </Badge>
-                                <Badge className={selectedMembre?.role === 'ADMIN' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-gray-100 text-gray-700 border-gray-200'}>
-                                    {selectedMembre?.role === 'ADMIN' ? 'ADMINISTRATEUR' : 'MEMBRE'}
-                                </Badge>
-                            </div>
-                        </div>
+                        <DialogTitle className="text-lg font-semibold">Fiche et carte du membre</DialogTitle>
+                        <p className="text-sm text-gray-500">Le QR code identifie le membre lors du pointage d’un événement.</p>
                     </DialogHeader>
 
                     <div className="mt-4">
                         {selectedMembre && (
                             <>
-                                <div className="flex gap-6 mb-6">
-                                    {/* Photo style passeport */}
-                                    <div className="flex-shrink-0">
-                                        <div className="w-32 h-40 rounded-lg bg-gray-100 border-2 border-gray-200 flex items-center justify-center overflow-hidden">
-                                            {selectedMembre.imageUrl ? (
-                                                <img
-                                                    src={selectedMembre.imageUrl}
-                                                    alt={`${selectedMembre.nom} ${selectedMembre.prenoms}`}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="text-center text-gray-400">
-                                                    <User className="w-12 h-12 mx-auto mb-2" />
-                                                    <span className="text-xs">Sans photo</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                <div ref={memberCardRef}>
+                                    <MemberIdentityCard membre={selectedMembre} />
+                                </div>
+                                <div className="mb-6 mt-3 flex flex-wrap items-center justify-between gap-3">
+                                    <p className="text-xs text-gray-500">Format standard · 85,6 × 54 mm · JPEG haute qualité</p>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={exportMemberCardToJpeg}
+                                        disabled={exportingCard}
+                                        className="gap-2"
+                                    >
+                                        {exportingCard
+                                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                                            : <Download className="h-4 w-4" />}
+                                        Télécharger la carte
+                                    </Button>
+                                </div>
 
-                                    {/* Informations principales */}
-                                    <div className="flex-1 space-y-3">
-                                        <div>
-                                            <p className="text-xs text-gray-500 uppercase tracking-wide">Nom</p>
-                                            <p className="text-base font-semibold text-gray-900">{selectedMembre.nom}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500 uppercase tracking-wide">Prénoms</p>
-                                            <p className="text-base font-semibold text-gray-900">{selectedMembre.prenoms}</p>
-                                        </div>
-                                        {selectedMembre.nomSacre && (
-                                            <div>
-                                                <p className="text-xs text-gray-500 uppercase tracking-wide">Nom Sacré</p>
-                                                <p className="text-sm font-medium text-gray-700">{selectedMembre.nomSacre}</p>
-                                            </div>
-                                        )}
-                                        {selectedMembre.profession && (
-                                            <div className="flex items-center gap-2">
-                                                <Briefcase className="w-4 h-4 text-gray-400" />
-                                                <div>
-                                                    <p className="text-xs text-gray-500 uppercase tracking-wide">Profession</p>
-                                                    <p className="text-sm font-medium text-gray-900">{selectedMembre.profession}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                <div className="mb-5 flex flex-wrap gap-2">
+                                    <Badge variant={getStatutBadgeVariant(selectedMembre.statut)}>
+                                        {selectedMembre.statut.toUpperCase()}
+                                    </Badge>
+                                    <Badge variant={getGradeBadgeVariant(selectedMembre.grade)}>
+                                        {selectedMembre.grade.toUpperCase()}
+                                    </Badge>
+                                    <Badge className={selectedMembre.role === 'ADMIN' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-gray-100 text-gray-700 border-gray-200'}>
+                                        {selectedMembre.role === 'ADMIN' ? 'ADMINISTRATEUR' : 'MEMBRE'}
+                                    </Badge>
+                                    {selectedMembre.profession && (
+                                        <Badge variant="outline">{selectedMembre.profession}</Badge>
+                                    )}
                                 </div>
 
                                 {/* Séparateur */}
                                 <div className="border-t border-gray-200 my-4"></div>
 
                                 {/* Informations personnelles en grille */}
-                                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <Calendar className="w-4 h-4 text-gray-400" />
@@ -974,6 +1119,11 @@ export default function MembersPage() {
                                     </div>
 
                                     <div>
+                                        <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Email</p>
+                                        <p className="break-all text-sm font-medium text-gray-900">{selectedMembre.email || '—'}</p>
+                                    </div>
+
+                                    <div>
                                         <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Religion pratiquée</p>
                                         <p className="text-sm font-medium text-gray-900">{selectedMembre.religionPratique}</p>
                                     </div>
@@ -992,6 +1142,23 @@ export default function MembersPage() {
                                 {/* Séparateur */}
                                 <div className="border-t border-gray-200 my-4"></div>
 
+                                {/* Participation aux traversées */}
+                                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Participation aux traversées</p>
+                                    {selectedMembre.participation && selectedMembre.participation.taux !== null ? (
+                                        <div className="flex items-center gap-3">
+                                            <p className={`text-2xl font-bold ${getParticipationColor(selectedMembre.participation.taux)}`}>
+                                                {selectedMembre.participation.taux}%
+                                            </p>
+                                            <p className="text-sm text-gray-600">
+                                                {selectedMembre.participation.participations} participation{selectedMembre.participation.participations > 1 ? 's' : ''} sur {selectedMembre.participation.concernees} traversée{selectedMembre.participation.concernees > 1 ? 's' : ''} concernant son grade
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-500">Aucune traversée passée ne concernait ce membre</p>
+                                    )}
+                                </div>
+
                                 {/* Date d'inscription */}
                                 <div className="bg-gray-50 rounded-lg p-4">
                                     <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Date d'inscription</p>
@@ -1007,6 +1174,125 @@ export default function MembersPage() {
                                 </div>
                             </>
                         )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Export CSV Dialog */}
+            <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+                <DialogContent className="w-[calc(100%-2rem)] max-h-[92vh] overflow-y-auto sm:max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <FileSpreadsheet className="h-5 w-5 text-emerald-700" />
+                            Exporter les membres en CSV
+                        </DialogTitle>
+                        <p className="text-sm text-gray-500">
+                            Appliquez les filtres, puis choisissez exactement les colonnes à inclure.
+                        </p>
+                    </DialogHeader>
+
+                    <div className="space-y-6 pt-2">
+                        <section>
+                            <h3 className="mb-3 text-sm font-semibold text-gray-900">1. Filtrer les membres</h3>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div className="relative sm:col-span-2">
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                    <Input
+                                        value={exportSearch}
+                                        onChange={(event) => setExportSearch(event.target.value)}
+                                        placeholder="Nom, nom sacré, téléphone ou email"
+                                        className="pl-9"
+                                    />
+                                </div>
+                                <Select value={exportStatut} onValueChange={setExportStatut}>
+                                    <SelectTrigger><SelectValue placeholder="Statut" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Tous les statuts</SelectItem>
+                                        <SelectItem value="actif">Actif</SelectItem>
+                                        <SelectItem value="suspendu">Suspendu</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Select value={exportGrade} onValueChange={setExportGrade}>
+                                    <SelectTrigger><SelectValue placeholder="Grade" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Tous les grades</SelectItem>
+                                        <SelectItem value="Explorateur">Explorateur</SelectItem>
+                                        <SelectItem value="Constructeur">Constructeur</SelectItem>
+                                        <SelectItem value="Navigateur">Navigateur</SelectItem>
+                                        <SelectItem value="Alchimiste">Alchimiste</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Select value={exportEquipage} onValueChange={setExportEquipage}>
+                                    <SelectTrigger><SelectValue placeholder="Équipage" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Tous les équipages</SelectItem>
+                                        <SelectItem value="ALEPH">ALEPH</SelectItem>
+                                        <SelectItem value="BETH">BETH</SelectItem>
+                                        <SelectItem value="GUIMEL">GUIMEL</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <p className="mt-3 text-sm font-medium text-emerald-800">
+                                {membersForExport.length} membre{membersForExport.length > 1 ? 's' : ''} dans cet export
+                            </p>
+                        </section>
+
+                        <section className="border-t border-gray-200 pt-5">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                                <h3 className="text-sm font-semibold text-gray-900">2. Choisir les champs</h3>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedExportFields(CSV_FIELDS.map((field) => field.key))}
+                                        className="text-xs font-medium text-gray-600 hover:text-gray-900"
+                                    >
+                                        Tout sélectionner
+                                    </button>
+                                    <span className="text-gray-300">|</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedExportFields(DEFAULT_CSV_FIELDS)}
+                                        className="text-xs font-medium text-gray-600 hover:text-gray-900"
+                                    >
+                                        Sélection recommandée
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                {CSV_FIELDS.map((field) => (
+                                    <label
+                                        key={field.key}
+                                        className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                                            selectedExportFields.includes(field.key)
+                                                ? 'border-emerald-300 bg-emerald-50 text-emerald-950'
+                                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedExportFields.includes(field.key)}
+                                            onChange={() => toggleExportField(field.key)}
+                                            className="h-4 w-4 rounded border-gray-300 accent-emerald-700"
+                                        />
+                                        {field.label}
+                                    </label>
+                                ))}
+                            </div>
+                        </section>
+
+                        <div className="flex flex-col-reverse gap-2 border-t border-gray-200 pt-5 sm:flex-row sm:justify-end">
+                            <Button variant="outline" onClick={() => setExportDialogOpen(false)}>
+                                Annuler
+                            </Button>
+                            <Button
+                                onClick={exportToCsv}
+                                disabled={selectedExportFields.length === 0 || membersForExport.length === 0}
+                                className="bg-emerald-800 hover:bg-emerald-900"
+                            >
+                                <Download className="mr-2 h-4 w-4" />
+                                Télécharger le CSV
+                            </Button>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
