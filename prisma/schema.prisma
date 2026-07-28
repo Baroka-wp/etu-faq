@@ -187,15 +187,18 @@ model InscriptionTraversee {
 }
 
 model ActiviteProgramme {
-  id        String   @id @default(cuid())
-  categorie String
-  titre     String
-  heures    String
-  lieu      String
-  ordre     Int      @default(0)
-  actif     Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(cuid())
+  categorie        String
+  titre            String
+  description      String?
+  heures           String
+  lieu             String
+  ordre            Int      @default(0)
+  actif            Boolean  @default(true)
+  catalogueDepuis  Int      @default(0)
+  catalogueJusqua  Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   programmations ProgrammationMensuelle[]
   evenements     Traversee[]
@@ -205,13 +208,20 @@ model ActiviteProgramme {
 }
 
 model ProgrammationMensuelle {
-  id         String   @id @default(cuid())
-  activiteId String
-  annee      Int
-  mois       Int
-  jours      Int[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(cuid())
+  activiteId  String
+  annee       Int
+  mois        Int
+  jours       Int[]
+  titre       String?
+  description String?
+  heures      String?
+  lieu        String?
+  ordre       Int?
+  visible     Boolean  @default(true)
+  specifique  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   activite ActiviteProgramme @relation(fields: [activiteId], references: [id], onDelete: Cascade)
 

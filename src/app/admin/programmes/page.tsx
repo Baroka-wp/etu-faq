@@ -14,6 +14,7 @@ import {
   FileImage,
   Link2,
   Loader2,
+  Pencil,
   Plus,
   Save,
   ScanLine,
@@ -40,9 +41,11 @@ interface Activite {
   id: string;
   categorie: Categorie;
   titre: string;
+  description: string | null;
   heures: string;
   lieu: string;
   ordre: number;
+  specifique?: boolean;
   jours: number[];
   evenements: EvenementLie[];
 }
@@ -112,7 +115,24 @@ export default function ProgrammesMensuelsPage() {
   const [exporting, setExporting] = useState<"png" | "pdf" | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ titre: "", heures: "", lieu: "" });
+  const [form, setForm] = useState({
+    titre: "",
+    description: "",
+    heures: "",
+    lieu: "",
+  });
+  const [appliquerFuturs, setAppliquerFuturs] = useState(false);
+  const [activiteEnEdition, setActiviteEnEdition] = useState<Activite | null>(
+    null,
+  );
+  const [editForm, setEditForm] = useState({
+    titre: "",
+    description: "",
+    heures: "",
+    lieu: "",
+  });
+  const [editing, setEditing] = useState(false);
+  const [reordering, setReordering] = useState(false);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [creatingLink, setCreatingLink] = useState(false);
   const [grades, setGrades] = useState([...GRADES]);
@@ -178,6 +198,7 @@ export default function ProgrammesMensuelsPage() {
     )
       return;
     setSelection(null);
+    setAppliquerFuturs(false);
     setDate(
       (current) =>
         new Date(current.getFullYear(), current.getMonth() + direction, 1),
@@ -249,14 +270,28 @@ export default function ProgrammesMensuelsPage() {
       const response = await fetch("/api/admin/programmes-mensuels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categorie, ...form }),
+        body: JSON.stringify({
+          action: "ajouter-activite",
+          categorie,
+          annee,
+          mois,
+          appliquerFuturs,
+          ...form,
+        }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
-      setActivites((current) => [...current, data.data]);
-      setForm({ titre: "", heures: "", lieu: "" });
+      setActivites((current) =>
+        [...current, data.data].sort((a, b) => a.ordre - b.ordre),
+      );
+      setForm({ titre: "", description: "", heures: "", lieu: "" });
       setShowAdd(false);
-      setMessage({ type: "success", texte: "Activité ajoutée au programme" });
+      setMessage({
+        type: "success",
+        texte: appliquerFuturs
+          ? "Activité ajoutée à ce mois et au catalogue des mois futurs"
+          : `Activité ajoutée uniquement à ${MOIS[mois - 1]} ${annee}`,
+      });
     } catch (error) {
       setMessage({
         type: "error",
@@ -267,10 +302,139 @@ export default function ProgrammesMensuelsPage() {
     }
   };
 
+  const ouvrirEdition = (activite: Activite) => {
+    setActiviteEnEdition(activite);
+    setEditForm({
+      titre: activite.titre,
+      description: activite.description || "",
+      heures: activite.heures,
+      lieu: activite.lieu,
+    });
+  };
+
+  const modifierActivite = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!activiteEnEdition) return;
+    setEditing(true);
+    try {
+      const response = await fetch("/api/admin/programmes-mensuels", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "modifier-activite",
+          activiteId: activiteEnEdition.id,
+          annee,
+          mois,
+          appliquerFuturs,
+          ...editForm,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      setActivites((current) =>
+        current.map((item) =>
+          item.id === activiteEnEdition.id
+            ? {
+                ...item,
+                titre: editForm.titre.trim(),
+                description: editForm.description.trim() || null,
+                heures: editForm.heures.trim(),
+                lieu: editForm.lieu.trim(),
+                specifique: appliquerFuturs ? false : item.specifique,
+              }
+            : item,
+        ),
+      );
+      setActiviteEnEdition(null);
+      setMessage({
+        type: "success",
+        texte: appliquerFuturs
+          ? "Activité modifiée pour ce mois et les mois futurs"
+          : `Activité modifiée uniquement pour ${MOIS[mois - 1]} ${annee}`,
+      });
+    } catch (error) {
+      setMessage({
+        type: "error",
+        texte:
+          error instanceof Error ? error.message : "Modification impossible",
+      });
+    } finally {
+      setEditing(false);
+    }
+  };
+
+  const deplacerActivite = async (activite: Activite, direction: -1 | 1) => {
+    if (reordering) return;
+    const categorieActuelle = activitesAffichees;
+    const index = categorieActuelle.findIndex(
+      (item) => item.id === activite.id,
+    );
+    const nouvellePosition = index + direction;
+    if (
+      index < 0 ||
+      nouvellePosition < 0 ||
+      nouvellePosition >= categorieActuelle.length
+    )
+      return;
+
+    const nouvelleCategorie = [...categorieActuelle];
+    [nouvelleCategorie[index], nouvelleCategorie[nouvellePosition]] = [
+      nouvelleCategorie[nouvellePosition],
+      nouvelleCategorie[index],
+    ];
+    const precedent = activites;
+    const ordreParId = new Map(
+      nouvelleCategorie.map((item, position) => [item.id, position + 1]),
+    );
+    setActivites((current) =>
+      current
+        .map((item) =>
+          item.categorie === categorie
+            ? { ...item, ordre: ordreParId.get(item.id) ?? item.ordre }
+            : item,
+        )
+        .sort((a, b) => (a.categorie === b.categorie ? a.ordre - b.ordre : 0)),
+    );
+    setReordering(true);
+    try {
+      const response = await fetch("/api/admin/programmes-mensuels", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reordonner",
+          annee,
+          mois,
+          appliquerFuturs,
+          activiteIds: nouvelleCategorie.map((item) => item.id),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      setMessage({
+        type: "success",
+        texte: appliquerFuturs
+          ? "Nouvel ordre appliqué à ce mois et aux mois futurs"
+          : "Nouvel ordre appliqué uniquement à ce mois",
+      });
+    } catch (error) {
+      setActivites(precedent);
+      setMessage({
+        type: "error",
+        texte:
+          error instanceof Error ? error.message : "Déplacement impossible",
+      });
+    } finally {
+      setReordering(false);
+    }
+  };
+
   const retirerActivite = async (activite: Activite) => {
-    if (!window.confirm(`Retirer « ${activite.titre} » du catalogue ?`)) return;
+    const portee = appliquerFuturs
+      ? "de ce mois et des mois futurs"
+      : `de ${MOIS[mois - 1]} ${annee} uniquement`;
+    if (!window.confirm(`Retirer « ${activite.titre} » ${portee} ?`)) return;
     const response = await fetch(
-      `/api/admin/programmes-mensuels?activiteId=${activite.id}`,
+      `/api/admin/programmes-mensuels?activiteId=${activite.id}&annee=${annee}&mois=${mois}&appliquerFuturs=${appliquerFuturs ? "1" : "0"}`,
       { method: "DELETE" },
     );
     const data = await response.json();
@@ -281,7 +445,12 @@ export default function ProgrammesMensuelsPage() {
     setActivites((current) =>
       current.filter((item) => item.id !== activite.id),
     );
-    setMessage({ type: "success", texte: "Activité retirée" });
+    setMessage({
+      type: "success",
+      texte: appliquerFuturs
+        ? "Activité retirée de ce mois et des mois futurs"
+        : "Activité retirée uniquement de ce mois",
+    });
   };
 
   const retirerDate = () => {
@@ -678,6 +847,46 @@ export default function ProgrammesMensuelsPage() {
                 </button>
               </div>
             </div>
+            <div className="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">
+                  Portée des modifications
+                </p>
+                <p className="mt-0.5 text-xs text-gray-500">
+                  {appliquerFuturs
+                    ? `Les changements seront appliqués à ${MOIS[mois - 1]} ${annee} et au catalogue des mois suivants.`
+                    : `Les changements resteront propres à ${MOIS[mois - 1]} ${annee}. Les autres mois ne seront pas modifiés.`}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={appliquerFuturs}
+                onClick={() => setAppliquerFuturs((current) => !current)}
+                className={`inline-flex min-h-11 shrink-0 items-center gap-3 rounded-xl border px-3 py-2 text-left transition ${
+                  appliquerFuturs
+                    ? "border-amber-300 bg-amber-50 text-amber-950"
+                    : "border-gray-300 bg-white text-gray-700"
+                }`}
+              >
+                <span
+                  className={`relative h-6 w-11 rounded-full transition ${
+                    appliquerFuturs ? "bg-amber-600" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${
+                      appliquerFuturs ? "left-6" : "left-1"
+                    }`}
+                  />
+                </span>
+                <span className="text-xs font-semibold">
+                  {appliquerFuturs
+                    ? "Ce mois + mois futurs"
+                    : "Ce mois uniquement"}
+                </span>
+              </button>
+            </div>
           </div>
 
           <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -709,6 +918,8 @@ export default function ProgrammesMensuelsPage() {
                     activites={activitesAffichees}
                     onDateClick={cocherJour}
                     onRemoveActivity={retirerActivite}
+                    onEditActivity={ouvrirEdition}
+                    onMoveActivity={deplacerActivite}
                   />
                 </div>
               )}
@@ -1029,7 +1240,7 @@ export default function ProgrammesMensuelsPage() {
               <div>
                 <p className="text-sm text-gray-500">{configuration.label}</p>
                 <h2 className="mt-1 text-xl font-semibold text-gray-900">
-                  Nouvelle activité
+                  Nouvelle activité · {MOIS[mois - 1]} {annee}
                 </h2>
               </div>
               <button
@@ -1047,6 +1258,18 @@ export default function ProgrammesMensuelsPage() {
                   value={form.titre}
                   onChange={(e) => setForm({ ...form, titre: e.target.value })}
                   className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500"
+                />
+              </label>
+              <label className="block text-sm font-medium text-gray-700">
+                Description
+                <textarea
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                  rows={3}
+                  placeholder="Informations utiles sur cette activité"
+                  className="mt-1 w-full resize-none rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500"
                 />
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -1073,6 +1296,17 @@ export default function ProgrammesMensuelsPage() {
                   />
                 </label>
               </div>
+              <div
+                className={`rounded-lg border px-3 py-2.5 text-xs ${
+                  appliquerFuturs
+                    ? "border-amber-200 bg-amber-50 text-amber-900"
+                    : "border-gray-200 bg-gray-50 text-gray-600"
+                }`}
+              >
+                {appliquerFuturs
+                  ? "Cette activité sera également ajoutée au catalogue utilisé pour les mois futurs."
+                  : "Cette activité sera ajoutée à ce mois uniquement."}
+              </div>
               <button
                 disabled={adding}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-gray-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-50"
@@ -1083,6 +1317,109 @@ export default function ProgrammesMensuelsPage() {
                   <Plus className="h-4 w-4" />
                 )}{" "}
                 Ajouter l'activité
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {activiteEnEdition && (
+        <div
+          className="fixed inset-0 z-[75] flex items-center justify-center bg-black/40 p-4"
+          onMouseDown={() => setActiviteEnEdition(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-lg bg-white shadow-xl"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between border-b border-gray-200 p-6">
+              <div>
+                <p className="text-sm text-gray-500">
+                  {MOIS[mois - 1]} {annee}
+                </p>
+                <h2 className="mt-1 text-xl font-semibold text-gray-900">
+                  Modifier l’activité
+                </h2>
+              </div>
+              <button
+                onClick={() => setActiviteEnEdition(null)}
+                className="rounded-md p-2 text-gray-400 hover:bg-gray-100"
+                aria-label="Fermer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form onSubmit={modifierActivite} className="space-y-4 p-6">
+              <label className="block text-sm font-medium text-gray-700">
+                Activité
+                <input
+                  required
+                  value={editForm.titre}
+                  onChange={(event) =>
+                    setEditForm({ ...editForm, titre: event.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500"
+                />
+              </label>
+              <label className="block text-sm font-medium text-gray-700">
+                Description
+                <textarea
+                  value={editForm.description}
+                  onChange={(event) =>
+                    setEditForm({
+                      ...editForm,
+                      description: event.target.value,
+                    })
+                  }
+                  rows={3}
+                  className="mt-1 w-full resize-none rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500"
+                />
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  Heures
+                  <input
+                    required
+                    value={editForm.heures}
+                    onChange={(event) =>
+                      setEditForm({ ...editForm, heures: event.target.value })
+                    }
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500"
+                  />
+                </label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Lieu
+                  <input
+                    required
+                    value={editForm.lieu}
+                    onChange={(event) =>
+                      setEditForm({ ...editForm, lieu: event.target.value })
+                    }
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500"
+                  />
+                </label>
+              </div>
+              <div
+                className={`rounded-lg border px-3 py-2.5 text-xs ${
+                  appliquerFuturs
+                    ? "border-amber-200 bg-amber-50 text-amber-900"
+                    : "border-gray-200 bg-gray-50 text-gray-600"
+                }`}
+              >
+                {appliquerFuturs
+                  ? "Le catalogue et les mois futurs reprendront aussi ces nouvelles informations."
+                  : "Seul ce mois sera modifié."}
+              </div>
+              <button
+                disabled={editing}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-gray-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-50"
+              >
+                {editing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Pencil className="h-4 w-4" />
+                )}
+                Enregistrer les modifications
               </button>
             </form>
           </div>
