@@ -13,17 +13,31 @@ interface Membre {
   createdAt: string
 }
 
+interface Participation {
+  concernees: number
+  participations: number
+  taux: number | null
+}
+
 export default function DashboardPage() {
   const [membre, setMembre] = useState<Membre | null>(null)
+  const [participation, setParticipation] = useState<Participation | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const membreResponse = await fetch('/api/membre/me')
+        const [membreResponse, statsResponse] = await Promise.all([
+          fetch('/api/membre/me'),
+          fetch('/api/membre/stats')
+        ])
         if (membreResponse.ok) {
           const membreData = await membreResponse.json()
           setMembre(membreData.membre)
+        }
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json()
+          setParticipation(statsData.stats?.participation ?? null)
         }
       } catch (error) {
         console.error('Erreur lors du chargement:', error)
@@ -63,6 +77,15 @@ export default function DashboardPage() {
         {memberSince && (
           <p className="text-sm text-gray-500 font-serif mt-1">
             Membre depuis {memberSince}
+          </p>
+        )}
+        {participation && participation.taux !== null && (
+          <p className="text-sm text-gray-700 font-serif mt-3">
+            Taux de participation aux traversées :{' '}
+            <span className="font-bold">{participation.taux}%</span>
+            <span className="text-gray-500">
+              {' '}({participation.participations}/{participation.concernees} traversées de votre grade)
+            </span>
           </p>
         )}
       </div>

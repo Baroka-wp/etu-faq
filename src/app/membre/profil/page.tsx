@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { User, Mail, Phone, MapPin, Save, Camera, Loader2 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { ToastContainer } from '@/components/ToastContainer'
+import MemberIdentityCard from '@/components/admin/MemberIdentityCard'
 
 export default function ProfilPage() {
   const { addToast, toasts, removeToast } = useToast()
@@ -153,6 +154,14 @@ export default function ProfilPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
       <h1 className="text-3xl font-serif font-bold text-gray-900 mb-8">Mon Profil</h1>
+
+      <div className="mb-8">
+        <div className="mb-3">
+          <h2 className="text-lg font-semibold text-gray-900">Ma carte de membre</h2>
+          <p className="text-sm text-gray-500">Présentez ce QR code à un administrateur pour enregistrer votre présence.</p>
+        </div>
+        <MemberIdentityCard membre={membre} />
+      </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center space-x-6 mb-8">
