@@ -3,6 +3,7 @@ import { constantTimeEqual, rateLimit, safeJson, secureCookieOptions } from '@/l
 import { createSessionToken, isSessionSecurityConfigured } from '@/lib/security/session'
 
 const REGISTRATION_MAX_AGE = 60 * 60
+const MEMBER_ACCESS_MIN_LENGTH = 5
 
 export async function POST(request: NextRequest) {
   const limited = rateLimit(request, 'registration-access', 6, 15 * 60 * 1000)
@@ -13,8 +14,11 @@ export async function POST(request: NextRequest) {
     // Le nom non public est prioritaire. L'ancien nom reste accepté côté serveur le temps de migrer l'environnement.
     const accessPassword = process.env.MEMBER_ACCESS_PASSWORD
       || (process.env.NODE_ENV !== 'production' ? process.env.NEXT_PUBLIC_MEMBER_ACCESS_PASSWORD : undefined)
-    const minimumLength = process.env.NODE_ENV === 'production' ? 10 : 6
-    if (!accessPassword || accessPassword.length < minimumLength || !isSessionSecurityConfigured()) {
+    if (
+      !accessPassword
+      || accessPassword.length < MEMBER_ACCESS_MIN_LENGTH
+      || !isSessionSecurityConfigured()
+    ) {
       return NextResponse.json({ error: 'Accès temporairement indisponible' }, { status: 503 })
     }
     if (!(await constantTimeEqual(password, accessPassword))) {
