@@ -1,6 +1,6 @@
 const encoder = new TextEncoder()
 
-export type SessionRole = 'admin' | 'membre' | 'user' | 'registration' | 'upload' | 'event'
+export type SessionRole = 'admin' | 'membre' | 'comite' | 'user' | 'registration' | 'upload' | 'event'
 
 export type SessionPayload = {
   sub: string
@@ -96,6 +96,7 @@ export async function verifySessionToken(
 export const SESSION_COOKIES: Record<Exclude<SessionRole, 'upload' | 'event'>, string> = {
   admin: 'admin-session',
   membre: 'membre-session',
+  comite: 'comite-session',
   user: 'user-session',
   registration: 'registration-session',
 }

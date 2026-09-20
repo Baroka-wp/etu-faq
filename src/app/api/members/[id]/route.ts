@@ -24,7 +24,8 @@ export async function PUT(
       grade,
       equipage,
       statut,
-      role
+      role,
+      comiteProjets
     } = body
 
     const cleanNomSacre = cleanSacredNameForStorage(nomSacre)
@@ -43,7 +44,8 @@ export async function PUT(
         grade,
         equipage,
         statut,
-        role: cleanRole
+        role: cleanRole,
+        comiteProjets: comiteProjets === true
       }
     })
 

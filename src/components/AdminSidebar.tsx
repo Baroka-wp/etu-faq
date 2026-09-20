@@ -8,7 +8,8 @@ import {
     X,
     UserPlus,
     BookOpen,
-    Compass
+    Compass,
+    ListChecks
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -40,6 +41,12 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             label: 'Aspirants Explorateurs',
             icon: Users,
             href: '/admin/inscriptions'
+        },
+        {
+            id: 'projets',
+            label: 'Suivi des projets',
+            icon: ListChecks,
+            href: '/projets/suivi'
         },
         {
             id: 'bibliotheque',

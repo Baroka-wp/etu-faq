@@ -51,6 +51,7 @@ interface Membre {
     lieuResidence: string
     statut: string
     role: 'MEMBRE' | 'ADMIN'
+    comiteProjets: boolean
     createdAt: string
     updatedAt: string
     imageUrl: string | null
@@ -73,6 +74,7 @@ const CSV_FIELDS: Array<{
     { key: 'equipage', label: 'Équipage', value: (membre) => membre.equipage },
     { key: 'statut', label: 'Statut', value: (membre) => membre.statut },
     { key: 'role', label: 'Rôle', value: (membre) => membre.role },
+    { key: 'comiteProjets', label: 'Comité projets', value: (membre) => membre.comiteProjets ? 'Oui' : 'Non' },
     { key: 'telephoneWhatsapp', label: 'Téléphone WhatsApp', value: (membre) => membre.telephoneWhatsapp },
     { key: 'email', label: 'Email', value: (membre) => membre.email || '' },
     { key: 'profession', label: 'Profession', value: (membre) => membre.profession || '' },
@@ -1063,6 +1065,9 @@ export default function MembersPage() {
                                     <Badge className={selectedMembre.role === 'ADMIN' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-gray-100 text-gray-700 border-gray-200'}>
                                         {selectedMembre.role === 'ADMIN' ? 'ADMINISTRATEUR' : 'MEMBRE'}
                                     </Badge>
+                                    {selectedMembre.comiteProjets && (
+                                        <Badge className="bg-stone-100 text-stone-700 border-stone-200">COMITÉ PROJETS</Badge>
+                                    )}
                                     {selectedMembre.profession && (
                                         <Badge variant="outline">{selectedMembre.profession}</Badge>
                                     )}
@@ -1420,6 +1425,23 @@ export default function MembersPage() {
                                     </SelectContent>
                                 </Select>
                                 <p className="mt-1 text-xs text-gray-500">Un administrateur se connecte avec son nom sacré et son mot de passe membre.</p>
+                            </div>
+
+                            <div className="rounded-lg border border-gray-200 p-4">
+                                <label className="flex items-start gap-3">
+                                    <input
+                                        type="checkbox"
+                                        checked={editFormData.comiteProjets === true}
+                                        onChange={(e) => setEditFormData({ ...editFormData, comiteProjets: e.target.checked })}
+                                        className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                                    />
+                                    <span>
+                                        <span className="block text-sm font-medium text-gray-700">Comité de suivi des projets</span>
+                                        <span className="mt-1 block text-xs text-gray-500">
+                                            Ouvre l’espace des projets avec le seul nom sacré. Les administrateurs y ont accès d’office.
+                                        </span>
+                                    </span>
+                                </label>
                             </div>
 
                             <div className="flex justify-end space-x-2 pt-4">
