@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
+import { Check, ChevronDown, Trash2 } from 'lucide-react'
 import { formatAppDate, formatAppDateYMD } from '@/lib/datetime'
 import { TACHE_STATUTS, TACHE_STATUT_LABELS, TacheStatut } from '@/lib/projets'
 
@@ -17,11 +18,11 @@ export type Tache = {
 
 type Commentaire = { id: string; auteur: string; contenu: string; createdAt: string }
 
-const MARQUEUR: Record<TacheStatut, string> = {
-  a_faire: 'border-stone-300',
-  en_cours: 'border-stone-900 border-l-[5px]',
-  terminee: 'border-stone-900 bg-stone-900',
-  bloquee: 'border-red-400 border-dashed',
+const PASTILLE: Record<TacheStatut, string> = {
+  a_faire: 'border-gray-300 bg-white',
+  en_cours: 'border-gray-900 bg-white ring-2 ring-inset ring-gray-900',
+  terminee: 'border-gray-900 bg-gray-900 text-white',
+  bloquee: 'border-red-500 bg-red-50',
 }
 
 function enRetard(tache: Tache): boolean {
@@ -40,6 +41,7 @@ export default function TacheLigne({
   isAdmin: boolean
   onChange: () => Promise<void> | void
 }) {
+  const panneauId = useId()
   const [ouvert, setOuvert] = useState(false)
   const [commentaires, setCommentaires] = useState<Commentaire[] | null>(null)
   const [message, setMessage] = useState('')
@@ -120,95 +122,124 @@ export default function TacheLigne({
   const retard = enRetard(tache)
 
   return (
-    <li className="border-b border-stone-200/80 last:border-b-0">
+    <li className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
       <button
         type="button"
         onClick={basculer}
-        className="flex w-full items-start gap-4 py-4 text-left transition hover:opacity-70"
         aria-expanded={ouvert}
+        aria-controls={panneauId}
+        className="flex w-full items-start gap-3 p-4 text-left transition hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-900"
       >
-        <span className={`mt-1.5 h-3 w-3 shrink-0 rounded-full border ${MARQUEUR[tache.statut]}`} aria-hidden />
+        <span
+          className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${PASTILLE[tache.statut]}`}
+          aria-hidden
+        >
+          {tache.statut === 'terminee' && <Check className="h-4 w-4" />}
+        </span>
+
         <span className="min-w-0 flex-1">
           <span
-            className={`block text-[15px] leading-6 ${tache.statut === 'terminee' ? 'text-stone-400 line-through decoration-stone-300' : 'text-stone-900'}`}
+            className={`block text-base font-medium leading-7 ${tache.statut === 'terminee' ? 'text-gray-500 line-through' : 'text-gray-950'}`}
           >
             {tache.titre}
           </span>
-          <span className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-400">
+          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600">
             <span>{TACHE_STATUT_LABELS[tache.statut]}</span>
             {tache.assigne && <span>· {tache.assigne.nom}</span>}
             {tache.echeance && (
-              <span className={retard ? 'text-red-600' : undefined}>
+              <span className={retard ? 'font-medium text-red-700' : undefined}>
                 · {retard ? 'échu le ' : 'pour le '}
                 {formatAppDate(tache.echeance, { day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
             )}
-            {tache.commentaires > 0 && <span>· {tache.commentaires} mot(s)</span>}
+            {tache.commentaires > 0 && (
+              <span>· {tache.commentaires} commentaire{tache.commentaires > 1 ? 's' : ''}</span>
+            )}
           </span>
         </span>
+
+        <ChevronDown
+          className={`mt-1 h-5 w-5 shrink-0 text-gray-400 transition-transform ${ouvert ? 'rotate-180' : ''}`}
+          aria-hidden
+        />
       </button>
 
       {ouvert && (
-        <div className="space-y-6 pb-8 pl-7 pr-1">
+        <div id={panneauId} className="space-y-6 border-t border-gray-200 p-4">
           {tache.description && (
-            <p className="font-serif text-[15px] leading-relaxed text-stone-600">{tache.description}</p>
+            <p className="text-base leading-7 text-gray-700">{tache.description}</p>
           )}
 
-          {isAdmin && (
-            <div className="flex flex-wrap gap-2">
-              {TACHE_STATUTS.map((statut) => (
-                <button
-                  key={statut}
-                  type="button"
-                  disabled={occupe || statut === tache.statut}
-                  onClick={() => modifier({ statut })}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs transition ${
-                    statut === tache.statut
-                      ? 'border-stone-900 bg-stone-900 text-stone-50'
-                      : 'border-stone-300 text-stone-500 hover:border-stone-900 hover:text-stone-900'
-                  }`}
-                >
-                  {TACHE_STATUT_LABELS[statut]}
-                </button>
-              ))}
-            </div>
+          {isAdmin ? (
+            <fieldset>
+              <legend className="text-sm font-semibold uppercase tracking-wide text-gray-500">Avancement</legend>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {TACHE_STATUTS.map((statut) => (
+                  <button
+                    key={statut}
+                    type="button"
+                    disabled={occupe}
+                    aria-pressed={statut === tache.statut}
+                    onClick={() => modifier({ statut })}
+                    className={`h-11 rounded-xl border px-4 text-base transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:opacity-40 ${
+                      statut === tache.statut
+                        ? 'border-gray-900 bg-gray-900 font-medium text-white'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {TACHE_STATUT_LABELS[statut]}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          ) : (
+            <p className="text-sm leading-6 text-gray-600">
+              L’avancement est tenu par l’administrateur.
+            </p>
           )}
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-[11px] uppercase tracking-[0.2em] text-stone-400">Confiée à</span>
+            <div>
+              <label htmlFor={`${panneauId}-assigne`} className="block text-base font-medium text-gray-800">
+                Confiée à
+              </label>
               <select
+                id={`${panneauId}-assigne`}
                 value={tache.assigne?.id ?? ''}
                 disabled={occupe}
                 onChange={(event) => modifier({ assigneId: event.target.value })}
-                className="mt-2 w-full border-0 border-b border-stone-200 bg-transparent pb-2 text-sm text-stone-800 focus:border-stone-900 focus:outline-none focus:ring-0"
+                className="mt-2 h-12 w-full rounded-xl border border-gray-300 bg-white px-3 text-base text-gray-950 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:opacity-40"
               >
                 <option value="">Personne</option>
                 {membres.map((membre) => (
                   <option key={membre.id} value={membre.id}>{membre.nom}</option>
                 ))}
               </select>
-            </label>
+            </div>
 
-            <label className="block">
-              <span className="text-[11px] uppercase tracking-[0.2em] text-stone-400">Délai</span>
+            <div>
+              <label htmlFor={`${panneauId}-echeance`} className="block text-base font-medium text-gray-800">
+                Délai
+              </label>
               <input
+                id={`${panneauId}-echeance`}
                 type="date"
                 disabled={occupe}
                 value={tache.echeance ? formatAppDateYMD(tache.echeance) : ''}
                 onChange={(event) => modifier({ echeance: event.target.value })}
-                className="mt-2 w-full border-0 border-b border-stone-200 bg-transparent pb-2 text-sm text-stone-800 focus:border-stone-900 focus:outline-none focus:ring-0"
+                className="mt-2 h-12 w-full rounded-xl border border-gray-300 bg-white px-3 text-base text-gray-950 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:opacity-40"
               />
-            </label>
+            </div>
           </div>
 
           <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Commentaires</h3>
             {commentaires && commentaires.length > 0 && (
-              <ul className="mb-4 space-y-3">
+              <ul className="mt-3 space-y-3">
                 {commentaires.map((commentaire) => (
-                  <li key={commentaire.id} className="border-l border-stone-200 pl-4">
-                    <p className="font-serif text-[15px] leading-relaxed text-stone-700">{commentaire.contenu}</p>
-                    <p className="mt-1 text-xs text-stone-400">
+                  <li key={commentaire.id} className="rounded-xl bg-gray-50 p-4">
+                    <p className="text-base leading-7 text-gray-800">{commentaire.contenu}</p>
+                    <p className="mt-1 text-sm text-gray-600">
                       {commentaire.auteur} · {formatAppDate(commentaire.createdAt, { day: 'numeric', month: 'long' })}
                     </p>
                   </li>
@@ -216,35 +247,45 @@ export default function TacheLigne({
               </ul>
             )}
 
-            <form onSubmit={commenter} className="flex items-end gap-3">
+            <form onSubmit={commenter} className="mt-3 flex flex-col gap-3 sm:flex-row">
+              <label htmlFor={`${panneauId}-mot`} className="sr-only">Ajouter un commentaire</label>
               <input
-                type="text"
+                id={`${panneauId}-mot`}
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
                 placeholder="Ajouter un mot"
                 maxLength={2000}
-                className="flex-1 border-0 border-b border-stone-200 bg-transparent pb-2 text-sm placeholder:text-stone-300 focus:border-stone-900 focus:outline-none focus:ring-0"
+                enterKeyHint="send"
+                className="h-12 flex-1 rounded-xl border border-gray-300 px-4 text-base text-gray-950 placeholder:text-gray-500 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20"
               />
               <button
                 type="submit"
                 disabled={occupe || !message.trim()}
-                className="pb-2 text-sm text-stone-500 transition hover:text-stone-900 disabled:opacity-30"
+                className="h-12 rounded-xl bg-gray-900 px-6 text-base font-medium text-white transition hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:opacity-40"
               >
                 Envoyer
               </button>
             </form>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-stone-400">
-            <span>{tache.creePar ? `Proposée par ${tache.creePar}` : ''}</span>
+          {erreur && (
+            <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-base text-red-800">{erreur}</p>
+          )}
+
+          <div className="flex items-center justify-between gap-3 border-t border-gray-200 pt-4">
+            <p className="text-sm text-gray-600">{tache.creePar ? `Proposée par ${tache.creePar}` : ''}</p>
             {isAdmin && (
-              <button type="button" onClick={supprimer} disabled={occupe} className="transition hover:text-red-700">
-                Retirer la tâche
+              <button
+                type="button"
+                onClick={supprimer}
+                disabled={occupe}
+                className="flex h-11 items-center gap-2 rounded-xl px-3 text-base text-gray-600 transition hover:bg-red-50 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:opacity-40"
+              >
+                <Trash2 className="h-5 w-5" aria-hidden />
+                Retirer
               </button>
             )}
           </div>
-
-          {erreur && <p className="text-sm text-red-700">{erreur}</p>}
         </div>
       )}
     </li>

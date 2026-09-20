@@ -7,8 +7,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   }
 
+  // Un projet ne se confie qu'au comité de suivi et aux administrateurs.
   const membres = await db.membre.findMany({
-    where: { statut: 'actif' },
+    where: {
+      statut: 'actif',
+      OR: [{ comiteProjets: true }, { role: 'ADMIN' }],
+    },
     select: { id: true, nom: true, prenoms: true, nomSacre: true },
     orderBy: [{ nom: 'asc' }, { prenoms: 'asc' }],
   })
