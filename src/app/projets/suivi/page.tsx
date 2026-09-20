@@ -2,10 +2,17 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ChevronRight, MessageSquare, Plus } from 'lucide-react'
+import { ChevronRight, MessageSquare, Plus, Users } from 'lucide-react'
 import ComiteShell, { ComiteMembre } from '@/components/projets/ComiteShell'
 import Avancement from '@/components/projets/Avancement'
 import { PROJET_STATUT_LABELS, ProjetStatut } from '@/lib/projets'
+
+type Compagnon = {
+  id: string
+  nom: string
+  isAdmin: boolean
+  designe: boolean
+}
 
 type ProjetResume = {
   id: string
@@ -22,6 +29,7 @@ type ProjetResume = {
 export default function ProjetsPage() {
   const [membre, setMembre] = useState<ComiteMembre | null>(null)
   const [projets, setProjets] = useState<ProjetResume[] | null>(null)
+  const [comite, setComite] = useState<Compagnon[]>([])
   const [erreur, setErreur] = useState('')
   const [formOuvert, setFormOuvert] = useState(false)
   const [titre, setTitre] = useState('')
@@ -31,9 +39,10 @@ export default function ProjetsPage() {
 
   const charger = useCallback(async () => {
     try {
-      const [meResponse, projetsResponse] = await Promise.all([
+      const [meResponse, projetsResponse, comiteResponse] = await Promise.all([
         fetch('/api/projets/me'),
         fetch('/api/projets'),
+        fetch('/api/projets/membres'),
       ])
       if (meResponse.status === 401 || projetsResponse.status === 401) {
         window.location.assign('/projets')
@@ -44,6 +53,7 @@ export default function ProjetsPage() {
       if (!projetsResponse.ok) throw new Error(liste.error)
       setMembre(me.membre)
       setProjets(liste.projets)
+      setComite((await comiteResponse.json()).membres ?? [])
     } catch (error) {
       setErreur(error instanceof Error ? error.message : 'Chargement impossible')
     }
@@ -143,6 +153,40 @@ export default function ProjetsPage() {
             </li>
           )}
         </ul>
+      )}
+
+      {comite.length > 0 && (
+        <section className="mt-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-950">
+            <Users className="h-5 w-5 text-gray-500" aria-hidden />
+            Le comité
+            <span className="font-normal text-gray-500">({comite.length})</span>
+          </h2>
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {comite.map((compagnon) => (
+              <li
+                key={compagnon.id}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-base ${
+                  compagnon.id === membre?.id
+                    ? 'bg-gray-900 font-medium text-white'
+                    : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                {compagnon.nom}
+                {compagnon.isAdmin && (
+                  <span
+                    className={`text-sm ${compagnon.id === membre?.id ? 'text-gray-300' : 'text-gray-500'}`}
+                  >
+                    admin
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-sm leading-6 text-gray-600">
+            Ce sont les personnes qui entrent ici avec leur nom sacré, et à qui une tâche peut être confiée.
+          </p>
+        </section>
       )}
 
       <section className="mt-8">

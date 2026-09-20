@@ -13,11 +13,17 @@ export async function GET(request: NextRequest) {
       statut: 'actif',
       OR: [{ comiteProjets: true }, { role: 'ADMIN' }],
     },
-    select: { id: true, nom: true, prenoms: true, nomSacre: true },
+    select: { id: true, nom: true, prenoms: true, nomSacre: true, role: true, comiteProjets: true },
     orderBy: [{ nom: 'asc' }, { prenoms: 'asc' }],
   })
 
   return NextResponse.json({
-    membres: membres.map((membre) => ({ id: membre.id, nom: displayName(membre) })),
+    membres: membres.map((membre) => ({
+      id: membre.id,
+      nom: displayName(membre),
+      isAdmin: membre.role === 'ADMIN',
+      // Un administrateur entre d'office, sans avoir été désigné au comité.
+      designe: membre.comiteProjets,
+    })),
   })
 }
