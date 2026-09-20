@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, BookOpen, CalendarDays, Loader2, MapPin, UserPlus, Users } from 'lucide-react'
+import { ArrowRight, BookOpen, CalendarDays, ListChecks, Loader2, MapPin, UserPlus, Users } from 'lucide-react'
 import AdminSidebar from '@/components/AdminSidebar'
 import { formatAppDate, formatAppTime } from '@/lib/datetime'
 
@@ -12,6 +12,7 @@ interface DashboardStats {
   monthEvents: number
   pendingAspirants: number
   books: number
+  projets: number
   upcomingEvents: Array<{
     id: string
     titre: string
@@ -45,6 +46,14 @@ const modules = [
     icon: UserPlus,
     stat: 'pendingAspirants' as const,
     statLabel: 'en attente',
+  },
+  {
+    href: '/projets/suivi',
+    title: 'Suivi des projets',
+    description: 'Comité de suivi : projets de l’Ordre, tâches, délais et échanges.',
+    icon: ListChecks,
+    stat: 'projets' as const,
+    statLabel: 'projet(s) en cours',
   },
   {
     href: '/admin/bibliotheque',

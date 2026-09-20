@@ -135,17 +135,20 @@ model Membre {
   lieuResidence         String
   statut                String   @default("actif") // actif | suspendu
   role                  String   @default("MEMBRE") // MEMBRE | ADMIN
+  comiteProjets         Boolean  @default(false) // Accès au suivi des projets par nom sacré
   imageUrl              String?
   derniereConnexion     DateTime? // Première connexion si null
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
   traversees            InscriptionTraversee[]
+  tachesAssignees       Tache[]                @relation("TacheAssignee")
 
   @@index([statut])
   @@index([grade])
   @@index([nomSacre])
   @@index([role, statut])
+  @@index([comiteProjets, statut])
 }
 
 model Traversee {
@@ -227,4 +230,60 @@ model ProgrammationMensuelle {
 
   @@unique([activiteId, annee, mois])
   @@index([annee, mois])
+}
+
+// --- Comité de suivi des projets -------------------------------------------
+
+model Projet {
+  id          String   @id @default(cuid())
+  titre       String
+  resume      String?
+  description String?
+  statut      String   @default("en_cours") // propose | en_cours | termine | suspendu
+  ordre       Int      @default(0)
+  proposePar  String?  // nom sacré de l'auteur de la suggestion
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  taches       Tache[]
+  commentaires Commentaire[]
+
+  @@index([statut, ordre])
+}
+
+model Tache {
+  id          String    @id @default(cuid())
+  projetId    String
+  titre       String
+  description String?
+  statut      String    @default("a_faire") // a_faire | en_cours | terminee | bloquee
+  echeance    DateTime?
+  assigneId   String?
+  ordre       Int       @default(0)
+  creePar     String?   // nom sacré de l'auteur
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  projet       Projet        @relation(fields: [projetId], references: [id], onDelete: Cascade)
+  assigne      Membre?       @relation("TacheAssignee", fields: [assigneId], references: [id], onDelete: SetNull)
+  commentaires Commentaire[]
+
+  @@index([projetId, ordre])
+  @@index([assigneId])
+  @@index([statut])
+}
+
+model Commentaire {
+  id        String   @id @default(cuid())
+  projetId  String?
+  tacheId   String?
+  auteur    String // nom sacré
+  contenu   String
+  createdAt DateTime @default(now())
+
+  projet Projet? @relation(fields: [projetId], references: [id], onDelete: Cascade)
+  tache  Tache?  @relation(fields: [tacheId], references: [id], onDelete: Cascade)
+
+  @@index([projetId, createdAt])
+  @@index([tacheId, createdAt])
 }

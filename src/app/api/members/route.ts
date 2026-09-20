@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
         id: true, nom: true, prenoms: true, nomSacre: true, profession: true, email: true,
         dateNaissance: true, heureNaissance: true, lieuNaissance: true, religionPratique: true,
         appartientAutreOrdre: true, precisionOrdre: true, grade: true, equipage: true,
-        telephoneWhatsapp: true, lieuResidence: true, statut: true, role: true, imageUrl: true,
+        telephoneWhatsapp: true, lieuResidence: true, statut: true, role: true, comiteProjets: true, imageUrl: true,
         derniereConnexion: true, createdAt: true, updatedAt: true,
       }
     })

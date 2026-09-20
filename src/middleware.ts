@@ -42,6 +42,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (pathname.startsWith('/projets') || pathname.startsWith('/api/projets')) {
+    const publicComiteRoutes = ['/projets', '/api/projets/acces', '/api/projets/logout']
+    if (publicComiteRoutes.includes(pathname)) return NextResponse.next()
+    return (await protect(request, 'comite', '/projets')) ?? NextResponse.next()
+  }
+
   if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
     return (await protect(request, 'admin', '/admin-login')) ?? NextResponse.next()
   }
@@ -84,5 +90,7 @@ export const config = {
     '/api/user/:path*',
     '/membre/:path*',
     '/api/membre/:path*',
+    '/projets/:path*',
+    '/api/projets/:path*',
   ],
 }
