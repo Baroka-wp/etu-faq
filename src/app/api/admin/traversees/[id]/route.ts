@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAuthorizedAdmin } from '@/lib/security/admin'
 import { isSameOrigin, safeHttpUrl, safeJson, safeText } from '@/lib/security/http'
+import { synchroniserEnseignements } from '@/lib/enseignements'
 
 /** Contenu de la séance et monographie d'un événement. */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -56,6 +57,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         monographieImageUrl: true,
       },
     })
+    await synchroniserEnseignements(evenement.id)
     return NextResponse.json({ success: true, data: evenement })
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
