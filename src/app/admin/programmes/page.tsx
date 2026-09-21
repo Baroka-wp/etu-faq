@@ -18,7 +18,6 @@ import {
   Plus,
   Save,
   ScanLine,
-  Search,
   Trash2,
   UserPlus,
   Users,
@@ -26,6 +25,10 @@ import {
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import ProgrammeCalendar from "@/components/programme/ProgrammeCalendar";
+import SelectionMembres, {
+  MembreActif,
+} from "@/components/programme/SelectionMembres";
+import ContenuSeance from "@/components/programme/ContenuSeance";
 
 type Categorie = "TEMPLE" | "ECOLE";
 
@@ -35,6 +38,12 @@ interface EvenementLie {
   lienUnique: string;
   gradesAutorises: string[];
   inscrits: number;
+  instruction?: string | null;
+  seminaire?: string | null;
+  sujetPlanche?: string | null;
+  monographieActive?: boolean;
+  monographiePrix?: number;
+  monographieImageUrl?: string | null;
 }
 
 interface Activite {
@@ -61,14 +70,6 @@ interface Inscrit {
     grade: string;
     telephoneWhatsapp: string;
   };
-}
-
-interface MembreCandidat {
-  id: string;
-  nom: string;
-  prenoms: string;
-  nomSacre: string | null;
-  grade: string;
 }
 
 interface Selection {
@@ -138,13 +139,11 @@ export default function ProgrammesMensuelsPage() {
   const [grades, setGrades] = useState([...GRADES]);
   const [inscrits, setInscrits] = useState<Inscrit[]>([]);
   const [loadingInscrits, setLoadingInscrits] = useState(false);
-  const [rechercheMembre, setRechercheMembre] = useState("");
-  const [membresTrouves, setMembresTrouves] = useState<MembreCandidat[]>([]);
-  const [rechercheEnCours, setRechercheEnCours] = useState(false);
-  const [inscriptionEnCours, setInscriptionEnCours] = useState<string | null>(
-    null,
-  );
+  const [inscriptionGroupee, setInscriptionGroupee] = useState(false);
   const [retraitEnCours, setRetraitEnCours] = useState<string | null>(null);
+  const [membresActifs, setMembresActifs] = useState<MembreActif[]>([]);
+  const [chargementMembres, setChargementMembres] = useState(false);
+  const [membresCoches, setMembresCoches] = useState<string[]>([]);
 
   const annee = date.getFullYear();
   const mois = date.getMonth() + 1;
@@ -491,12 +490,20 @@ export default function ProgrammesMensuelsPage() {
           mois,
           jour: selection.jour,
           gradesAutorises: grades,
+          membreIds: membresCoches,
         }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
       await charger();
-      setMessage({ type: "success", texte: "Lien d'inscription créé" });
+      setMembresCoches([]);
+      setMessage({
+        type: "success",
+        texte:
+          data.inscrits > 0
+            ? `Lien d'inscription créé · ${data.inscrits} membre(s) inscrit(s)`
+            : "Lien d'inscription créé",
+      });
     } catch (error) {
       setMessage({
         type: "error",
@@ -560,47 +567,25 @@ export default function ProgrammesMensuelsPage() {
     }
   };
 
-  const rechercherMembre = async () => {
-    if (!evenementSelectionne || rechercheMembre.trim().length < 2) return;
-    setRechercheEnCours(true);
-    try {
-      const response = await fetch(
-        `/api/admin/traversees/${evenementSelectionne.id}/inscrits?q=${encodeURIComponent(rechercheMembre.trim())}`,
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-      setMembresTrouves(data.data);
-    } catch (error) {
-      setMessage({
-        type: "error",
-        texte: error instanceof Error ? error.message : "Recherche impossible",
-      });
-    } finally {
-      setRechercheEnCours(false);
-    }
-  };
-
-  const inscrireMembre = async (membre: MembreCandidat) => {
-    if (!evenementSelectionne) return;
-    setInscriptionEnCours(membre.id);
+  const inscrireCoches = async () => {
+    if (!evenementSelectionne || membresCoches.length === 0) return;
+    setInscriptionGroupee(true);
     try {
       const response = await fetch(
         `/api/admin/traversees/${evenementSelectionne.id}/inscrits`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ membreId: membre.id }),
+          body: JSON.stringify({ membreIds: membresCoches }),
         },
       );
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
-      setMembresTrouves((current) =>
-        current.filter((item) => item.id !== membre.id),
-      );
+      setMembresCoches([]);
       await Promise.all([chargerInscrits(), charger()]);
       setMessage({
         type: "success",
-        texte: `${membre.prenoms} ${membre.nom} a été inscrit(e)`,
+        texte: `${data.inscrits} membre(s) inscrit(s)`,
       });
     } catch (error) {
       setMessage({
@@ -609,7 +594,7 @@ export default function ProgrammesMensuelsPage() {
           error instanceof Error ? error.message : "Inscription impossible",
       });
     } finally {
-      setInscriptionEnCours(null);
+      setInscriptionGroupee(false);
     }
   };
 
@@ -640,10 +625,26 @@ export default function ProgrammesMensuelsPage() {
     }
   };
 
+  const doitProposerMembres = Boolean(selection);
+  useEffect(() => {
+    if (!doitProposerMembres || membresActifs.length > 0 || chargementMembres)
+      return;
+    setChargementMembres(true);
+    fetch("/api/admin/membres-actifs")
+      .then((response) => response.json())
+      .then((data) => setMembresActifs(data.data ?? []))
+      .catch(() =>
+        setMessage({ type: "error", texte: "Liste des membres indisponible" }),
+      )
+      .finally(() => setChargementMembres(false));
+  }, [doitProposerMembres, membresActifs.length, chargementMembres]);
+
+  useEffect(() => {
+    setMembresCoches([]);
+  }, [selection?.activiteId, selection?.jour]);
+
   useEffect(() => {
     setInscrits([]);
-    setRechercheMembre("");
-    setMembresTrouves([]);
     if (evenementSelectionne) chargerInscrits();
   }, [evenementSelectionne?.id]);
 
@@ -983,6 +984,24 @@ export default function ProgrammesMensuelsPage() {
                       ))}
                     </div>
                   </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">
+                      Inscrire des membres dès maintenant{" "}
+                      <span className="font-normal text-gray-500">
+                        (facultatif)
+                      </span>
+                    </p>
+                    <p className="mb-2 mt-0.5 text-xs text-gray-500">
+                      Seuls les grades autorisés ci-dessus sont proposés.
+                    </p>
+                    <SelectionMembres
+                      membres={membresActifs}
+                      gradesAutorises={grades}
+                      coches={membresCoches}
+                      onChange={setMembresCoches}
+                      chargement={chargementMembres}
+                    />
+                  </div>
                   <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                     <h3 className="font-medium text-gray-900">
                       Créer le lien d'inscription
@@ -1001,7 +1020,9 @@ export default function ProgrammesMensuelsPage() {
                       ) : (
                         <Link2 className="h-4 w-4" />
                       )}{" "}
-                      Créer le lien public
+                      {membresCoches.length > 0
+                        ? `Créer le lien et inscrire ${membresCoches.length} membre(s)`
+                        : "Créer le lien public"}
                     </button>
                   </div>
                   <button
@@ -1059,6 +1080,23 @@ export default function ProgrammesMensuelsPage() {
                       </a>
                     </div>
                   </div>
+                  <ContenuSeance
+                    evenement={{
+                      id: evenementSelectionne.id,
+                      instruction: evenementSelectionne.instruction ?? null,
+                      seminaire: evenementSelectionne.seminaire ?? null,
+                      sujetPlanche: evenementSelectionne.sujetPlanche ?? null,
+                      monographieActive:
+                        evenementSelectionne.monographieActive ?? false,
+                      monographiePrix: evenementSelectionne.monographiePrix ?? 2000,
+                      monographieImageUrl:
+                        evenementSelectionne.monographieImageUrl ?? null,
+                    }}
+                    onEnregistre={async (resultat) => {
+                      if (resultat.type === "success") await charger();
+                      setMessage(resultat);
+                    }}
+                  />
                   <div>
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                       <div>
@@ -1079,80 +1117,33 @@ export default function ProgrammesMensuelsPage() {
                       )}
                     </div>
                     <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                      <p className="text-sm font-medium text-gray-800">
-                        Inscrire un membre
+                      <p className="mb-2 text-sm font-medium text-gray-800">
+                        Inscrire des membres
                       </p>
-                      <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                        <input
-                          value={rechercheMembre}
-                          onChange={(event) => {
-                            setRechercheMembre(event.target.value);
-                            setMembresTrouves([]);
-                          }}
-                          onKeyDown={(event) =>
-                            event.key === "Enter" && rechercherMembre()
-                          }
-                          placeholder="Nom, prénom ou nom sacré"
-                          className="h-10 min-w-0 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-500"
-                        />
-                        <button
-                          onClick={rechercherMembre}
-                          disabled={
-                            rechercheMembre.trim().length < 2 ||
-                            rechercheEnCours
-                          }
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-gray-800 px-4 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-50"
-                        >
-                          {rechercheEnCours ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Search className="h-4 w-4" />
-                          )}{" "}
-                          Rechercher
-                        </button>
-                      </div>
-                      {membresTrouves.length > 0 && (
-                        <div className="mt-3 max-h-48 space-y-1.5 overflow-y-auto">
-                          {membresTrouves.map((membre) => (
-                            <div
-                              key={membre.id}
-                              className="flex items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2"
-                            >
-                              <div className="min-w-0">
-                                <p className="truncate text-sm font-medium text-gray-900">
-                                  {membre.prenoms} {membre.nom}{" "}
-                                  {membre.nomSacre
-                                    ? `(${membre.nomSacre})`
-                                    : ""}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {membre.grade}
-                                </p>
-                              </div>
-                              <button
-                                onClick={() => inscrireMembre(membre)}
-                                disabled={inscriptionEnCours === membre.id}
-                                className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-gray-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-900 disabled:opacity-50"
-                              >
-                                {inscriptionEnCours === membre.id ? (
-                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                ) : (
-                                  <UserPlus className="h-3.5 w-3.5" />
-                                )}{" "}
-                                Inscrire
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {!rechercheEnCours &&
-                        rechercheMembre.trim().length >= 2 &&
-                        membresTrouves.length === 0 && (
-                          <p className="mt-3 text-xs text-gray-500">
-                            Lancez la recherche pour afficher les membres
-                            disponibles.
-                          </p>
+                      <SelectionMembres
+                        membres={membresActifs.filter(
+                          (membre) =>
+                            !inscrits.some((item) => item.membre.id === membre.id),
                         )}
+                        gradesAutorises={evenementSelectionne.gradesAutorises}
+                        coches={membresCoches}
+                        onChange={setMembresCoches}
+                        chargement={chargementMembres || loadingInscrits}
+                      />
+                      <button
+                        onClick={inscrireCoches}
+                        disabled={membresCoches.length === 0 || inscriptionGroupee}
+                        className="mt-3 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-gray-800 px-4 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-50"
+                      >
+                        {inscriptionGroupee ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <UserPlus className="h-4 w-4" />
+                        )}{" "}
+                        {membresCoches.length > 0
+                          ? `Inscrire ${membresCoches.length} membre(s)`
+                          : "Cochez des membres à inscrire"}
+                      </button>
                     </div>
                     {loadingInscrits ? (
                       <div className="flex justify-center py-8">

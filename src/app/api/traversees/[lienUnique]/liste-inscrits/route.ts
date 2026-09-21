@@ -32,7 +32,8 @@ export async function POST(
       where: { traverseeId: traversee.id },
       select: {
         id: true,
-        membre: { select: { nom: true, prenoms: true, nomSacre: true } },
+        membreId: true,
+        membre: { select: { nom: true, prenoms: true, nomSacre: true, grade: true } },
       },
       orderBy: { createdAt: 'asc' },
     })
@@ -42,9 +43,15 @@ export async function POST(
       nom: row.membre.nom,
       prenoms: row.membre.prenoms,
       nomSacre: row.membre.nomSacre?.trim() ?? null,
+      grade: row.membre.grade,
     }))
 
-    return NextResponse.json({ success: true, data: inscrits })
+    return NextResponse.json({
+      success: true,
+      data: inscrits,
+      // La personne qui consulte figure-t-elle déjà dans la liste ?
+      dejaInscrit: rows.some((row) => row.membreId === membre.id),
+    })
   } catch {
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }

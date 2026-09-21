@@ -5,6 +5,7 @@ import { formatAppDateYMD, parseAppDatetimeLocal } from "@/lib/datetime";
 import { slugify } from "@/lib/utils";
 import { getAuthorizedAdmin } from "@/lib/security/admin";
 import { isSameOrigin, safeJson, safeText } from "@/lib/security/http";
+import { inscrireMembresCoches } from "@/lib/inscriptions";
 
 const CATEGORIES = ["TEMPLE", "ECOLE"] as const;
 type Categorie = (typeof CATEGORIES)[number];
@@ -322,6 +323,12 @@ export async function GET(request: NextRequest) {
                 date: true,
                 lienUnique: true,
                 gradesAutorises: true,
+                instruction: true,
+                seminaire: true,
+                sujetPlanche: true,
+                monographieActive: true,
+                monographiePrix: true,
+                monographieImageUrl: true,
                 _count: { select: { inscriptions: true } },
               },
             },
@@ -349,6 +356,12 @@ export async function GET(request: NextRequest) {
           lienUnique: evenement.lienUnique,
           gradesAutorises: evenement.gradesAutorises,
           inscrits: evenement._count.inscriptions,
+          instruction: evenement.instruction,
+          seminaire: evenement.seminaire,
+          sujetPlanche: evenement.sujetPlanche,
+          monographieActive: evenement.monographieActive,
+          monographiePrix: evenement.monographiePrix,
+          monographieImageUrl: evenement.monographieImageUrl,
         })),
       })),
     });
@@ -423,7 +436,10 @@ export async function POST(request: NextRequest) {
         },
         include: { _count: { select: { inscriptions: true } } },
       });
-      if (existant) return NextResponse.json({ success: true, data: existant });
+      if (existant) {
+        const inscrits = await inscrireMembresCoches(existant.id, existant.gradesAutorises, body.membreIds);
+        return NextResponse.json({ success: true, data: existant, inscrits });
+      }
 
       const baseSlug = `${slugify(titre)}-${dateYmd}`;
       const lienUnique = await slugDisponible(baseSlug);
@@ -452,8 +468,10 @@ export async function POST(request: NextRequest) {
         include: { _count: { select: { inscriptions: true } } },
       });
 
+      const inscrits = await inscrireMembresCoches(evenement.id, evenement.gradesAutorises, body.membreIds);
+
       return NextResponse.json(
-        { success: true, data: evenement },
+        { success: true, data: evenement, inscrits },
         { status: 201 },
       );
     }

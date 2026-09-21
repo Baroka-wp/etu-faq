@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAuthorizedAdmin } from '@/lib/security/admin'
 import { isSameOrigin, safeJson, safeText } from '@/lib/security/http'
-
-function gradeAutorise(grade: string, gradesAutorises: string[]) {
-  return grade === 'Alchimiste' || gradesAutorises.length === 0 || gradesAutorises.includes(grade)
-}
+import { gradeAutorise, inscrireMembresCoches } from '@/lib/inscriptions'
 
 export async function GET(
   request: NextRequest,
@@ -82,7 +79,16 @@ export async function POST(
 
   try {
     const { id } = await params
-    const body = await safeJson<Record<string, unknown>>(request, 4_096)
+    const body = await safeJson<Record<string, unknown>>(request, 131_072)
+
+    // Inscription groupée depuis la liste à cocher
+    if (Array.isArray(body.membreIds)) {
+      const traversee = await db.traversee.findUnique({ where: { id }, select: { id: true, gradesAutorises: true } })
+      if (!traversee) return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 })
+      const inscrits = await inscrireMembresCoches(traversee.id, traversee.gradesAutorises, body.membreIds)
+      return NextResponse.json({ success: true, inscrits }, { status: 201 })
+    }
+
     const membreId = safeText(body.membreId, 120)
     if (!membreId) return NextResponse.json({ error: 'Membre requis' }, { status: 400 })
 

@@ -19,6 +19,12 @@ export async function GET(
         lieu: true,
         lienUnique: true,
         gradesAutorises: true,
+        instruction: true,
+        seminaire: true,
+        sujetPlanche: true,
+        monographieActive: true,
+        monographiePrix: true,
+        monographieImageUrl: true,
         _count: { select: { inscriptions: true } }
       }
     })

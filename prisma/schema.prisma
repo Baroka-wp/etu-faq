@@ -162,6 +162,14 @@ model Traversee {
   gradesAutorises     String[]
   serieId             String?
   activiteProgrammeId String?
+  // Contenu de la séance, affiché sur la page publique
+  instruction         String?
+  seminaire           String?
+  sujetPlanche        String?
+  // Monographie proposée à l'inscription (instructions)
+  monographieActive   Boolean  @default(false)
+  monographiePrix     Int      @default(2000) // FCFA
+  monographieImageUrl String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
