@@ -28,6 +28,7 @@ import {
   sujetMonographie,
 } from '@/lib/monographie'
 import { nomInitiatique } from '@/lib/titre-initiatique'
+import AncreFond from '@/components/traversee/AncreFond'
 
 interface TraverseeData {
   id: string
@@ -66,16 +67,6 @@ interface Inscrit {
 type ModalStep = 'search' | 'verifying' | 'confirm' | 'monographie' | 'success' | 'error'
 
 const STORAGE_KEY = 'etu-traversee-nom-sacre'
-
-const TYPE_BADGE: Record<string, string> = {
-  'Traversée Grand Navire': 'bg-blue-50 text-blue-800',
-  'Traversée Équipage': 'bg-sky-50 text-sky-800',
-  "Traversée d'Initiation": 'bg-emerald-50 text-emerald-800',
-  'Cours de Grade': 'bg-purple-50 text-purple-800',
-  Cours: 'bg-indigo-50 text-indigo-800',
-  Agape: 'bg-orange-50 text-orange-800',
-  Rencontre: 'bg-pink-50 text-pink-800',
-}
 
 const GRADE_COLORS: Record<string, string> = {
   Explorateur: 'bg-green-50 text-green-800 border-green-200',
@@ -357,19 +348,13 @@ export default function TraverseePage() {
   const ouvertureAuto = Boolean(nomMemorise) && !listUnlocked && listLoading
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] pb-24 text-[#282724] sm:pb-10">
+    <div className="relative isolate min-h-screen overflow-x-clip bg-[#faf9f6] pb-24 text-[#282724] sm:pb-10">
+      <AncreFond />
       <SiteNav />
-      <main className="mx-auto max-w-2xl px-4 py-5 sm:px-6 sm:py-10">
-        <Link href="/programme" className="mb-5 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
-          <ArrowLeft className="h-4 w-4" /> Programme du mois
-        </Link>
-
-        <article className="border-t border-stone-200">
-          <div className="py-6 sm:py-8">
-            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${TYPE_BADGE[traversee.type] || 'bg-stone-100 text-stone-700'}`}>
-              {traversee.type}
-            </span>
-            <h1 className="mt-4 text-2xl font-semibold leading-tight tracking-tight text-gray-950 sm:text-4xl">
+      <main className="relative z-10 mx-auto max-w-2xl px-4 py-5 sm:px-6 sm:py-10">
+        <article>
+          <div className="pb-6 pt-2 sm:pb-8">
+            <h1 className="text-2xl font-semibold leading-tight tracking-tight text-gray-950 sm:text-4xl">
               {traversee.titre}
             </h1>
 
