@@ -1,11 +1,11 @@
 /** Numéro WhatsApp qui reçoit les demandes de monographie. */
-export const MONOGRAPHIE_WHATSAPP = '22967153974'
+export const MONOGRAPHIE_WHATSAPP = '22997961695'
 
 /** Numéro qui reçoit le dépôt pour la monographie. */
 export const MONOGRAPHIE_DEPOT = {
-  numero: '+2290167153974',
-  affichage: '+229 01 67 15 39 74',
-  titulaire: 'Irotori Baroka',
+  numero: '+2290197687681',
+  affichage: '+229 01 97 68 76 81',
+  titulaire: 'DOSSOUNON Elinvo Luc',
 }
 
 export const MONOGRAPHIE_PRIX_DEFAUT = 2000
