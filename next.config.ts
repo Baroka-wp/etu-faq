@@ -19,6 +19,10 @@ const contentSecurityPolicy = [
 const nextConfig: NextConfig = {
   /* config options here */
   serverExternalPackages: ['@prisma/client'],
+  // Le logo est lu au moment de produire l'export Excel : il doit suivre la fonction.
+  outputFileTracingIncludes: {
+    '/api/admin/programmes-mensuels/export': ['./public/icon-192.png'],
+  },
   // Configuration pour Vercel
   output: 'standalone',
   // Optimisations pour la production
