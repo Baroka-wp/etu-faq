@@ -2,121 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { formatAppDateYMD, parseAppDatetimeLocal } from "@/lib/datetime";
-import { slugify } from "@/lib/utils";
 import { getAuthorizedAdmin } from "@/lib/security/admin";
 import { isSameOrigin, safeJson, safeText } from "@/lib/security/http";
 import { inscrireMembresCoches } from "@/lib/inscriptions";
+import {
+  creerEvenementPourDate,
+  heureDebut,
+} from "@/lib/programme-evenements";
 
 const CATEGORIES = ["TEMPLE", "ECOLE"] as const;
 type Categorie = (typeof CATEGORIES)[number];
-
-const ACTIVITES_PAR_DEFAUT = [
-  {
-    categorie: "TEMPLE",
-    titre: "Initiation degré Constructeur",
-    heures: "9h-12h",
-    lieu: "Temple",
-    ordre: 1,
-  },
-  {
-    categorie: "TEMPLE",
-    titre: "Consécration des Membres du Bureau Exécutif",
-    heures: "9h-12h",
-    lieu: "Temple",
-    ordre: 2,
-  },
-  {
-    categorie: "TEMPLE",
-    titre: "Traversée degré Constructeur",
-    heures: "9h-12h",
-    lieu: "Temple",
-    ordre: 3,
-  },
-  {
-    categorie: "TEMPLE",
-    titre: "Traversée degré Navigateur",
-    heures: "9h-12h",
-    lieu: "Temple",
-    ordre: 4,
-  },
-  {
-    categorie: "TEMPLE",
-    titre: "Traversée initiation Explorateur",
-    heures: "À préciser",
-    lieu: "Temple",
-    ordre: 5,
-  },
-  {
-    categorie: "TEMPLE",
-    titre: "Traversée ISALEM",
-    heures: "9h-15h",
-    lieu: "Temple",
-    ordre: 6,
-  },
-  {
-    categorie: "ECOLE",
-    titre: "Travaux d'expansion de l'Égrégore d'ETU",
-    heures: "19h-21h",
-    lieu: "École",
-    ordre: 1,
-  },
-  {
-    categorie: "ECOLE",
-    titre: "Cours de Philosophie Ésotérique",
-    heures: "19h-21h",
-    lieu: "École",
-    ordre: 2,
-  },
-  {
-    categorie: "ECOLE",
-    titre: "Cours d'Évangiles Constructeurs",
-    heures: "19h-21h",
-    lieu: "École",
-    ordre: 3,
-  },
-  {
-    categorie: "ECOLE",
-    titre: "Cours d'Évangiles Navigateurs",
-    heures: "19h-21h",
-    lieu: "École",
-    ordre: 4,
-  },
-  {
-    categorie: "ECOLE",
-    titre: "Instruction de Grade Constructeurs",
-    heures: "19h-21h",
-    lieu: "École",
-    ordre: 5,
-  },
-  {
-    categorie: "ECOLE",
-    titre: "Instruction de Grade Navigateurs",
-    heures: "19h-21h",
-    lieu: "École",
-    ordre: 6,
-  },
-  {
-    categorie: "ECOLE",
-    titre: "Instruction des Explorateurs",
-    heures: "19h-21h",
-    lieu: "École",
-    ordre: 7,
-  },
-  {
-    categorie: "ECOLE",
-    titre: "Cours d'Explorateurs en ligne",
-    heures: "21h-23h",
-    lieu: "En ligne",
-    ordre: 8,
-  },
-] as const;
-
-const TOUS_LES_GRADES = [
-  "Explorateur",
-  "Constructeur",
-  "Navigateur",
-  "Alchimiste",
-];
 
 function moisValide(annee: number, mois: number) {
   return (
@@ -141,11 +36,6 @@ function pad(value: number) {
   return String(value).padStart(2, "0");
 }
 
-function heureDebut(heures: string) {
-  const match = heures.match(/(\d{1,2})h(?:(\d{2}))?/i);
-  return match ? `${pad(Number(match[1]))}:${match[2] ?? "00"}` : "12:00";
-}
-
 function limitesMois(annee: number, mois: number) {
   const debut = parseAppDatetimeLocal(`${annee}-${pad(mois)}-01T00:00`);
   const suivant =
@@ -160,29 +50,22 @@ function estApres(annee: number, mois: number, reference: number) {
   return periode(annee, mois) > reference;
 }
 
-async function initialiserCatalogue() {
-  if ((await db.activiteProgramme.count()) > 0) return;
-  await db.$transaction(
-    ACTIVITES_PAR_DEFAUT.map((activite) =>
-      db.activiteProgramme.create({
-        data: { ...activite, catalogueDepuis: 0 },
-      }),
-    ),
-  );
-}
-
+/**
+ * Ouverture d'un mois.
+ *
+ * Le programme du Temple part d'une page blanche : ses lignes naissent quand
+ * on pose un modèle sur une date. Le programme pédagogique, lui, reprend
+ * d'office ses activités ordinaires, sans aucune date cochée.
+ */
 async function initialiserMois(annee: number, mois: number) {
-  await initialiserCatalogue();
   const clePeriode = periode(annee, mois);
-  const [catalogue, existantes] = await Promise.all([
+  const [pedagogiques, existantes] = await Promise.all([
     db.activiteProgramme.findMany({
       where: {
+        categorie: "ECOLE",
         actif: true,
         catalogueDepuis: { lte: clePeriode },
-        OR: [
-          { catalogueJusqua: null },
-          { catalogueJusqua: { gte: clePeriode } },
-        ],
+        OR: [{ catalogueJusqua: null }, { catalogueJusqua: { gte: clePeriode } }],
       },
     }),
     db.programmationMensuelle.findMany({
@@ -191,10 +74,27 @@ async function initialiserMois(annee: number, mois: number) {
     }),
   ]);
 
-  const parActivite = new Map(
-    existantes.map((item) => [item.activiteId, item]),
-  );
   const operations: Prisma.PrismaPromise<unknown>[] = [];
+  const dejaPresentes = new Set(existantes.map((item) => item.activiteId));
+
+  for (const activite of pedagogiques) {
+    if (dejaPresentes.has(activite.id)) continue;
+    operations.push(
+      db.programmationMensuelle.create({
+        data: {
+          activiteId: activite.id,
+          annee,
+          mois,
+          jours: [],
+          titre: activite.titre,
+          description: activite.description,
+          heures: activite.heures,
+          lieu: activite.lieu,
+          ordre: activite.ordre,
+        },
+      }),
+    );
+  }
 
   for (const programmation of existantes) {
     if (
@@ -222,42 +122,7 @@ async function initialiserMois(annee: number, mois: number) {
     }
   }
 
-  for (const activite of catalogue) {
-    const programmation = parActivite.get(activite.id);
-    if (!programmation) {
-      operations.push(
-        db.programmationMensuelle.create({
-          data: {
-            activiteId: activite.id,
-            annee,
-            mois,
-            jours: [],
-            titre: activite.titre,
-            description: activite.description,
-            heures: activite.heures,
-            lieu: activite.lieu,
-            ordre: activite.ordre,
-          },
-        }),
-      );
-    }
-  }
-
   if (operations.length > 0) await db.$transaction(operations);
-}
-
-async function slugDisponible(base: string) {
-  let candidat = base;
-  let suffixe = 2;
-  while (
-    await db.traversee.findUnique({
-      where: { lienUnique: candidat },
-      select: { id: true },
-    })
-  ) {
-    candidat = `${base}-${suffixe++}`;
-  }
-  return candidat;
 }
 
 async function misesAJourEvenements(
@@ -329,6 +194,8 @@ export async function GET(request: NextRequest) {
                 monographieActive: true,
                 monographiePrix: true,
                 monographieImageUrl: true,
+                monographieBookId: true,
+                monographie: { select: { id: true, title: true } },
                 _count: { select: { inscriptions: true } },
               },
             },
@@ -362,6 +229,8 @@ export async function GET(request: NextRequest) {
           monographieActive: evenement.monographieActive,
           monographiePrix: evenement.monographiePrix,
           monographieImageUrl: evenement.monographieImageUrl,
+          monographieBookId: evenement.monographieBookId,
+          monographieTitre: evenement.monographie?.title ?? null,
         })),
       })),
     });
@@ -388,6 +257,152 @@ export async function POST(request: NextRequest) {
   try {
     const body = await safeJson<Record<string, unknown>>(request, 16_384);
 
+    // Poser un modèle sur une date : on réutilise l'activité choisie, ou on
+    // en crée une à partir des informations fournies, puis on coche le jour.
+    if (body.action === "appliquer-modele") {
+      const annee = Number(body.annee);
+      const mois = Number(body.mois);
+      const jour = Number(body.jour);
+      const maxJour = new Date(annee, mois, 0).getDate();
+      if (
+        !moisValide(annee, mois) ||
+        !Number.isInteger(jour) ||
+        jour < 1 ||
+        jour > maxJour
+      ) {
+        return NextResponse.json({ error: "Date invalide" }, { status: 400 });
+      }
+
+      await initialiserMois(annee, mois);
+      const clePeriode = periode(annee, mois);
+      const appliquerFuturs = body.appliquerFuturs === true;
+      let activiteId = safeText(body.activiteId, 120);
+
+      if (!activiteId) {
+        // Modèle repris d'un ancien événement, ou modèle tout neuf.
+        const categorie = body.categorie;
+        const titre = safeText(body.titre, 180);
+        const description = safeText(body.description, 1_000) ?? "";
+        const heures = safeText(body.heures, 80);
+        const lieu = safeText(body.lieu, 120);
+        if (!categorieValide(categorie) || !titre || !heures || !lieu) {
+          return NextResponse.json(
+            { error: "Titre, heures, lieu et catégorie sont obligatoires" },
+            { status: 400 },
+          );
+        }
+
+        const ordreMax = await db.programmationMensuelle.aggregate({
+          where: { annee, mois, visible: true, activite: { categorie } },
+          _max: { ordre: true },
+        });
+        const ordre = (ordreMax._max.ordre ?? 0) + 1;
+        const titreInterne = appliquerFuturs
+          ? titre
+          : `${titre} · spécifique ${annee}-${pad(mois)} · ${Date.now()}`;
+
+        const creee = await db.activiteProgramme.create({
+          data: {
+            categorie,
+            titre: titreInterne,
+            description,
+            heures,
+            lieu,
+            ordre,
+            actif: appliquerFuturs,
+            catalogueDepuis: appliquerFuturs ? clePeriode : 0,
+            programmations: {
+              create: [
+                {
+                  annee,
+                  mois,
+                  jours: [],
+                  titre,
+                  description,
+                  heures,
+                  lieu,
+                  ordre,
+                  specifique: !appliquerFuturs,
+                },
+              ],
+            },
+          },
+          select: { id: true },
+        });
+        activiteId = creee.id;
+      }
+
+      let programmation = await db.programmationMensuelle.findUnique({
+        where: { activiteId_annee_mois: { activiteId, annee, mois } },
+        include: { activite: true },
+      });
+
+      if (!programmation) {
+        // Première séance de cette activité dans ce mois : on ouvre sa ligne.
+        const activite = await db.activiteProgramme.findUnique({
+          where: { id: activiteId },
+        });
+        if (!activite) {
+          return NextResponse.json(
+            { error: "Modèle introuvable" },
+            { status: 404 },
+          );
+        }
+        const ordreMax = await db.programmationMensuelle.aggregate({
+          where: {
+            annee,
+            mois,
+            visible: true,
+            activite: { categorie: activite.categorie },
+          },
+          _max: { ordre: true },
+        });
+        programmation = await db.programmationMensuelle.create({
+          data: {
+            activiteId,
+            annee,
+            mois,
+            jours: [],
+            titre: activite.titre.split(" · spécifique ")[0].trim(),
+            description: activite.description ?? "",
+            heures: activite.heures,
+            lieu: activite.lieu,
+            ordre: (ordreMax._max.ordre ?? 0) + 1,
+            specifique: !appliquerFuturs,
+          },
+          include: { activite: true },
+        });
+      }
+
+      const jours = [...new Set([...programmation.jours, jour])].sort(
+        (a, b) => a - b,
+      );
+      await db.programmationMensuelle.update({
+        where: { id: programmation.id },
+        data: { jours, visible: true },
+      });
+
+      const lien =
+        body.creerLien === true
+          ? await creerEvenementPourDate({
+              activiteId,
+              annee,
+              mois,
+              jour,
+              gradesAutorises: body.gradesAutorises,
+            })
+          : null;
+
+      return NextResponse.json({
+        success: true,
+        activiteId,
+        jours,
+        lien: lien?.evenement
+          ? { id: lien.evenement.id, lienUnique: lien.evenement.lienUnique, cree: lien.cree }
+          : null,
+      });
+    }
+
     if (body.action === "creer-lien") {
       const activiteId = safeText(body.activiteId, 120);
       const annee = Number(body.annee);
@@ -410,7 +425,7 @@ export async function POST(request: NextRequest) {
       await initialiserMois(annee, mois);
       const programmation = await db.programmationMensuelle.findUnique({
         where: { activiteId_annee_mois: { activiteId, annee, mois } },
-        include: { activite: true },
+        select: { visible: true },
       });
       if (!programmation?.visible) {
         return NextResponse.json(
@@ -419,60 +434,29 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const titre = programmation.titre ?? programmation.activite.titre;
-      const description =
-        programmation.description ??
-        programmation.activite.description ??
-        `${titre} · ${programmation.heures ?? programmation.activite.heures}`;
-      const heures = programmation.heures ?? programmation.activite.heures;
-      const lieu = programmation.lieu ?? programmation.activite.lieu;
-      const dateYmd = `${annee}-${pad(mois)}-${pad(jour)}`;
-      const debutJour = parseAppDatetimeLocal(`${dateYmd}T00:00`);
-      const finJour = parseAppDatetimeLocal(`${dateYmd}T23:59`);
-      const existant = await db.traversee.findFirst({
-        where: {
-          activiteProgrammeId: activiteId,
-          date: { gte: debutJour, lte: finJour },
-        },
-        include: { _count: { select: { inscriptions: true } } },
+      const { evenement, cree } = await creerEvenementPourDate({
+        activiteId,
+        annee,
+        mois,
+        jour,
+        gradesAutorises: body.gradesAutorises,
       });
-      if (existant) {
-        const inscrits = await inscrireMembresCoches(existant.id, existant.gradesAutorises, body.membreIds);
-        return NextResponse.json({ success: true, data: existant, inscrits });
+      if (!evenement) {
+        return NextResponse.json(
+          { error: "Activité introuvable pour ce mois" },
+          { status: 404 },
+        );
       }
 
-      const baseSlug = `${slugify(titre)}-${dateYmd}`;
-      const lienUnique = await slugDisponible(baseSlug);
-      const grades =
-        Array.isArray(body.gradesAutorises) && body.gradesAutorises.length > 0
-          ? body.gradesAutorises.filter(
-              (grade): grade is string =>
-                typeof grade === "string" && TOUS_LES_GRADES.includes(grade),
-            )
-          : TOUS_LES_GRADES;
-
-      const evenement = await db.traversee.create({
-        data: {
-          type:
-            programmation.activite.categorie === "TEMPLE"
-              ? "Programme du Temple"
-              : "Programme pédagogique",
-          titre,
-          description,
-          date: parseAppDatetimeLocal(`${dateYmd}T${heureDebut(heures)}`),
-          lieu,
-          lienUnique,
-          gradesAutorises: grades.length > 0 ? grades : TOUS_LES_GRADES,
-          activiteProgrammeId: activiteId,
-        },
-        include: { _count: { select: { inscriptions: true } } },
-      });
-
-      const inscrits = await inscrireMembresCoches(evenement.id, evenement.gradesAutorises, body.membreIds);
+      const inscrits = await inscrireMembresCoches(
+        evenement.id,
+        evenement.gradesAutorises,
+        body.membreIds,
+      );
 
       return NextResponse.json(
         { success: true, data: evenement, inscrits },
-        { status: 201 },
+        { status: cree ? 201 : 200 },
       );
     }
 

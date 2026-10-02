@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Check, Pencil, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Pencil, Plus, Trash2 } from "lucide-react";
 
 export type ProgrammeCategory = "TEMPLE" | "ECOLE";
 
@@ -34,6 +34,8 @@ interface ProgrammeCalendarProps {
   onRemoveActivity?: (activite: ProgrammeActivity) => void;
   onEditActivity?: (activite: ProgrammeActivity) => void;
   onMoveActivity?: (activite: ProgrammeActivity, direction: -1 | 1) => void;
+  /** Poser une séance sur une date, sur la ligne d'ajout. */
+  onAddDate?: (jour: number) => void;
 }
 
 const MOIS = [
@@ -77,6 +79,7 @@ export default function ProgrammeCalendar({
   onRemoveActivity,
   onEditActivity,
   onMoveActivity,
+  onAddDate,
 }: ProgrammeCalendarProps) {
   const identite = IDENTITE[categorie];
   const nombreJours = new Date(annee, mois, 0).getDate();
@@ -272,6 +275,29 @@ export default function ProgrammeCalendar({
               })}
             </tr>
           ))}
+
+          {onAddDate && (
+            <tr data-html2canvas-ignore className="h-[31px] bg-white">
+              <td className="border border-gray-400 text-center text-gray-400">
+                <Plus className="mx-auto h-3.5 w-3.5" aria-hidden />
+              </td>
+              <td className="border border-gray-400 px-2 text-gray-500" colSpan={3}>
+                Cliquez une date pour poser une séance
+              </td>
+              {joursDuMois.map((jour) => (
+                <td key={jour} className="border border-gray-400 bg-white p-0">
+                  <button
+                    onClick={() => onAddDate(jour)}
+                    className="flex h-[30px] w-full items-center justify-center text-gray-300 transition hover:bg-gray-900 hover:text-white"
+                    aria-label={`Poser une séance le ${jour} ${MOIS[mois - 1]}`}
+                    title={`Poser une séance le ${jour}`}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </td>
+              ))}
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
