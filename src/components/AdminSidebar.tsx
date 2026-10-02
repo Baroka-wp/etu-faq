@@ -7,7 +7,6 @@ import {
     Menu,
     X,
     UserPlus,
-    BookOpen,
     Compass,
     ListChecks,
     GraduationCap
@@ -54,14 +53,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             label: 'Suivi des projets',
             icon: ListChecks,
             href: '/projets/suivi'
-        },
-        {
-            id: 'bibliotheque',
-            label: 'Bibliothèque',
-            icon: BookOpen,
-            href: '/admin/bibliotheque'
-        }
-    ]
+        },]
 
     return (
         <>

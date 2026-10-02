@@ -79,8 +79,86 @@ model Book {
   imageUrl          String   @default("")
   whatsappMessage   String   @default("")
   driveUrl          String   @default("")
+  /// livre | monographie | ressource
+  type              String   @default("livre")
+  /// public | restreint
+  acces             String   @default("public")
+  /// Grades admis quand l'accès est restreint ; vide = tous les grades
+  gradesAutorises   String[]
+  publie            Boolean  @default(true)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  collections       CollectionRessource[]
+  codes             CodeAccesRessource[]
+  seances           Traversee[]
+
+  @@index([type, publie])
+  @@index([acces])
+}
+
+/// Ensemble de ressources partagé par un lien unique.
+model Collection {
+  id              String   @id @default(cuid())
+  titre           String
+  slug            String   @unique
+  description     String?
+  imageUrl        String?
+  /// public | restreint
+  acces           String   @default("restreint")
+  gradesAutorises String[]
+  publie          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  ressources CollectionRessource[]
+  codes      CodeAcces[]
+
+  @@index([publie])
+}
+
+model CollectionRessource {
+  collectionId String
+  bookId       String
+  ordre        Int    @default(0)
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  ressource  Book       @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, bookId])
+  @@index([bookId])
+}
+
+/// Code nominatif remis à un aspirant, rattaché à des ressources ou à une collection.
+model CodeAcces {
+  id                  String    @id @default(cuid())
+  code                String    @unique
+  libelle             String // à qui ce code a été remis
+  note                String?
+  collectionId        String?
+  expiresAt           DateTime?
+  actif               Boolean   @default(true)
+  utilisations        Int       @default(0)
+  derniereUtilisation DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  collection Collection?          @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  ressources CodeAccesRessource[]
+
+  @@index([actif])
+  @@index([collectionId])
+}
+
+model CodeAccesRessource {
+  codeId String
+  bookId String
+
+  code      CodeAcces @relation(fields: [codeId], references: [id], onDelete: Cascade)
+  ressource Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([codeId, bookId])
+  @@index([bookId])
 }
 
 model Course {
@@ -170,16 +248,20 @@ model Traversee {
   monographieActive   Boolean  @default(false)
   monographiePrix     Int      @default(2000) // FCFA
   monographieImageUrl String?
+  /// Monographie choisie dans la bibliothèque, quand il y en a une
+  monographieBookId   String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
   inscriptions     InscriptionTraversee[]
   enseignements    Enseignement[]
+  monographie      Book?                  @relation(fields: [monographieBookId], references: [id], onDelete: SetNull)
   activiteProgramme ActiviteProgramme? @relation(fields: [activiteProgrammeId], references: [id], onDelete: SetNull)
 
   @@index([lienUnique])
   @@index([serieId])
   @@index([activiteProgrammeId, date])
+  @@index([monographieBookId])
 }
 
 model InscriptionTraversee {

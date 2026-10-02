@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { getAuthorizedAdmin } from '@/lib/security/admin'
+import { estAcces, estTypeRessource, gradesValides } from '@/lib/ressources'
 
 const prisma = new PrismaClient()
 
@@ -24,7 +25,10 @@ export async function PUT(
       category,
       imageUrl,
       whatsappMessage,
-      driveUrl
+      driveUrl,
+      type,
+      acces,
+      publie
     } = body
 
     // Validation des champs requis
@@ -60,7 +64,11 @@ export async function PUT(
         category,
         imageUrl: imageUrl || '',
         whatsappMessage: whatsappMessage || '',
-        driveUrl: driveUrl || ''
+        driveUrl: driveUrl || '',
+        type: estTypeRessource(type) ? type : 'livre',
+        acces: estAcces(acces) ? acces : 'public',
+        gradesAutorises: gradesValides(body.gradesAutorises),
+        publie: publie !== false
       }
     })
 
