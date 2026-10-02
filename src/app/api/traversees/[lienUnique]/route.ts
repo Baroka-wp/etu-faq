@@ -25,6 +25,10 @@ export async function GET(
         monographieActive: true,
         monographiePrix: true,
         monographieImageUrl: true,
+        monographieBookId: true,
+        monographie: {
+          select: { id: true, title: true, price: true, isFree: true, imageUrl: true },
+        },
         _count: { select: { inscriptions: true } }
       }
     })
@@ -33,7 +37,22 @@ export async function GET(
       return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, data: traversee })
+    // Quand une ressource est jointe, elle fait foi pour le prix et la couverture ;
+    // sinon on garde les valeurs saisies à la main sur la séance.
+    const { monographie, monographieBookId: _lien, ...reste } = traversee
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...reste,
+        monographiePrix: monographie
+          ? monographie.isFree
+            ? 0
+            : Math.round(monographie.price ?? 0)
+          : traversee.monographiePrix,
+        monographieImageUrl: monographie?.imageUrl || traversee.monographieImageUrl,
+        monographieTitre: monographie?.title ?? null,
+      },
+    })
   } catch {
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }

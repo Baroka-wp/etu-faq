@@ -1,12 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BookOpen, ImagePlus, Loader2, Save, X } from "lucide-react";
 import {
   MONOGRAPHIE_PRIX_DEFAUT,
   RUBRIQUES_SEANCE,
   formatPrixFcfa,
 } from "@/lib/monographie";
+
+interface RessourceBreve {
+  id: string;
+  title: string;
+  author: string;
+  type: string;
+  price: number | null;
+  isFree: boolean;
+  imageUrl: string;
+}
 
 export interface ContenuEvenement {
   id: string;
@@ -16,6 +26,8 @@ export interface ContenuEvenement {
   monographieActive: boolean;
   monographiePrix: number;
   monographieImageUrl: string | null;
+  monographieBookId?: string | null;
+  monographieTitre?: string | null;
 }
 
 /** Instruction, séminaire, sujet de planche et monographie d'un événement. */
@@ -29,6 +41,47 @@ export default function ContenuSeance({
   const [valeurs, setValeurs] = useState(() => initial(evenement));
   const [enregistrement, setEnregistrement] = useState(false);
   const [televersement, setTeleversement] = useState(false);
+  const [bibliotheque, setBibliotheque] = useState<RessourceBreve[] | null>(null);
+  const [rattachement, setRattachement] = useState(false);
+
+  const chargerBibliotheque = useCallback(async () => {
+    try {
+      const reponse = await fetch("/api/admin/ressources?type=monographie");
+      const corps = await reponse.json();
+      setBibliotheque(corps.data ?? []);
+    } catch {
+      setBibliotheque([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    void chargerBibliotheque();
+  }, [chargerBibliotheque]);
+
+  /** Rattache une monographie de la bibliothèque : prix et couverture suivent. */
+  const rattacher = async (bookId: string) => {
+    setRattachement(true);
+    try {
+      const reponse = await fetch(`/api/admin/traversees/${evenement.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ monographieBookId: bookId || null }),
+      });
+      const corps = await reponse.json();
+      if (!reponse.ok) throw new Error(corps.error);
+      onEnregistre({
+        type: "success",
+        texte: bookId ? "Monographie reprise de la bibliothèque" : "Monographie détachée",
+      });
+    } catch (erreur) {
+      onEnregistre({
+        type: "error",
+        texte: erreur instanceof Error ? erreur.message : "Rattachement impossible",
+      });
+    } finally {
+      setRattachement(false);
+    }
+  };
 
   // On ne réinitialise le formulaire que si le contenu enregistré change,
   // pas à chaque rendu du parent.
@@ -135,7 +188,46 @@ export default function ContenuSeance({
         </label>
 
         {valeurs.monographieActive && (
-          <div className="mt-4 flex flex-col gap-4 sm:flex-row">
+          <div className="mt-4 rounded-md border border-gray-200 bg-white p-3">
+            <label htmlFor="monographie-bibliotheque" className="text-sm font-medium text-gray-700">
+              Ressource jointe
+            </label>
+            <select
+              id="monographie-bibliotheque"
+              value={evenement.monographieBookId ?? ""}
+              disabled={rattachement || bibliotheque === null}
+              onChange={(event) => void rattacher(event.target.value)}
+              className="mt-1 h-10 w-full rounded-md border border-gray-300 bg-white px-2 text-sm outline-none focus:border-gray-500 disabled:opacity-50"
+            >
+              <option value="">Aucune — valeurs saisies à la main</option>
+              {(bibliotheque ?? []).map((ressource) => (
+                <option key={ressource.id} value={ressource.id}>
+                  {ressource.type === "monographie" ? "" : `[${ressource.type}] `}
+                  {ressource.title}
+                  {ressource.isFree ? " · gratuit" : ressource.price ? ` · ${ressource.price} FCFA` : ""}
+                </option>
+              ))}
+            </select>
+            {evenement.monographieBookId ? (
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-800">
+                <BookOpen className="h-3.5 w-3.5" aria-hidden />
+                {evenement.monographieTitre ?? "Ressource jointe"} — prix et couverture repris
+                automatiquement.
+              </p>
+            ) : bibliotheque && bibliotheque.length === 0 ? (
+              <p className="mt-2 text-xs text-gray-500">
+                Aucune ressource en bibliothèque : créez-en une dans Enseignements › Ressources.
+              </p>
+            ) : (
+              <p className="mt-2 text-xs text-gray-500">
+                Choisissez une ressource, ou renseignez le prix et la couverture ci-dessous.
+              </p>
+            )}
+          </div>
+        )}
+
+        {valeurs.monographieActive && !evenement.monographieBookId && (
+          <div className="mt-3 flex flex-col gap-4 rounded-md border border-dashed border-gray-300 p-3 sm:flex-row">
             <div className="shrink-0">
               {valeurs.monographieImageUrl ? (
                 <div className="relative h-32 w-24 overflow-hidden rounded-md border border-gray-200 bg-white">

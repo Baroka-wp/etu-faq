@@ -12,6 +12,7 @@ import {
   Download,
   ExternalLink,
   FileImage,
+  FileSpreadsheet,
   Link2,
   Loader2,
   Pencil,
@@ -29,6 +30,7 @@ import SelectionMembres, {
   MembreActif,
 } from "@/components/programme/SelectionMembres";
 import ContenuSeance from "@/components/programme/ContenuSeance";
+import SelecteurModele from "@/components/programme/SelecteurModele";
 
 type Categorie = "TEMPLE" | "ECOLE";
 
@@ -44,6 +46,8 @@ interface EvenementLie {
   monographieActive?: boolean;
   monographiePrix?: number;
   monographieImageUrl?: string | null;
+  monographieBookId?: string | null;
+  monographieTitre?: string | null;
 }
 
 interface Activite {
@@ -134,6 +138,16 @@ export default function ProgrammesMensuelsPage() {
   });
   const [editing, setEditing] = useState(false);
   const [reordering, setReordering] = useState(false);
+  const [choixModele, setChoixModele] = useState<{
+    jour: number;
+    activiteId: string | null;
+  } | null>(null);
+  const [excelOuvert, setExcelOuvert] = useState(false);
+  const [excelPortee, setExcelPortee] = useState<"LES_DEUX" | "TEMPLE" | "ECOLE">("LES_DEUX");
+  const [excelFusion, setExcelFusion] = useState(false);
+  const [excelLiens, setExcelLiens] = useState(true);
+  const [excelDebut, setExcelDebut] = useState("");
+  const [excelFin, setExcelFin] = useState("");
   const [selection, setSelection] = useState<Selection | null>(null);
   const [creatingLink, setCreatingLink] = useState(false);
   const [grades, setGrades] = useState([...GRADES]);
@@ -216,14 +230,51 @@ export default function ProgrammesMensuelsPage() {
       );
       return;
     }
-    setActivites((current) =>
-      current.map((item) =>
-        item.id === activiteId
-          ? { ...item, jours: [...item.jours, jour].sort((a, b) => a - b) }
-          : item,
-      ),
-    );
-    setDirty(true);
+    // Une date libre : on demande d'abord quel modèle d'événement y poser.
+    setChoixModele({ jour, activiteId });
+  };
+
+  const appliquerModele = async (choix: {
+    activiteId: string | null;
+    titre: string;
+    description: string;
+    heures: string;
+    lieu: string;
+    categorie: "TEMPLE" | "ECOLE";
+    creerLien: boolean;
+  }) => {
+    if (!choixModele) return;
+    try {
+      if (dirty && !(await enregistrer(false))) return;
+      const response = await fetch("/api/admin/programmes-mensuels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "appliquer-modele",
+          annee,
+          mois,
+          jour: choixModele.jour,
+          appliquerFuturs,
+          ...choix,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      setChoixModele(null);
+      await charger();
+      setMessage({
+        type: "success",
+        texte: data.lien
+          ? `${choix.titre} · ${choixModele.jour} ${MOIS[mois - 1]} · lien d'inscription prêt`
+          : `${choix.titre} posé sur le ${choixModele.jour} ${MOIS[mois - 1]}`,
+      });
+    } catch (error) {
+      setMessage({
+        type: "error",
+        texte:
+          error instanceof Error ? error.message : "Impossible de poser ce modèle",
+      });
+    }
   };
 
   const enregistrer = async (afficherMessage = true) => {
@@ -701,6 +752,31 @@ export default function ProgrammesMensuelsPage() {
     });
   };
 
+  const ouvrirExportExcel = () => {
+    const moisCourant = `${annee}-${String(mois).padStart(2, "0")}`;
+    setExcelDebut(moisCourant);
+    setExcelFin(moisCourant);
+    setExcelOuvert(true);
+  };
+
+  const exporterExcel = () => {
+    const categories =
+      excelPortee === "LES_DEUX" ? "TEMPLE,ECOLE" : excelPortee;
+    const fusion = excelPortee === "LES_DEUX" && excelFusion ? "1" : "0";
+    if (excelFin < excelDebut) {
+      setMessage({ type: "error", texte: "Le mois de fin précède le mois de début" });
+      return;
+    }
+    const lien = document.createElement("a");
+    lien.href = `/api/admin/programmes-mensuels/export?debut=${excelDebut}&fin=${excelFin}&categories=${categories}&fusion=${fusion}&liens=${excelLiens ? "1" : "0"}`;
+    lien.rel = "noopener";
+    document.body.appendChild(lien);
+    lien.click();
+    lien.remove();
+    setExcelOuvert(false);
+    setMessage({ type: "success", texte: "Export Excel en cours de téléchargement" });
+  };
+
   const exporterCalendrier = async (format: "png" | "pdf") => {
     setExporting(format);
     try {
@@ -846,6 +922,13 @@ export default function ProgrammesMensuelsPage() {
                 >
                   <Download className="h-4 w-4" /> PDF
                 </button>
+                <button
+                  onClick={ouvrirExportExcel}
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  <FileSpreadsheet className="h-4 w-4" /> Excel
+                </button>
               </div>
             </div>
             <div className="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
@@ -921,6 +1004,7 @@ export default function ProgrammesMensuelsPage() {
                     onRemoveActivity={retirerActivite}
                     onEditActivity={ouvrirEdition}
                     onMoveActivity={deplacerActivite}
+                    onAddDate={(jour) => setChoixModele({ jour, activiteId: null })}
                   />
                 </div>
               )}
@@ -928,6 +1012,160 @@ export default function ProgrammesMensuelsPage() {
           </section>
         </div>
       </main>
+
+      {choixModele && (
+        <SelecteurModele
+          annee={annee}
+          mois={mois}
+          jour={choixModele.jour}
+          categorie={categorie}
+          activiteSuggeree={choixModele.activiteId}
+          onFermer={() => setChoixModele(null)}
+          onAppliquer={appliquerModele}
+        />
+      )}
+
+      {excelOuvert && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4"
+          onMouseDown={() => setExcelOuvert(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titre-export-excel"
+            className="w-full max-w-md rounded-lg bg-white shadow-xl"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between border-b border-gray-200 p-5">
+              <div>
+                <h2 id="titre-export-excel" className="text-lg font-semibold text-gray-900">
+                  Exporter en Excel
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Choisissez la période et les programmes
+                </p>
+              </div>
+              <button
+                onClick={() => setExcelOuvert(false)}
+                className="rounded-md p-2 text-gray-400 hover:bg-gray-100"
+                aria-label="Fermer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 p-5">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Période</p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className="text-xs text-gray-500">Du mois</span>
+                    <input
+                      type="month"
+                      value={excelDebut}
+                      onChange={(event) => setExcelDebut(event.target.value)}
+                      className="mt-1 h-10 w-full rounded-md border border-gray-300 px-2 text-sm outline-none focus:border-gray-500"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs text-gray-500">Au mois</span>
+                    <input
+                      type="month"
+                      value={excelFin}
+                      onChange={(event) => setExcelFin(event.target.value)}
+                      className="mt-1 h-10 w-full rounded-md border border-gray-300 px-2 text-sm outline-none focus:border-gray-500"
+                    />
+                  </label>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Un seul mois : laissez les deux champs identiques. 24 mois au maximum.
+                </p>
+              </div>
+
+              <fieldset>
+                <legend className="text-sm font-medium text-gray-700">Programmes à exporter</legend>
+                <div className="mt-2 space-y-2">
+                  {[
+                    { valeur: "LES_DEUX" as const, label: "Temple et École" },
+                    { valeur: "TEMPLE" as const, label: "Programme du Temple seul" },
+                    { valeur: "ECOLE" as const, label: "Programme pédagogique seul" },
+                  ].map((option) => (
+                    <label
+                      key={option.valeur}
+                      className="flex cursor-pointer items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5 hover:bg-gray-50"
+                    >
+                      <input
+                        type="radio"
+                        name="portee-excel"
+                        value={option.valeur}
+                        checked={excelPortee === option.valeur}
+                        onChange={() => setExcelPortee(option.valeur)}
+                        className="h-4 w-4"
+                      />
+                      <span className="text-sm text-gray-800">{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              {excelPortee === "LES_DEUX" && (
+                <label className="flex cursor-pointer items-start gap-3 rounded-md border border-gray-200 bg-gray-50 px-3 py-3">
+                  <input
+                    type="checkbox"
+                    checked={excelFusion}
+                    onChange={(event) => setExcelFusion(event.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-gray-800">
+                      Réunir les deux programmes
+                    </span>
+                    <span className="mt-0.5 block text-xs text-gray-500">
+                      Coché : une feuille par mois, Temple puis École. Décoché : une feuille
+                      « Temple » et une feuille « École », les mois empilés.
+                    </span>
+                  </span>
+                </label>
+              )}
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-md border border-gray-200 bg-gray-50 px-3 py-3">
+                <input
+                  type="checkbox"
+                  checked={excelLiens}
+                  onChange={(event) => setExcelLiens(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-gray-800">
+                    Ajouter la feuille des liens d’inscription
+                  </span>
+                  <span className="mt-0.5 block text-xs text-gray-500">
+                    Date, activité, nombre d’inscrits et lien public de chaque séance. Les croix du
+                    calendrier deviennent aussi cliquables.
+                  </span>
+                </span>
+              </label>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  onClick={() => setExcelOuvert(false)}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={exporterExcel}
+                  disabled={!excelDebut || !excelFin}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-50"
+                >
+                  <FileSpreadsheet className="h-4 w-4" /> Télécharger
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selection && activiteSelectionnee && (
         <div
@@ -1091,6 +1329,10 @@ export default function ProgrammesMensuelsPage() {
                       monographiePrix: evenementSelectionne.monographiePrix ?? 2000,
                       monographieImageUrl:
                         evenementSelectionne.monographieImageUrl ?? null,
+                      monographieBookId:
+                        evenementSelectionne.monographieBookId ?? null,
+                      monographieTitre:
+                        evenementSelectionne.monographieTitre ?? null,
                     }}
                     onEnregistre={async (resultat) => {
                       if (resultat.type === "success") await charger();

@@ -22,6 +22,26 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     if (body.monographieActive !== undefined) data.monographieActive = body.monographieActive === true
 
+    // Monographie reprise de la bibliothèque : prix, couverture et sujet suivent.
+    if (body.monographieBookId !== undefined) {
+      const bookId = safeText(body.monographieBookId, 120)
+      if (!bookId) {
+        data.monographieBookId = null
+      } else {
+        const ressource = await db.book.findUnique({
+          where: { id: bookId },
+          select: { id: true, title: true, price: true, isFree: true, imageUrl: true },
+        })
+        if (!ressource) {
+          return NextResponse.json({ error: 'Ressource introuvable' }, { status: 404 })
+        }
+        data.monographieBookId = ressource.id
+        data.monographieActive = true
+        data.monographiePrix = ressource.isFree ? 0 : Math.round(ressource.price ?? 0)
+        if (ressource.imageUrl) data.monographieImageUrl = ressource.imageUrl
+      }
+    }
+
     if (body.monographiePrix !== undefined) {
       const prix = Number(body.monographiePrix)
       if (!Number.isInteger(prix) || prix < 0 || prix > 1_000_000) {
@@ -55,6 +75,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         monographieActive: true,
         monographiePrix: true,
         monographieImageUrl: true,
+        monographieBookId: true,
+        monographie: { select: { id: true, title: true, author: true } },
       },
     })
     await synchroniserEnseignements(evenement.id)
