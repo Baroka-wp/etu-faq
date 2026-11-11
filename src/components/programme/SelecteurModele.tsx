@@ -1,5 +1,6 @@
 "use client";
 
+import GradesAutorises, { GRADES } from "./GradesAutorises";
 import { useEffect, useMemo, useState } from "react";
 import { CalendarPlus, Check, Loader2, Plus, Search, X } from "lucide-react";
 
@@ -52,10 +53,12 @@ export default function SelecteurModele({
     lieu: string;
     categorie: "TEMPLE" | "ECOLE";
     creerLien: boolean;
+    gradesAutorises: string[];
   }) => Promise<void>;
 }) {
   const [modeles, setModeles] = useState<Modele[] | null>(null);
   const [recherche, setRecherche] = useState("");
+  const [grades, setGrades] = useState([...GRADES]);
   const [creerLien, setCreerLien] = useState(true);
   const [enCours, setEnCours] = useState(false);
   const [nouveau, setNouveau] = useState(false);
@@ -96,6 +99,7 @@ export default function SelecteurModele({
         lieu: modele.lieu,
         categorie: modele.categorie ?? categorie,
         creerLien,
+        gradesAutorises: grades,
       });
     } finally {
       setEnCours(false);
@@ -115,6 +119,7 @@ export default function SelecteurModele({
         lieu: form.lieu.trim(),
         categorie,
         creerLien,
+        gradesAutorises: grades,
       });
     } finally {
       setEnCours(false);
@@ -150,6 +155,8 @@ export default function SelecteurModele({
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        {creerLien && <div className="border-b px-5 py-3"><GradesAutorises grades={grades} onChange={setGrades} /></div>}
 
         {nouveau ? (
           <form onSubmit={creer} className="space-y-3 overflow-y-auto p-5">

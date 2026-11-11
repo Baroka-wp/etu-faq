@@ -8,6 +8,7 @@ import { inscrireMembresCoches } from "@/lib/inscriptions";
 import {
   creerEvenementPourDate,
   heureDebut,
+  TOUS_LES_GRADES,
 } from "@/lib/programme-evenements";
 
 const CATEGORIES = ["TEMPLE", "ECOLE"] as const;
@@ -256,6 +257,21 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await safeJson<Record<string, unknown>>(request, 16_384);
+
+    if (body.action === "modifier-grades") {
+      const grades = body.gradesAutorises;
+      const id = safeText(body.evenementId, 128);
+      if (!id || !Array.isArray(grades) || !grades.length ||
+          !grades.every((grade) => TOUS_LES_GRADES.includes(grade))) {
+        return NextResponse.json({ error: "Sélection de grades invalide" }, { status: 400 });
+      }
+      const resultat = await db.traversee.updateMany({
+        where: { id, activiteProgrammeId: { not: null } },
+        data: { gradesAutorises: [...new Set<string>(grades)] },
+      });
+      if (!resultat.count) return NextResponse.json({ error: "Séance introuvable" }, { status: 404 });
+      return NextResponse.json({ success: true });
+    }
 
     // Poser un modèle sur une date : on réutilise l'activité choisie, ou on
     // en crée une à partir des informations fournies, puis on coche le jour.

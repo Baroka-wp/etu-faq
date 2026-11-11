@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import ProgrammeCalendar from "@/components/programme/ProgrammeCalendar";
+import GradesAutorises, { GRADES } from "@/components/programme/GradesAutorises";
 import SelectionMembres, {
   MembreActif,
 } from "@/components/programme/SelectionMembres";
@@ -99,7 +100,7 @@ const MOIS = [
   "Novembre",
   "Décembre",
 ];
-const GRADES = ["Explorateur", "Constructeur", "Navigateur", "Alchimiste"];
+
 
 export default function ProgrammesMensuelsPage() {
   const router = useRouter();
@@ -524,6 +525,28 @@ export default function ProgrammesMensuelsPage() {
     );
     setDirty(true);
     setSelection(null);
+  };
+
+  const enregistrerGrades = async () => {
+    if (!evenementSelectionne) return;
+    setCreatingLink(true);
+    try {
+      const response = await fetch("/api/admin/programmes-mensuels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "modifier-grades", evenementId: evenementSelectionne.id, gradesAutorises: grades }),
+      });
+      if (!response.ok) throw new Error((await response.json()).error);
+      setActivites((items) => items.map((item) => ({
+        ...item, evenements: item.evenements.map((evt) =>
+          evt.id === evenementSelectionne.id ? { ...evt, gradesAutorises: grades } : evt),
+      })));
+      setMessage({ type: "success", texte: "Grades autorisés enregistrés" });
+    } catch (error) {
+      setMessage({ type: "error", texte: error instanceof Error ? error.message : "Enregistrement impossible" });
+    } finally {
+      setCreatingLink(false);
+    }
   };
 
   const creerLien = async () => {
@@ -1197,31 +1220,15 @@ export default function ProgrammesMensuelsPage() {
               </button>
             </div>
             <div className="space-y-5 p-6">
+              <GradesAutorises grades={grades} onChange={setGrades} />
+              {evenementSelectionne && (
+                <button onClick={enregistrerGrades} disabled={creatingLink}
+                  className="rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">
+                  Enregistrer les grades
+                </button>
+              )}
               {!evenementSelectionne ? (
                 <>
-                  <div>
-                    <p className="mb-2 text-sm font-medium text-gray-700">
-                      Grades autorisés
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {GRADES.map((grade) => (
-                        <button
-                          key={grade}
-                          onClick={() =>
-                            setGrades((current) =>
-                              current.includes(grade)
-                                ? current.filter((item) => item !== grade)
-                                : [...current, grade],
-                            )
-                          }
-                          className={`rounded-full border px-3 py-1.5 text-xs font-medium ${grades.includes(grade) ? "border-gray-800 bg-gray-800 text-white" : "border-gray-300 bg-white text-gray-600"}`}
-                        >
-                          {grades.includes(grade) ? "✓ " : ""}
-                          {grade}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                   <div>
                     <p className="text-sm font-medium text-gray-700">
                       Inscrire des membres dès maintenant{" "}
