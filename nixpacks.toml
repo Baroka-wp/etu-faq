@@ -1,0 +1,7 @@
+[phases.install]
+onlyIncludeFiles = ["package.json", "package-lock.json", "prisma/schema.prisma"]
+
+[phases.build]
+# Le script postinstall a déjà généré le client Prisma.
+cmds = ["./node_modules/.bin/next build"]
+cacheDirectories = [".next/cache", "node_modules/.cache"]
