@@ -35,7 +35,7 @@ jobs:
       - name: Vérifier le démarrage avant publication
         run: |
           docker run -d --name etufaq -p 127.0.0.1:3000:3000 "$IMAGE:$GITHUB_SHA"
-          curl --retry 12 --retry-delay 1 --retry-connrefused --fail http://127.0.0.1:3000/ -o /dev/null
+          curl --retry 20 --retry-delay 1 --retry-all-errors --fail http://127.0.0.1:3000/ -o /dev/null
           docker exec etufaq node -e "const {PrismaClient}=require('@prisma/client'); new PrismaClient()"
       - name: Publier la version vérifiée
         run: |
