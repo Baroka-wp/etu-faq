@@ -37,11 +37,18 @@ export function rateLimit(
   )
 }
 
+// Le proxy du VPS peut transmettre une URL interne à Next.js.
+const originesPubliques = new Set([
+  'https://etu-benin.org',
+  'https://www.etu-benin.org',
+])
+
 export function isSameOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin')
   if (!origin) return request.headers.get('sec-fetch-site') !== 'cross-site'
   try {
-    return new URL(origin).origin === request.nextUrl.origin
+    const origine = new URL(origin).origin
+    return origine === origin && (origine === request.nextUrl.origin || originesPubliques.has(origine))
   } catch {
     return false
   }
