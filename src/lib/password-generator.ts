@@ -19,5 +19,5 @@ export function generatePassword(): string {
 }
 
 export function generateUserPassword(): string {
-  return securePassword(16)
+  return securePassword(4)
 }

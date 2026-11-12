@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { createSessionToken } from '@/lib/security/session'
 import { rateLimit, safeJson, secureCookieOptions } from '@/lib/security/http'
-import { isProtectedCredential, protectCredential } from '@/lib/security/credential'
+import { protectCredential } from '@/lib/security/credential'
 
 const prisma = new PrismaClient()
 
@@ -10,23 +10,17 @@ export async function POST(request: NextRequest) {
   const limited = rateLimit(request, 'user-login', 8, 15 * 60 * 1000)
   if (limited) return limited
   try {
-    const { password } = await safeJson<{ password?: unknown }>(request, 2_048)
-    if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+    const { password, videotheque } = await safeJson<{ password?: unknown; videotheque?: boolean }>(request, 2_048)
+    if (typeof password !== 'string' || password.length !== 4) {
       return NextResponse.json({ error: 'Identifiants invalides' }, { status: 400 })
     }
 
     // Rechercher l'utilisateur par mot de passe
     const protectedPassword = await protectCredential(password)
-    const user = await (prisma as any).inscription.findFirst({
-      where: {
-        motDePasse: { in: [password, protectedPassword] }
-      }
-    })
-
-    if (user) {
-      if (!isProtectedCredential(user.motDePasse)) {
-        await (prisma as any).inscription.update({ where: { id: user.id }, data: { motDePasse: protectedPassword } })
-      }
+    const user = await prisma.inscription.findUnique({ where: { codeAspirant: protectedPassword } })
+    if (user &&
+        user.codeExpireLe && user.codeExpireLe.getTime() > Date.now() &&
+        (!videotheque || user.statut === 'Actif')) {
       // Créer un cookie de session utilisateur
       const response = NextResponse.json({
         success: true,
@@ -48,13 +42,13 @@ export async function POST(request: NextRequest) {
         }
       })
       
-      const maxAge = 60 * 60 * 24 * 7
-      response.cookies.set('user-session', await createSessionToken('user', user.id, maxAge), secureCookieOptions(maxAge))
+      const maxAge = Math.min(60 * 60 * 24 * 7, Math.floor((user.codeExpireLe.getTime() - Date.now()) / 1000))
+      response.cookies.set('user-session', await createSessionToken('user', user.id, maxAge, user.codeExpireLe.getTime()), secureCookieOptions(maxAge))
 
       return response
     } else {
       return NextResponse.json(
-        { error: 'Mot de passe incorrect' },
+        { error: videotheque ? 'Accès refusé. Vérifiez votre code et que votre dossier est actif.' : 'Code incorrect ou expiré.' },
         { status: 401 }
       )
     }

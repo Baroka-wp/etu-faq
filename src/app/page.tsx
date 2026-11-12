@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, Heart } from 'lucide-react'
+import { ChevronDown, ChevronUp, MessageCircle, Facebook, User, Menu, X, Play, Heart } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 import DonModal from '@/components/DonModal'
@@ -46,12 +46,12 @@ export default function HomePage() {
                 >
                   FAQ
                 </Link>
-                <Link
-                  href="/programme"
+                <a
+                  href="/videotheque"
                   className="shrink-0 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
                 >
-                  Programme
-                </Link>
+                  Vidéothèque
+                </a>
                 <Link
                   href="/bibliotheque"
                   className="shrink-0 text-[15px] font-serif text-gray-700 transition hover:text-gray-900"
@@ -69,7 +69,7 @@ export default function HomePage() {
                   href="/inscription"
                   className="shrink-0 rounded-lg bg-gray-800 px-4 py-2 text-[15px] font-serif font-medium text-white transition-colors hover:bg-gray-900"
                 >
-                  S&apos;inscrire
+                  S’inscrire à la formation END
                 </Link>
               </div>
 
@@ -96,13 +96,13 @@ export default function HomePage() {
                   >
                     FAQ
                   </Link>
-                  <Link
-                    href="/programme"
+                  <a
+                    href="/videotheque"
                     className="block rounded-md px-3 py-2.5 font-serif text-gray-800 hover:bg-stone-50"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Programme du mois
-                  </Link>
+                    Vidéothèque
+                  </a>
                   <Link
                     href="/bibliotheque"
                     className="block rounded-md px-3 py-2.5 font-serif text-gray-800 hover:bg-stone-50"
@@ -123,7 +123,7 @@ export default function HomePage() {
                     className="mx-3 mt-2 block rounded-lg bg-gray-800 py-2.5 text-center font-serif text-white hover:bg-gray-900"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    S&apos;inscrire
+                    S’inscrire à la formation END
                   </Link>
                 </div>
               </div>
@@ -132,48 +132,42 @@ export default function HomePage() {
         </nav>
 
         {/* ── HERO ── */}
-        <section id="accueil" className="relative min-h-[92vh] flex items-end overflow-hidden">
-          {/* Image de fond */}
-          <img
-            src="/img_6.webp"
-            alt="ETU Bénin en action"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <section id="accueil" className="relative min-h-[92vh] flex items-center overflow-hidden bg-[#faf9f6]">
+          <img src="/arbre-de-vie.svg" alt="" aria-hidden="true"
+            className="pointer-events-none absolute right-4 top-4 h-40 w-auto sm:right-[7%] sm:top-1/2 sm:h-[78%] sm:max-w-[35%] sm:-translate-y-1/2" />
 
-          <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pb-16 sm:pb-24 w-full">
+          <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pt-48 pb-12 sm:py-20 w-full">
             <div className="max-w-2xl">
               {/* Tag */}
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
-                <span className="text-xs font-serif text-white/90 tracking-widest uppercase">Depuis 1977 · Bénin</span>
+              <div className="inline-flex items-center gap-2 bg-white/60 border border-stone-300 rounded-full px-4 py-1.5 mb-6">
+                <span className="text-xs font-serif text-stone-700 tracking-widest uppercase">Depuis 1977 · Bénin</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-white leading-tight mb-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-stone-900 leading-tight mb-6">
                 École<br />
                 Transcendantaliste<br />
-                <span className="text-stone-300">Universelle</span>
+                <span className="text-stone-600">Universelle</span>
               </h1>
 
-              <p className="text-base sm:text-lg font-serif text-white/70 leading-relaxed mb-10 max-w-lg">
+              <p className="text-base sm:text-lg font-serif text-stone-700 leading-relaxed mb-10 max-w-lg">
                 Dévoiler les enseignements des hautes Écoles Initiatiques. Transmettre les clés des lois divines. Servir l'humanité.
               </p>
 
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/inscription"
-                  className="inline-flex items-center gap-2 bg-white text-gray-900 px-6 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-stone-100 transition-all shadow-xl"
+                  className="inline-flex items-center gap-2 bg-[#831843] text-white px-6 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-[#691336] transition-colors"
                 >
                   <User className="w-4 h-4" />
-                  S'inscrire maintenant
+                  S’inscrire à la formation END
                 </Link>
-                <button
-                  onClick={() => setDonModalOpen(true)}
-                  className="inline-flex items-center gap-2 bg-rose-500/20 border border-rose-300/40 backdrop-blur-sm text-white px-6 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-rose-500/30 transition-all"
+                <Link
+                  href="/videotheque"
+                  className="inline-flex items-center gap-2 bg-white border border-stone-300 text-stone-800 px-6 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-stone-100 transition-all"
                 >
-                  <Heart className="w-4 h-4 text-rose-300" />
-                  Faire un don
-                </button>
+                  <Play className="w-4 h-4 text-[#831843]" />
+                  Accéder à la vidéothèque
+                </Link>
               </div>
             </div>
           </div>
@@ -233,7 +227,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <p className="text-white font-serif font-bold text-lg sm:text-xl">Prêt à commencer votre parcours ?</p>
-              <p className="text-stone-400 font-serif text-sm mt-1">Formation de 6 mois · 12 000 FCFA · En ligne ou en présentiel</p>
+              <p className="text-stone-400 font-serif text-sm mt-1">Formation de 6 mois · Inscription gratuite · En ligne ou en présentiel</p>
             </div>
             <Link
               href="/inscription"

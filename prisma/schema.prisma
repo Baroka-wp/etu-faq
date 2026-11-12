@@ -32,6 +32,9 @@ model Post {
 }
 
 model Inscription {
+  codeAspirant      String?  @unique
+  codeExpireLe      DateTime?
+  email             String?
   id                String   @id @default(cuid())
   nom               String
   prenom            String
@@ -91,6 +94,7 @@ model Book {
 
   collections       CollectionRessource[]
   codes             CodeAccesRessource[]
+  coursVideo         CoursVideo[] @relation("RessourcesCoursVideo")
   seances           Traversee[]
 
   @@index([type, publie])
@@ -398,4 +402,14 @@ model Enseignement {
   @@unique([traverseeId, rubrique])
   @@index([date])
   @@index([rubrique, date])
+}
+
+model CoursVideo {
+  ressources Book[] @relation("RessourcesCoursVideo")
+  id        String  @id @default(cuid())
+  driveId   String  @unique
+  date      String
+  titre     String
+  presentiel Boolean @default(false)
+  notes     String
 }

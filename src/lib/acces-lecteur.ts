@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
+import { cookies } from 'next/headers'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/security/http'
+import { verifySessionToken } from '@/lib/security/session'
 import { gradeAdmis } from '@/lib/ressources'
 
 export type Lecteur =
@@ -14,9 +16,18 @@ export type Lecteur =
  */
 export async function getLecteur(request: NextRequest): Promise<Lecteur | null> {
   const session = await getSession(request, 'lecteur')
-  if (!session) return null
+  return session ? lecteurDepuisSujet(session.sub) : null
+}
 
-  const [genre, identifiant] = session.sub.split(':')
+/** Même lecture, depuis un composant serveur. */
+export async function getLecteurServeur(): Promise<Lecteur | null> {
+  const jeton = (await cookies()).get('lecteur-session')?.value
+  const session = await verifySessionToken(jeton, 'lecteur')
+  return session ? lecteurDepuisSujet(session.sub) : null
+}
+
+async function lecteurDepuisSujet(sujet: string): Promise<Lecteur | null> {
+  const [genre, identifiant] = sujet.split(':')
 
   if (genre === 'membre') {
     const membre = await db.membre.findFirst({

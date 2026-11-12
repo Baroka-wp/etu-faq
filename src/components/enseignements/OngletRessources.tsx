@@ -223,7 +223,7 @@ export default function OngletRessources({
                       {ressource.gradesAutorises.length > 0 && ` · ${ressource.gradesAutorises.join(', ')}`}
                     </span>
                   )}
-                  {!ressource.publie && <span className="rounded-full bg-gray-200 px-2 py-0.5 text-gray-700">Masquée</span>}
+                  {!ressource.publie && <span className="rounded-full bg-gray-200 px-2 py-0.5 text-gray-700">Brouillon</span>}
                   <span className="text-gray-500">
                     {ressource.isFree ? 'Gratuit' : `${ressource.price ?? 0} FCFA`}
                   </span>
@@ -367,9 +367,15 @@ export default function OngletRessources({
                       onChange={(e) => { const f = e.target.files?.[0]; if (f) void televerser(f); e.target.value = '' }} />
                   </label>
                 )}
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input type="checkbox" checked={edition.form.publie} onChange={(e) => majForm({ publie: e.target.checked })} className="h-4 w-4 rounded border-gray-300" />
-                  Visible dans la bibliothèque
+                <label className="flex items-start gap-2 text-sm text-gray-700">
+                  <input type="checkbox" checked={edition.form.publie} onChange={(e) => majForm({ publie: e.target.checked })} className="mt-0.5 h-4 w-4 rounded border-gray-300" />
+                  <span>
+                    <span className="block font-medium">En ligne</span>
+                    <span className="mt-0.5 block text-xs text-gray-500">
+                      Décoché, la ressource reste un brouillon : invisible de tous, membres compris.
+                      C’est l’accès ci-dessus qui décide qui peut l’ouvrir.
+                    </span>
+                  </span>
                 </label>
               </div>
 

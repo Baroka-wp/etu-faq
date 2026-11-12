@@ -9,6 +9,7 @@ import {
     UserPlus,
     Compass,
     ListChecks,
+    Video,
     GraduationCap
 } from 'lucide-react'
 import Link from 'next/link'
@@ -16,11 +17,16 @@ import { useRouter } from 'next/navigation'
 
 interface AdminSidebarProps {
     activeTab: string
-    onTabChange: (tab: string) => void
-    onLogout: () => void
+    onTabChange?: (tab: string) => void
+    onLogout?: () => void
 }
 
 export default function AdminSidebar({ activeTab, onTabChange, onLogout }: AdminSidebarProps) {
+    const router = useRouter()
+    const logout = async () => {
+        await fetch('/api/auth/logout', { method: 'POST' })
+        router.push('/admin-login')
+    }
     const [isOpen, setIsOpen] = useState(false)
 
     const menuItems = [
@@ -41,6 +47,12 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
             label: 'Aspirants Explorateurs',
             icon: Users,
             href: '/admin/inscriptions'
+        },
+        {
+            id: 'videotheque',
+            label: 'Cours vidéo',
+            icon: Video,
+            href: '/admin/videotheque'
         },
         {
             id: 'enseignements',
@@ -100,7 +112,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
                                     key={item.id}
                                     href={item.href}
                                     onClick={() => {
-                                        onTabChange(item.id)
+                                        onTabChange?.(item.id)
                                         setIsOpen(false)
                                     }}
                                     className={`
@@ -121,7 +133,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout }: Admin
                     {/* Logout */}
                     <div className="px-4 py-4 border-t border-gray-200">
                         <button
-                            onClick={onLogout}
+                            onClick={onLogout ?? logout}
                             className="flex items-center space-x-3 w-full px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-all duration-200"
                         >
                             <LogOut className="w-5 h-5" />

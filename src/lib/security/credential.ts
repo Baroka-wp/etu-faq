@@ -55,3 +55,12 @@ export async function revealCredential(value: string): Promise<string> {
   )
   return decoder.decode(plaintext)
 }
+
+/** Une erreur de lecture du mot de passe ne doit pas masquer le dossier administratif. */
+export async function lireCredentialDossier(value: string): Promise<string | null> {
+  try {
+    return await revealCredential(value)
+  } catch {
+    return null
+  }
+}

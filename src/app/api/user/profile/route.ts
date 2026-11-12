@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { getSession } from '@/lib/security/http'
 
+import { joursAccesRestants } from '@/lib/acces-video'
+import { sessionAspirantValide } from '@/lib/security/aspirant'
+
 const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
@@ -22,14 +25,15 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    if (!user) {
+    if (!user || !sessionAspirantValide(session, user)) {
       return NextResponse.json(
-        { error: 'Utilisateur non trouvé' },
-        { status: 404 }
+        { error: 'Session expirée' },
+        { status: 401 }
       )
     }
 
     return NextResponse.json({
+      joursRestants: joursAccesRestants(user.codeExpireLe),
       id: user.id,
       nom: user.nom,
       prenom: user.prenom,

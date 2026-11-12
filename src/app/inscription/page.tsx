@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, User, Calendar, MapPin, Phone, BookOpen, CheckCircle, X } from 'lucide-react'
+import { ArrowLeft, User, Calendar, MapPin, Phone, BookOpen, CheckCircle, Mail } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 
@@ -14,6 +14,7 @@ interface InscriptionData {
     lieuNaissance: string
     lieuResidence: string
     religion: string
+    email: string
     telephone: string
 }
 
@@ -27,15 +28,13 @@ export default function InscriptionPage() {
         lieuNaissance: '',
         lieuResidence: '',
         religion: '',
+        email: '',
         telephone: ''
     })
 
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     const [error, setError] = useState('')
-    const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
-    const [showConditionsModal, setShowConditionsModal] = useState(true)
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
@@ -56,8 +55,8 @@ export default function InscriptionPage() {
             })
 
             if (response.ok) {
-                const result = await response.json()
-                setShowWhatsAppModal(true)
+                setIsSuccess(true)
+                window.scrollTo(0, 0)
             } else {
                 const errorData = await response.json()
                 setError(errorData.error || 'Une erreur est survenue')
@@ -88,9 +87,28 @@ export default function InscriptionPage() {
                             <h1 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-4">
                                 Inscription réussie !
                             </h1>
-                            <p className="text-lg text-gray-600 mb-8 font-serif">
-                                Votre inscription a été enregistrée avec succès. Nous vous contacterons bientôt.
-                            </p>
+                            <div className="my-8 space-y-4 text-left font-serif leading-relaxed text-gray-700">
+                                <p>Cher Aspirant explorateur,</p>
+                                <p>Merci pour votre inscription à la formation.</p>
+                                <p>L’inscription est désormais gratuite.</p>
+                                <h2 className="font-semibold">Ce qu’il faut faire</h2>
+                                <ol className="list-decimal space-y-4 pl-6">
+                                    <li><a className="inline-flex min-h-11 items-center justify-center rounded-xl bg-fuchsia-200 px-5 py-3 text-center text-sm font-semibold text-fuchsia-950 hover:bg-fuchsia-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-700" href="https://chat.whatsapp.com/Kzawjc2gC2OJjuxkNlbWxt?mode=gi_t">Rejoindre le groupe WhatsApp de la formation</a></li>
+                                    <li>Si vous rencontrez une difficulté avec le formulaire, vous pouvez également écrire directement à <a className="underline" href="mailto:guerashel@gmail.com">guerashel@gmail.com</a> ou adresser un message en privé au frère Isaac @Isaac LAKPE, en communiquant :
+                                        <ul className="mt-2 list-disc pl-5">
+                                            <li>Nom et prénom(s)</li>
+                                            <li>Date de naissance</li>
+                                            <li>Pays de résidence</li>
+                                            <li>Ville de résidence</li>
+                                            <li>Numéro WhatsApp</li>
+                                            <li>Adresse électronique</li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                                <p>Merci d’accompagner ces informations de la mention suivante :</p>
+                                <p>Rendez-vous tous les dimanches pour une séance en live 🙏🏽</p>
+                                <p>Dans la Paix et la Lumière.</p>
+                            </div>
                             <Link
                                 href="/"
                                 className="inline-flex items-center space-x-2 bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl transition-all text-base font-semibold font-serif shadow-lg hover:shadow-xl"
@@ -330,6 +348,16 @@ export default function InscriptionPage() {
                                 />
                             </div>
 
+                            <div>
+                                <label htmlFor="email" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                    <Mail className="w-4 h-4 inline mr-2" />
+                                    Adresse électronique *
+                                </label>
+                                <input type="email" id="email" name="email" autoComplete="email" maxLength={254}
+                                    value={formData.email} onChange={handleInputChange} required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 text-sm font-serif" />
+                            </div>
+
                             {/* Bouton de soumission */}
                             <div className="pt-6">
                                 <button
@@ -351,129 +379,6 @@ export default function InscriptionPage() {
                     </p>
                 </footer>
 
-                {/* Modal Conditions d'inscription */}
-                {showConditionsModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-                            {/* Header */}
-                            <div className="px-6 pt-6 pb-4 border-b border-gray-200">
-                                <h3 className="text-xl font-serif font-bold text-gray-900">
-                                    Conditions d'inscription
-                                </h3>
-                                <p className="text-xs text-gray-500 font-serif mt-1">
-                                    Degré Explorateur - ETU Bénin
-                                </p>
-                            </div>
-
-                            {/* Content */}
-                            <div className="px-6 py-5 overflow-y-auto flex-1">
-                                <div className="space-y-4 text-sm font-serif text-gray-700 leading-relaxed">
-                                    <div className="space-y-3">
-                                        <p>
-                                            <strong className="text-gray-900">1. Frais d'inscription :</strong> 12 000 FCFA, payables une seule fois.
-                                        </p>
-
-                                        <p>
-                                            <strong className="text-gray-900">2. Engagement :</strong> Vous vous engagez à suivre la formation sur une durée de 6 mois, en pratiquant les prières et exercices spirituels qui vous seront recommandés.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Footer */}
-                            <div className="px-6 pb-6 pt-4 border-t border-gray-200">
-                                <button
-                                    onClick={() => setShowConditionsModal(false)}
-                                    className="w-full bg-gray-900 hover:bg-black text-white py-3 px-6 rounded-xl transition-all font-semibold text-sm font-serif shadow-lg hover:shadow-xl"
-                                >
-                                    J'ai compris et j'accepte les conditions
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Modal WhatsApp */}
-                {showWhatsAppModal && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] overflow-y-auto relative">
-                            {/* Bouton de fermeture fixe */}
-                            <button
-                                onClick={() => setShowWhatsAppModal(false)}
-                                className="absolute top-2 right-2 z-10 p-1.5 hover:bg-gray-100 rounded-full transition-colors bg-white shadow-md"
-                            >
-                                <X className="w-4 h-4 text-gray-500" />
-                            </button>
-
-                            {/* Header */}
-                            <div className="p-3 border-b border-gray-200">
-                                <h3 className="text-base font-serif text-gray-900 pr-8">
-                                    Inscription réussie !
-                                </h3>
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-3">
-                                <div className="text-center mb-4">
-                                    <CheckCircle className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                                    <h4 className="text-sm font-serif text-gray-900 mb-1">
-                                        Félicitations {formData.prenom} !
-                                    </h4>
-                                    <p className="text-xs text-gray-600 font-serif">
-                                        Votre inscription a été enregistrée avec succès.
-                                    </p>
-                                </div>
-
-                                <div className="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-200">
-                                    <h5 className="text-sm font-serif text-gray-900 mb-3 text-center">
-                                        Il reste encore une étape importante !
-                                    </h5>
-
-                                    <div className="space-y-3">
-                                        <div className="bg-white rounded-xl p-3 border border-gray-200">
-                                            <h6 className="text-xs font-serif text-gray-900 mb-2">
-                                                Étape 1 : Effectuer le paiement
-                                            </h6>
-                                            <div className="text-xs text-gray-700 font-serif space-y-2">
-                                                <p><strong>Frais d'inscription :</strong> <span className="font-bold text-gray-900">12 000 FCFA + frais de retrait</span></p>
-                                                <p className="text-center">
-                                                    <span className="text-lg font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded inline-block">
-                                                        +229 01 67 15 39 74
-                                                    </span>
-                                                </p>
-                                                <p className="text-xs text-gray-600 text-center">
-                                                    Pour les paiements par carte, contactez le WhatsApp : +229 67 15 39 74
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white rounded-xl p-3 border border-gray-200">
-                                            <h6 className="text-xs font-serif text-gray-900 mb-2">
-                                                Étape 2 : Envoyer la capture d'écran
-                                            </h6>
-                                            <p className="text-xs text-gray-700 font-serif">
-                                                Envoyez la capture d'écran du paiement au
-                                                <span className="font-bold text-gray-900"> +229 67 15 39 74</span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <a
-                                        href={`https://wa.me/22967153974?text=Bonjour, je viens de m'inscrire à l'ETU. Voici mes informations: ${formData.nom} ${formData.prenom}, ${formData.telephone}. J'ai effectué le paiement des frais d'inscription de 12 000 FCFA au numéro +229 01 67 15 39 74. Voici la capture d'écran du paiement.`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full bg-gray-900 hover:bg-black text-white py-2.5 px-4 rounded-xl transition-all font-semibold flex items-center justify-center space-x-2 text-sm font-serif shadow-lg hover:shadow-xl"
-                                    >
-                                        <Phone className="w-4 h-4" />
-                                        <span>Envoyer la capture d'écran</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </ClientOnly>
     )

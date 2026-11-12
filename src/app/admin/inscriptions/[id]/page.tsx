@@ -15,12 +15,14 @@ interface InscriptionProfile {
     nom: string
     prenom: string
     sexe: string
+    email?: string | null
     telephone: string
     lieuResidence: string
     grade: string
     programme: string
     statut: string
-    motDePasse: string
+    codeExpireLe?: string | null
+    motDePasse: string | null
     dateNaissance?: string
     heureNaissance?: string
     lieuNaissance?: string
@@ -36,6 +38,7 @@ export default function InscriptionProfilePage() {
     const [inscription, setInscription] = useState<InscriptionProfile | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [renouvelle, setRenouvelle] = useState(false)
     const [showPasswordModal, setShowPasswordModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -49,6 +52,29 @@ export default function InscriptionProfilePage() {
             fetchInscriptionProfile()
         }
     }, [id])
+
+    const renouvelerCode = async () => {
+        if (!inscription) return
+        let montant: number | undefined
+        if (inscription.codeExpireLe) {
+            const saisie = window.prompt('Montant de la contribution effectivement reçue (minimum 10 000 FCFA)')
+            if (saisie === null) return
+            montant = Number(saisie)
+            if (!Number.isSafeInteger(montant) || montant < 10000) {
+                addToast({ type: 'error', title: 'Montant insuffisant', message: 'Le minimum est de 10 000 FCFA.' })
+                return
+            }
+            if (!window.confirm(`Confirmer la réception de ${montant} FCFA et remplacer le code pour 30 jours à compter de maintenant ?`)) return
+        }
+        setRenouvelle(true)
+        try {
+            const res = await fetch(`/api/admin/inscriptions/${id}/renouveler`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ montant, expiration: inscription.codeExpireLe ?? null }) })
+            if (!res.ok) throw new Error()
+            await fetchInscriptionProfile()
+        } catch {
+            addToast({ type: 'error', title: 'Renouvellement impossible', message: 'Veuillez réessayer.' })
+        } finally { setRenouvelle(false) }
+    }
 
     const fetchInscriptionProfile = async () => {
         try {
@@ -495,6 +521,7 @@ export default function InscriptionProfilePage() {
                                         <div>
                                             <p className="text-sm text-gray-500">Téléphone</p>
                                             <p className="text-lg font-medium text-gray-900">{inscription.telephone}</p>
+                                            {inscription.email && <a className="break-all underline" href={`mailto:${inscription.email}`}>{inscription.email}</a>}
                                         </div>
                                     </div>
                                     {inscription.dateNaissance && (
@@ -641,10 +668,11 @@ export default function InscriptionProfilePage() {
                                 <p className="text-sm text-gray-600 mb-3 font-medium">Mot de passe généré :</p>
                                 <div className="flex items-center space-x-3">
                                     <code className="text-lg font-mono bg-white px-4 py-3 rounded-lg border flex-1 text-center font-bold text-gray-900">
-                                        {inscription.motDePasse}
+                                        {inscription.motDePasse || 'Mot de passe indisponible'}
                                     </code>
                                     <button
-                                        onClick={() => copyPassword(inscription.motDePasse)}
+                                        disabled={!inscription.motDePasse}
+                                        onClick={() => inscription.motDePasse && copyPassword(inscription.motDePasse)}
                                         className="p-3 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                                         title="Copier le mot de passe"
                                     >
@@ -653,6 +681,10 @@ export default function InscriptionProfilePage() {
                                 </div>
                             </div>
 
+                            <div className="mb-4 text-sm">
+                                {inscription.codeExpireLe && <p>Expiration : {new Date(inscription.codeExpireLe).toLocaleString('fr-FR')}</p>}
+                                <button onClick={renouvelerCode} disabled={renouvelle || inscription.statut !== 'Actif'} className="mt-2 underline disabled:opacity-50">{inscription.codeExpireLe ? 'Renouveler pour 30 jours' : 'Générer le premier code'}</button>
+                            </div>
                             <div className="bg-blue-50 rounded-lg p-4 mb-6">
                                 <p className="text-sm text-blue-800 font-medium mb-2">Instructions :</p>
                                 <ul className="text-sm text-blue-700 space-y-1">
@@ -670,7 +702,9 @@ export default function InscriptionProfilePage() {
                                     Fermer
                                 </button>
                                 <button
+                                    disabled={!inscription.motDePasse}
                                     onClick={() => {
+                                        if (!inscription.motDePasse) return
                                         copyPassword(inscription.motDePasse)
                                         setShowPasswordModal(false)
                                     }}

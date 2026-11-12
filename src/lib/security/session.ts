@@ -7,6 +7,7 @@ export type SessionPayload = {
   role: SessionRole
   iat: number
   exp: number
+  credentialExpiry?: number
   nonce: string
 }
 
@@ -47,7 +48,8 @@ export function isSessionSecurityConfigured(): boolean {
 export async function createSessionToken(
   role: SessionRole,
   subject: string,
-  maxAgeSeconds: number
+  maxAgeSeconds: number,
+  credentialExpiry?: number
 ): Promise<string> {
   const secret = getSessionSecret()
   if (!secret) throw new Error('SESSION_SECRET doit contenir au moins 32 caractères')
@@ -58,6 +60,7 @@ export async function createSessionToken(
     role,
     iat: now,
     exp: now + maxAgeSeconds,
+    credentialExpiry,
     nonce: crypto.randomUUID(),
   }
   const encodedPayload = base64UrlEncode(encoder.encode(JSON.stringify(payload)))

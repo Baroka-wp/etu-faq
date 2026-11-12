@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { getAuthorizedAdmin } from '@/lib/security/admin'
-import { revealCredential } from '@/lib/security/credential'
+import { dossierAdmin } from '@/lib/security/aspirant'
 
 const prisma = new PrismaClient()
 
@@ -33,7 +33,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ ...inscription, motDePasse: await revealCredential(inscription.motDePasse) }, { status: 200 })
+    return NextResponse.json(await dossierAdmin(inscription), { status: 200 })
   } catch (error) {
     console.error('Erreur lors de la récupération de l\'inscription:', error)
     return NextResponse.json(
@@ -109,7 +109,7 @@ export async function PATCH(
       data: { statut }
     })
 
-    return NextResponse.json({ ...updatedInscription, motDePasse: await revealCredential(updatedInscription.motDePasse) }, { status: 200 })
+    return NextResponse.json(await dossierAdmin(updatedInscription), { status: 200 })
   } catch (error) {
     console.error('Erreur lors de la mise à jour:', error)
     return NextResponse.json(
@@ -156,7 +156,7 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json({ ...updatedInscription, motDePasse: await revealCredential(updatedInscription.motDePasse) }, { status: 200 })
+    return NextResponse.json(await dossierAdmin(updatedInscription), { status: 200 })
   } catch (error) {
     console.error('Erreur lors de la mise à jour:', error)
     return NextResponse.json(

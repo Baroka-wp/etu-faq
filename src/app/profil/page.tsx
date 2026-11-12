@@ -7,6 +7,7 @@ import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 
 interface UserProfile {
+    joursRestants: number
     nom: string
     prenom: string
     sexe: string
@@ -157,6 +158,7 @@ export default function UserProfilePage() {
                             <User className="w-6 h-6 text-gray-600" />
                             <div>
                                 <p className="text-sm text-gray-500">Nom complet</p>
+                                <p className="text-sm text-gray-600">Accès : {user.joursRestants} jour{user.joursRestants > 1 ? 's' : ''} restant{user.joursRestants > 1 ? 's' : ''}</p>
                                 <p className="text-lg font-medium text-gray-900">{user.prenom} {user.nom}</p>
                             </div>
                         </div>

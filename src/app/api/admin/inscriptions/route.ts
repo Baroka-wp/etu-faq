@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { getAuthorizedAdmin } from '@/lib/security/admin'
-import { revealCredential } from '@/lib/security/credential'
+import { dossierAdmin } from '@/lib/security/aspirant'
 
 const prisma = new PrismaClient()
 
@@ -16,16 +16,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const inscriptions = await (prisma as any).inscription.findMany({
+    const inscriptions = await prisma.inscription.findMany({
       orderBy: {
         createdAt: 'desc'
       }
     })
 
-    return NextResponse.json(await Promise.all(inscriptions.map(async (inscription: { motDePasse: string }) => ({
-      ...inscription,
-      motDePasse: await revealCredential(inscription.motDePasse),
-    }))))
+    return NextResponse.json(await Promise.all(inscriptions.map(dossierAdmin)))
 
   } catch (error: any) {
     console.error('Erreur lors de la récupération des inscriptions:', error)

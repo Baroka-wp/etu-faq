@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, BookOpen, CalendarDays, ListChecks, Loader2, MapPin, UserPlus, Users } from 'lucide-react'
+import { ArrowRight, BookOpen, CalendarDays, ListChecks, Loader2, MapPin, UserPlus, Users, Video } from 'lucide-react'
 import AdminSidebar from '@/components/AdminSidebar'
 import { formatAppDate, formatAppTime } from '@/lib/datetime'
 
@@ -11,6 +11,7 @@ interface DashboardStats {
   activeMembers: number
   monthEvents: number
   pendingAspirants: number
+  videos: number
   books: number
   projets: number
   upcomingEvents: Array<{
@@ -30,6 +31,14 @@ const modules = [
     icon: CalendarDays,
     stat: 'monthEvents' as const,
     statLabel: 'événement(s) ce mois',
+  },
+  {
+    href: '/admin/videotheque',
+    title: 'Cours vidéo',
+    description: 'Publier une séance ou modifier sa vidéo et ses notes.',
+    icon: Video,
+    stat: 'videos' as const,
+    statLabel: 'cours en ligne',
   },
   {
     href: '/admin/members',

@@ -33,7 +33,7 @@ interface Inscription {
     grade: string
     programme: string
     statut: string
-    motDePasse: string
+    motDePasse: string | null
     createdAt: string
 }
 
@@ -41,6 +41,7 @@ export default function AdminInscriptions() {
     const [activeTab, setActiveTab] = useState('inscriptions')
     const [inscriptions, setInscriptions] = useState<Inscription[]>([])
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
     const [filterStatut, setFilterStatut] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
@@ -58,14 +59,18 @@ export default function AdminInscriptions() {
     }, [])
 
     const fetchInscriptions = async () => {
+        setLoading(true)
+        setLoadError('')
         try {
             const response = await fetch('/api/admin/inscriptions')
-            if (response.ok) {
-                const data = await response.json()
-                setInscriptions(data)
+            if (response.status === 401) {
+                router.replace('/admin-login?retour=/admin/inscriptions')
+                return
             }
+            if (!response.ok) throw new Error('Liste indisponible')
+            setInscriptions(await response.json())
         } catch (err) {
-            console.error('Erreur lors du chargement des inscriptions:', err)
+            setLoadError('Impossible de charger les inscriptions.')
         } finally {
             setLoading(false)
         }
@@ -256,7 +261,7 @@ export default function AdminInscriptions() {
         setCurrentPage(1)
     }
 
-    if (loading) {
+    if (loading || loadError) {
         return (
             <div className="h-screen bg-gray-50 flex overflow-hidden">
                 <AdminSidebar
@@ -266,8 +271,9 @@ export default function AdminInscriptions() {
                 />
                 <div className="flex-1 lg:ml-64 flex items-center justify-center">
                     <div className="text-center">
+                        {loadError ? <div role="alert"><p>{loadError}</p><button className="mt-3 underline" onClick={fetchInscriptions}>Réessayer</button></div> : <>
                         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Chargement des inscriptions...</p>
+                        <p className="mt-4 text-gray-600">Chargement des inscriptions...</p></>}
                     </div>
                 </div>
             </div>
@@ -632,10 +638,11 @@ export default function AdminInscriptions() {
                                 <p className="text-sm text-gray-600 mb-3 font-medium">Mot de passe généré :</p>
                                 <div className="flex items-center space-x-3">
                                     <code className="text-lg font-mono bg-white px-4 py-3 rounded-lg border flex-1 text-center font-bold text-gray-900">
-                                        {selectedInscription.motDePasse}
+                                        {selectedInscription.motDePasse || 'Mot de passe indisponible'}
                                     </code>
                                     <button
-                                        onClick={() => copyPassword(selectedInscription.motDePasse)}
+                                        disabled={!selectedInscription.motDePasse}
+                                        onClick={() => selectedInscription.motDePasse && copyPassword(selectedInscription.motDePasse)}
                                         className="p-3 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                                         title="Copier le mot de passe"
                                     >
@@ -661,7 +668,9 @@ export default function AdminInscriptions() {
                                     Fermer
                                 </button>
                                 <button
+                                    disabled={!selectedInscription.motDePasse}
                                     onClick={() => {
+                                        if (!selectedInscription.motDePasse) return
                                         copyPassword(selectedInscription.motDePasse)
                                         setShowPasswordModal(false)
                                     }}

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Lock, Eye, EyeOff, ArrowLeft, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { demandeCode } from '@/lib/acces-video'
 import ClientOnly from '@/components/ClientOnly'
 
 export default function MemberLoginPage() {
@@ -19,16 +20,19 @@ export default function MemberLoginPage() {
         setError('')
 
         try {
+            const params = new URLSearchParams(window.location.search)
+            const video = params.get('retour') === '/videotheque'
+            const seance = params.get('seance')
             const response = await fetch('/api/user/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ password }),
+                body: JSON.stringify({ password, videotheque: video }),
             })
 
             if (response.ok) {
-                router.push('/profil')
+                router.replace(video ? '/videotheque' + (seance ? '?seance=' + encodeURIComponent(seance) : '') : '/profil')
             } else {
                 const data = await response.json()
                 setError(data.error || 'Mot de passe incorrect')
@@ -66,7 +70,7 @@ export default function MemberLoginPage() {
                     </div>
 
                     <h2 className="text-center text-3xl font-bold text-gray-900">
-                        Connexion Membre
+                        Accès à la formation à la Kabbale
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600 font-serif">
                         École Transcendantaliste Universelle
@@ -82,9 +86,10 @@ export default function MemberLoginPage() {
                                 </div>
                             )}
 
+
                             <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 font-serif">
-                                    Mot de passe personnel uniquement
+                                    Code personnel (4 caractères)
                                 </label>
                                 <div className="mt-1 relative">
                                     <input
@@ -92,10 +97,11 @@ export default function MemberLoginPage() {
                                         name="password"
                                         type={showPassword ? 'text' : 'password'}
                                         required
+                                        autoCapitalize="none" spellCheck={false} minLength={4} maxLength={4} autoComplete="current-password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-                                        placeholder="Entrez votre mot de passe personnel"
+                                        placeholder="Votre code"
                                     />
                                     <button
                                         type="button"
@@ -132,26 +138,10 @@ export default function MemberLoginPage() {
                             </div>
                         </form>
 
-                        <div className="mt-6">
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center">
-                                    <div className="w-full border-t border-gray-300" />
-                                </div>
-                                <div className="relative flex justify-center text-sm">
-                                    <span className="px-2 bg-white text-gray-500 font-serif">
-                                        Accès réservé aux membres
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 text-center">
-                            <p className="text-sm text-gray-600">
-                                Vous êtes administrateur ?{' '}
-                                <Link href="/admin-login" className="font-medium text-gray-900 hover:text-gray-700">
-                                    Connexion admin
-                                </Link>
-                            </p>
+                        <div className="mt-6 space-y-3 text-center text-sm">
+                            <a className="flex min-h-11 w-full items-center justify-center rounded-md bg-[#b01458] px-4 py-2 font-semibold text-white transition-colors hover:bg-[#921047] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b01458]" href={demandeCode()}>Demander un premier code</a>
+                            <a className="block underline" href={demandeCode(true)}>Renouveler mon code</a>
+                            <p className="text-gray-600">Le code est valable 30 jours.</p>
                         </div>
                     </div>
                 </div>

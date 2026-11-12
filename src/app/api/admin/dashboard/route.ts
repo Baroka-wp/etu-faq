@@ -12,11 +12,12 @@ export async function GET(request: NextRequest) {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
 
-    const [activeMembers, monthEvents, pendingAspirants, books, projets, upcomingEvents] = await Promise.all([
+    const [activeMembers, monthEvents, pendingAspirants, books, videos, projets, upcomingEvents] = await Promise.all([
       db.membre.count({ where: { statut: 'actif' } }),
       db.traversee.count({ where: { date: { gte: monthStart, lt: nextMonth } } }),
       db.inscription.count({ where: { statut: 'En attente' } }),
       db.book.count(),
+      db.coursVideo.count(),
       db.projet.count({ where: { statut: { not: 'termine' } } }),
       db.traversee.findMany({
         where: { date: { gte: now } },
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
       monthEvents,
       pendingAspirants,
       books,
+      videos,
       projets,
       upcomingEvents: upcomingEvents.map(({ _count, ...event }) => ({
         ...event,

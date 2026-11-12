@@ -72,6 +72,13 @@ const nextConfig: NextConfig = {
           }] : []),
         ],
       },
+      {
+        source: '/videotheque',
+        headers: [{
+          key: 'Content-Security-Policy',
+          value: contentSecurityPolicy.replace("frame-src 'none'", "frame-src https://drive.google.com"),
+        }],
+      },
     ];
   },
 };

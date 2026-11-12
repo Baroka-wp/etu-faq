@@ -1,5 +1,6 @@
 'use client'
 
+import { lienCommandeLivre } from '@/lib/commande-livre'
 import { useState } from 'react'
 import { BookOpen, MessageCircle, ArrowLeft, Copy, Check, Facebook, X } from 'lucide-react'
 import Link from 'next/link'
@@ -53,8 +54,7 @@ export default function BookDetail({ book }: BookDetailProps) {
     }
 
     const handleWhatsAppContact = () => {
-        const message = encodeURIComponent(book.whatsappMessage)
-        const whatsappUrl = `https://wa.me/22967153974?text=${message}`
+        const whatsappUrl = lienCommandeLivre(book)
         window.open(whatsappUrl, '_blank')
     }
 

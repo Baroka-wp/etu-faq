@@ -1,9 +1,9 @@
 import { Metadata } from 'next'
-import { PrismaClient } from '@prisma/client'
 import { notFound } from 'next/navigation'
+import { db } from '@/lib/db'
 import BookDetail from '@/components/BookDetail'
-
-const prisma = new PrismaClient()
+import RessourceReservee from '@/components/acces/RessourceReservee'
+import { getLecteurServeur, nomLecteur, peutVoirRessource } from '@/lib/acces-lecteur'
 
 interface PageProps {
     params: Promise<{
@@ -14,13 +14,22 @@ interface PageProps {
 // Générer les métadonnées Open Graph pour le partage sur les réseaux sociaux
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const resolvedParams = await params
-    const book = await prisma.book.findUnique({
+    const book = await db.book.findUnique({
         where: { slug: resolvedParams.slug }
     })
 
-    if (!book) {
+    if (!book || !book.publie) {
         return {
             title: 'Livre non trouvé - Bibliothèque ETU-Bénin',
+        }
+    }
+
+    // Une ressource réservée ne livre pas sa description au partage.
+    if (book.acces === 'restreint') {
+        return {
+            title: `${book.title} - Bibliothèque ETU-Bénin`,
+            description: 'Ressource réservée : accès par nom sacré ou par code.',
+            robots: { index: false, follow: false },
         }
     }
 
@@ -59,12 +68,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function BookPage({ params }: PageProps) {
     const resolvedParams = await params
-    const book = await prisma.book.findUnique({
+    const book = await db.book.findUnique({
         where: { slug: resolvedParams.slug }
     })
 
-    if (!book) {
+    if (!book || !book.publie) {
         notFound()
+    }
+
+    const lecteur = await getLecteurServeur()
+    if (!peutVoirRessource(lecteur, book)) {
+        return (
+            <RessourceReservee
+                titre={book.title}
+                auteur={book.author}
+                imageUrl={book.imageUrl}
+                type={book.type}
+                gradesAutorises={book.gradesAutorises}
+                lecteurConnu={lecteur ? nomLecteur(lecteur) : null}
+            />
+        )
     }
 
     return <BookDetail book={book} />

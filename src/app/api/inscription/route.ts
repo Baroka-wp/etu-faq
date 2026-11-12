@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { generateUserPassword } from '@/lib/password-generator'
 import { rateLimit, safeJson, safeText } from '@/lib/security/http'
-import { protectCredential } from '@/lib/security/credential'
 
 const prisma = new PrismaClient()
 
@@ -37,12 +35,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Générer un mot de passe unique
-    const motDePasse = generateUserPassword()
+    const email = typeof body.email === 'string' ? body.email.trim() : ''
+    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Veuillez saisir une adresse électronique valide' }, { status: 400 })
+    }
 
     // Enregistrement dans la base de données
-    const inscription = await (prisma as any).inscription.create({
+    const inscription = await prisma.inscription.create({
       data: {
+        email,
         nom: clean.nom!,
         prenom: clean.prenom!,
         sexe: clean.sexe!,
@@ -52,7 +53,6 @@ export async function POST(request: NextRequest) {
         lieuResidence: clean.lieuResidence!,
         religion: clean.religion!,
         telephone: clean.telephone!,
-        motDePasse: await protectCredential(motDePasse),
         grade: 'Explorateur',
         programme: 'Initiation',
         statut: 'En attente'

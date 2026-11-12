@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BookOpen, Filter, ShoppingCart, MessageCircle, ExternalLink, Heart } from 'lucide-react'
+import { BookOpen, Filter, ShoppingCart, MessageCircle, ExternalLink, Heart, Lock } from 'lucide-react'
+import PorteAcces from '@/components/acces/PorteAcces'
 import Link from 'next/link'
 import Image from 'next/image'
 import DonModal from '@/components/DonModal'
@@ -18,6 +19,7 @@ interface Book {
     imageUrl: string
     whatsappMessage: string
     driveUrl: string
+    reservee?: boolean
 }
 
 export default function BibliothequePage() {
@@ -26,6 +28,9 @@ export default function BibliothequePage() {
     const [filter, setFilter] = useState<'all' | 'etu' | 'recommended'>('all')
     const [searchTerm, setSearchTerm] = useState('')
     const [donModalOpen, setDonModalOpen] = useState(false)
+    const [lecteur, setLecteur] = useState<{ genre: string; nom: string } | null>(null)
+    const [reservees, setReservees] = useState(0)
+    const [porteOuverte, setPorteOuverte] = useState(false)
 
     useEffect(() => {
         fetchBooks()
@@ -37,6 +42,8 @@ export default function BibliothequePage() {
             if (response.ok) {
                 const data = await response.json()
                 setBooks(data.books)
+                setLecteur(data.lecteur ?? null)
+                setReservees(data.reservees ?? 0)
             }
         } catch (error) {
             console.error('Erreur lors du chargement des livres:', error)
@@ -169,6 +176,45 @@ export default function BibliothequePage() {
                     </div>
                 </div>
 
+                {/* Ressources réservées : identification du lecteur */}
+                {lecteur ? (
+                    <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm">
+                        <p className="text-gray-700">
+                            Vous consultez en tant que <strong className="font-medium">{lecteur.nom}</strong>.
+                            Les ressources qui vous sont ouvertes apparaissent ci-dessous.
+                        </p>
+                        <button
+                            onClick={async () => {
+                                await fetch('/api/acces', { method: 'DELETE' })
+                                await fetchBooks()
+                            }}
+                            className="text-gray-500 underline underline-offset-2 hover:text-gray-900"
+                        >
+                            Sortir
+                        </button>
+                    </div>
+                ) : reservees > 0 ? (
+                    <div className="mb-6">
+                        {!porteOuverte ? (
+                            <button
+                                onClick={() => setPorteOuverte(true)}
+                                className="inline-flex items-center gap-2 text-sm text-gray-600 underline underline-offset-4 hover:text-gray-900"
+                            >
+                                <Lock className="h-4 w-4" aria-hidden />
+                                {reservees} ressource{reservees > 1 ? 's' : ''} réservée{reservees > 1 ? 's' : ''} — entrer mon code ou mon nom sacré
+                            </button>
+                        ) : (
+                            <PorteAcces
+                                titre="Ressources réservées"
+                                onOuvert={async () => {
+                                    setPorteOuverte(false)
+                                    await fetchBooks()
+                                }}
+                            />
+                        )}
+                    </div>
+                ) : null}
+
                 {/* Books Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredBooks.map((book) => (
@@ -190,7 +236,12 @@ export default function BibliothequePage() {
                                 {/* Book Content */}
                                 <div className="p-5">
                                     <div className="flex justify-between items-start mb-2">
-                                        <h3 className="text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">{book.title}</h3>
+                                        <h3 className="text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">
+                                            {book.reservee && (
+                                                <Lock className="mr-1.5 inline h-3.5 w-3.5 align-[-2px] text-gray-400" aria-label="Ressource réservée" />
+                                            )}
+                                            {book.title}
+                                        </h3>
                                         <span className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ml-2 ${book.isFree
                                             ? 'bg-gray-100 text-gray-700 border border-gray-300'
                                             : 'bg-gray-900 text-white'
