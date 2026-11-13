@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, User, Calendar, MapPin, Phone, BookOpen, CheckCircle, Mail } from 'lucide-react'
+import { ArrowLeft, User, Calendar, MapPin, Phone, BookOpen, Mail } from 'lucide-react'
 import Link from 'next/link'
 import ClientOnly from '@/components/ClientOnly'
 
@@ -78,47 +78,50 @@ export default function InscriptionPage() {
                     </div>
                 </div>
             }>
-                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-                    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16">
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle className="w-12 h-12 text-gray-900" />
-                            </div>
-                            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-4">
-                                Inscription réussie !
-                            </h1>
-                            <div className="my-8 space-y-4 text-left font-serif leading-relaxed text-gray-700">
-                                <p>Cher Aspirant explorateur,</p>
-                                <p>Merci pour votre inscription à la formation.</p>
-                                <p>L’inscription est désormais gratuite.</p>
-                                <h2 className="font-semibold">Ce qu’il faut faire</h2>
-                                <ol className="list-decimal space-y-4 pl-6">
-                                    <li><a className="inline-flex min-h-11 items-center justify-center rounded-xl bg-fuchsia-200 px-5 py-3 text-center text-sm font-semibold text-fuchsia-950 hover:bg-fuchsia-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-700" href="https://chat.whatsapp.com/Kzawjc2gC2OJjuxkNlbWxt?mode=gi_t">Rejoindre le groupe WhatsApp de la formation</a></li>
-                                    <li>Si vous rencontrez une difficulté avec le formulaire, vous pouvez également écrire directement à <a className="underline" href="mailto:guerashel@gmail.com">guerashel@gmail.com</a> ou adresser un message en privé au frère Isaac @Isaac LAKPE, en communiquant :
-                                        <ul className="mt-2 list-disc pl-5">
-                                            <li>Nom et prénom(s)</li>
-                                            <li>Date de naissance</li>
-                                            <li>Pays de résidence</li>
-                                            <li>Ville de résidence</li>
-                                            <li>Numéro WhatsApp</li>
-                                            <li>Adresse électronique</li>
-                                        </ul>
-                                    </li>
-                                </ol>
-                                <p>Merci d’accompagner ces informations de la mention suivante :</p>
-                                <p>Rendez-vous tous les dimanches pour une séance en live 🙏🏽</p>
-                                <p>Dans la Paix et la Lumière.</p>
-                            </div>
-                            <Link
-                                href="/"
-                                className="inline-flex items-center space-x-2 bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl transition-all text-base font-semibold font-serif shadow-lg hover:shadow-xl"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                                <span>Retour à l'accueil</span>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+                <main className="min-h-screen bg-[#faf9f7] px-6 py-12 text-stone-900 sm:py-20">
+                    <article className="mx-auto max-w-2xl space-y-8 font-serif text-lg leading-relaxed sm:text-xl sm:leading-relaxed">
+                        <header>
+                            <h1 className="text-balance font-sans text-3xl font-light leading-tight sm:text-4xl">Demande d’inscription enregistrée</h1>
+                            <p className="mt-5">Cher Aspirant explorateur,<br />Nous avons bien reçu votre fiche d’inscription.</p>
+                        </header>
+                        <section className="space-y-4">
+                            <h2 className="font-sans text-xl font-medium sm:text-2xl">Vos prochaines étapes</h2>
+                            <ol className="list-decimal space-y-5 pl-6 marker:font-semibold">
+                                <li className="pl-1">
+                                    <strong className="font-semibold">Réglez les frais d’inscription de 12 000 FCFA.</strong>
+                                    <ul className="mt-1 list-disc pl-5">
+                                        <li>Au Bénin, par MoMo au <span className="whitespace-nowrap">+229 01 67 15 39 74</span>.</li>
+                                        <li>Depuis l’étranger, par Western Union ou MoneyGram.</li>
+                                    </ul>
+                                </li>
+                                <li className="pl-1">
+                                    <strong className="font-semibold">Demandez l’activation de votre compte.</strong>
+                                    <p>Envoyez la capture d’écran du paiement par WhatsApp au <a className="whitespace-nowrap underline underline-offset-4" href="https://wa.me/22967153974">+229 67 15 39 74</a>.</p>
+                                </li>
+                                <li className="pl-1"><a className="inline-flex min-h-11 items-center rounded-lg bg-fuchsia-200 px-4 py-2 font-sans text-base font-medium sm:text-lg text-fuchsia-950 hover:bg-fuchsia-300" href="https://chat.whatsapp.com/HbCOaq0Adra86k4qjkDW6D?mode=gi_t">Rejoindre le groupe WhatsApp de la formation</a></li>
+                            </ol>
+                        </section>
+                        <section className="space-y-3 border-t border-stone-200 pt-6">
+                            <h2 className="font-sans text-xl font-medium sm:text-2xl">Informations sur les cours</h2>
+                            <p>Chaque séance associe lecture des textes, interprétation et discussion.</p>
+                            <ul className="list-disc space-y-1 pl-5">
+                                <li><strong className="font-semibold">En ligne</strong> chaque vendredi à 21 h.</li>
+                                <li><strong className="font-semibold">En présentiel</strong> le deuxième vendredi de chaque mois.</li>
+                            </ul>
+                            <p>Les cours de Kabbale sont disponibles en <Link href="/videotheque" className="underline underline-offset-4">vidéothèque</Link> avec votre code personnel.</p>
+                        </section>
+                        <section className="space-y-2">
+                            <h2 className="font-sans text-xl font-medium sm:text-2xl">Votre engagement spirituel</h2>
+                            <p className="font-semibold">Étude · Prière · Charité</p>
+                            <p>Étudiez avec assiduité les enseignements de l’École. Pour cultiver la prière au quotidien, relevez le défi de <strong className="font-semibold">154 jours de prière</strong> avec constance et persévérance.</p>
+                            <p>Votre livre de prière : <Link href="/bibliotheque/lumiere-divine-premiers-pas" className="underline underline-offset-4">Lumière divine – Premiers pas</Link>.</p>
+                        </section>
+                        <p className="italic text-stone-600">Dans la Paix et la Lumière.</p>
+                        <Link href="/" className="inline-flex items-center gap-2 font-sans text-base text-stone-600 hover:underline">
+                            <ArrowLeft className="h-4 w-4" /> Retour à l’accueil
+                        </Link>
+                    </article>
+                </main>
             </ClientOnly>
         )
     }
@@ -147,7 +150,7 @@ export default function InscriptionPage() {
                 {/* Hero Section */}
                 <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Fiche d'inscription</h1>
+                        <h1 className="text-4xl sm:text-5xl font-light tracking-wide text-stone-900 mb-3">Fiche d'inscription</h1>
                         <p className="text-sm text-gray-600 font-serif">École Transcendantaliste Universelle - OMP Bénin</p>
                     </div>
 
@@ -163,7 +166,7 @@ export default function InscriptionPage() {
                             {/* Nom, Prénom et Sexe */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div>
-                                    <label htmlFor="nom" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                    <label htmlFor="nom" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                         <User className="w-4 h-4 inline mr-2" />
                                         Nom *
                                     </label>
@@ -174,12 +177,12 @@ export default function InscriptionPage() {
                                         value={formData.nom}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-base font-serif transition-all"
                                         placeholder="Votre nom de famille"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="prenom" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                    <label htmlFor="prenom" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                         <User className="w-4 h-4 inline mr-2" />
                                         Prénom *
                                     </label>
@@ -190,7 +193,7 @@ export default function InscriptionPage() {
                                         value={formData.prenom}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm font-serif transition-all"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-base font-serif transition-all"
                                         placeholder="Votre prénom"
                                     />
                                 </div>
@@ -198,7 +201,7 @@ export default function InscriptionPage() {
 
                             {/* Sexe */}
                             <div>
-                                <label htmlFor="sexe" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                <label htmlFor="sexe" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                     <User className="w-4 h-4 inline mr-2" />
                                     Sexe *
                                 </label>
@@ -218,7 +221,7 @@ export default function InscriptionPage() {
 
                             {/* Date de naissance */}
                             <div>
-                                <label htmlFor="dateNaissance" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                <label htmlFor="dateNaissance" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                     <Calendar className="w-4 h-4 inline mr-2" />
                                     Date de naissance *
                                 </label>
@@ -245,7 +248,7 @@ export default function InscriptionPage() {
 
                             {/* Heure de naissance */}
                             <div>
-                                <label htmlFor="heureNaissance" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                <label htmlFor="heureNaissance" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                     <Calendar className="w-4 h-4 inline mr-2" />
                                     Heure de naissance (optionnel)
                                 </label>
@@ -271,7 +274,7 @@ export default function InscriptionPage() {
 
                             {/* Lieu de naissance */}
                             <div>
-                                <label htmlFor="lieuNaissance" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                <label htmlFor="lieuNaissance" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                     <MapPin className="w-4 h-4 inline mr-2" />
                                     Lieu de naissance *
                                 </label>
@@ -289,7 +292,7 @@ export default function InscriptionPage() {
 
                             {/* Lieu de résidence */}
                             <div>
-                                <label htmlFor="lieuResidence" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                <label htmlFor="lieuResidence" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                     <MapPin className="w-4 h-4 inline mr-2" />
                                     Lieu de résidence actuel *
                                 </label>
@@ -307,7 +310,7 @@ export default function InscriptionPage() {
 
                             {/* Religion */}
                             <div>
-                                <label htmlFor="religion" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                <label htmlFor="religion" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                     <BookOpen className="w-4 h-4 inline mr-2" />
                                     Religion pratiquée *
                                 </label>
@@ -332,7 +335,7 @@ export default function InscriptionPage() {
 
                             {/* Téléphone */}
                             <div>
-                                <label htmlFor="telephone" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                <label htmlFor="telephone" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                     <Phone className="w-4 h-4 inline mr-2" />
                                     Numéro de téléphone WhatsApp *
                                 </label>
@@ -349,7 +352,7 @@ export default function InscriptionPage() {
                             </div>
 
                             <div>
-                                <label htmlFor="email" className="block text-sm sm:text-base font-serif text-gray-700 mb-2">
+                                <label htmlFor="email" className="block text-base sm:text-lg font-serif text-stone-800 mb-2">
                                     <Mail className="w-4 h-4 inline mr-2" />
                                     Adresse électronique *
                                 </label>

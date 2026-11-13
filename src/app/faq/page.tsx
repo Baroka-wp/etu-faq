@@ -59,7 +59,7 @@ const faqData: FAQSection[] = [
             },
             {
                 question: "Quel est l'investissement financier demandé et pourquoi ?",
-                answer: "L'investissement pour votre éveil se décompose ainsi :\n• Inscription gratuite\n• Mensualités : 10 000 FCFA au début de chaque mois, pendant 6 mois (soit 60 000 FCFA au total)\n\nCet investissement couvre les frais de structure, l'encadrement par les instructeurs et la transmission d'un savoir initiatique de grande valeur. Il est aussi un premier acte d'engagement et de conscience sur votre chemin."
+                answer: "L'investissement pour votre éveil se décompose ainsi :\n• Frais de validation de l’inscription : 12 000 FCFA\n• Mensualités : 10 000 FCFA au début de chaque mois, pendant 6 mois (soit 60 000 FCFA au total)\n\nCet investissement couvre les frais de structure, l'encadrement par les instructeurs et la transmission d'un savoir initiatique de grande valeur. Il est aussi un premier acte d'engagement et de conscience sur votre chemin."
             },
             {
                 question: "Pouvez-vous m'expliquer plus en détail la 'discipline de l'Initiation' (154 jours et 154 000 FCFA) ?",
@@ -95,7 +95,7 @@ const faqData: FAQSection[] = [
         items: [
             {
                 question: "Je suis convaincu(e) ! Comment je m'inscris ?",
-                answer: "Nous sommes heureux de vous accueillir ! Le processus est simple :\n1. Remplissez gratuitement la fiche d’inscription en ligne\n2. Rejoignez la communauté WhatsApp pour recevoir les premiers liens et commencer à vibrer avec le groupe"
+                answer: "Nous sommes heureux de vous accueillir ! Le processus est simple :\n1. Remplissez la fiche d’inscription en ligne\n2. Pour valider votre inscription, versez 12 000 FCFA par MoMo au +229 01 67 15 39 74 ou, depuis l’étranger, par Western Union ou MoneyGram.\n3. Rejoignez la communauté WhatsApp pour recevoir les premiers liens et commencer à vibrer avec le groupe"
             },
             {
                 question: "J'ai encore une question qui n'est pas ici.",

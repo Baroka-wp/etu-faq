@@ -69,7 +69,7 @@ export default function HomePage() {
                   href="/inscription"
                   className="shrink-0 rounded-lg bg-gray-800 px-4 py-2 text-[15px] font-serif font-medium text-white transition-colors hover:bg-gray-900"
                 >
-                  S’inscrire à la formation END
+                  Inscription nouveau membre
                 </Link>
               </div>
 
@@ -123,7 +123,7 @@ export default function HomePage() {
                     className="mx-3 mt-2 block rounded-lg bg-gray-800 py-2.5 text-center font-serif text-white hover:bg-gray-900"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    S’inscrire à la formation END
+                    Inscription nouveau membre
                   </Link>
                 </div>
               </div>
@@ -159,7 +159,7 @@ export default function HomePage() {
                   className="inline-flex items-center gap-2 bg-[#831843] text-white px-6 py-3 rounded-xl text-sm font-serif font-semibold hover:bg-[#691336] transition-colors"
                 >
                   <User className="w-4 h-4" />
-                  S’inscrire à la formation END
+                  Inscription nouveau membre
                 </Link>
                 <Link
                   href="/videotheque"
@@ -227,7 +227,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <p className="text-white font-serif font-bold text-lg sm:text-xl">Prêt à commencer votre parcours ?</p>
-              <p className="text-stone-400 font-serif text-sm mt-1">Formation de 6 mois · Inscription gratuite · En ligne ou en présentiel</p>
+              <p className="text-stone-400 font-serif text-sm mt-1">Formation de 6 mois · Frais d’inscription de 12 000 FCFA · En ligne ou en présentiel</p>
             </div>
             <Link
               href="/inscription"
